@@ -13,6 +13,7 @@ import copy
 from itertools import groupby
 import warnings
 
+from domains import *
 
 '''
 Change the 5 following paths:
@@ -32,67 +33,12 @@ output_gbk_lump = "/Users/fredrikfossheim/Desktop/Master/master/gbk_db_output_mo
 # 3) Folder that lump models are output (empty folder)
 json_folder = '/Users/fredrikfossheim/Desktop/Master/master/json_files/difficidin/'
 # 4) Folder that json files are output (empty folder)(an unnecessary step, but it may help look at the information that is saved)
-sco_metabolic_model_path = '/Users/fredrikfossheim/Desktop/Master/master/streptomyces_coelicolor_metabolic_model.xml'
+
 # 5) path of the genome scale metabolic model
-snorre_model = cobra.io.read_sbml_model(sco_metabolic_model_path)
+model_fn = '../Models/Sco-GEM.xml'
+snorre_model = cobra.io.read_sbml_model(model_fn)
 
-reducing_domains = [
-    "PKS_DH",
-    "PKS_DH2",
-    "PKS_DHt",
-    "PKS_KR",
-    "PKS_ER",
-    "MT",
-    "Thioesterase"
-]
 
-dh_er_domains = [
-    "PKS_DH",
-    "PKS_DH2",
-    "PKS_DHt",
-    "PKS_ER"
-]
-
-mt_domains = [
-    'cMT',
-    'oMT',
-    'nMT'
-]
-
-loader_domains = [
-    'CAL_domain',
-    'FkbH',
-    'GNAT'
-]
-
-loader_at_domains = [
-    'AMP-binding',
-    'PKS_AT'
-]
-
-loader_acp_domains = [
-    "ACP",
-    "PP-binding",
-    'ACP_beta',
-    'PCP'
-]
-
-exclude_modules = [
-    'DHD',
-    'oMT'
-]
-
-general_domain_dict = {
-    "PKS_DH": "PKS_DH",
-    "PKS_DH2": "PKS_DH",
-    "PKS_DHt": "PKS_DH",
-    "PKS_KR": "PKS_KR",
-    "PKS_ER": "PKS_ER",
-    "MT": "PKS_cMT",
-    "cMT": "cMT",
-    "oMT": "oMT",
-    "nMT": "nMT"
-}
 
 acid_to_bigg = {'gly': 'gly_c',
                 'ala': 'ala__L_c',
@@ -1840,6 +1786,23 @@ def add_cores_to_model(data, model_output_path):
     Then finally, we save the model to a file
     '''
     cobra.io.save_json_model(model, model_output_path)
+
+
+def run(bgc_path, output_folder):
+    """
+    The main function used to run BiGMeC on wither a single .gbk file or a folder
+    """
+    if os.path.isdir(bgc_path):
+        for filename in os.listdir(bgc_path):
+            if filename.endswith('.gbk'):
+                run(bgc_path, output_folder)
+
+                json_path = json_folder + filename.split('.')[0] + '.json'
+                create_json_1(biggbk + filename)
+                with open(json_path, 'r') as json_file:
+                    data_json_1 = json.load(json_file)
+                json_file.close()
+                add_cores_to_model(data_json_1, output_gbk + filename[:-4] + ".json")
 
 
 if __name__ == '__main__':
