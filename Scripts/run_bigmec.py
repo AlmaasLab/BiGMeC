@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# coding: utf-8
+"""
+Authors:
+  - Snorre Sulheim, snorres.sulheim@sintef.no
+  - Fredrik Fossheim
+
+Date: 17.09.2020
+Lisence: CC-BY-4.0
+
+This is the main file used to run BiGMeC to predict metabolic pathways from identified and annotated BGCs.
+
+"""
+
 from Bio import SeqIO
 import re
 import os
@@ -12,475 +26,14 @@ import plotly.graph_objects as go
 import copy
 from itertools import groupby
 import warnings
+from pathlib import Path
 
 from domains import *
+from dictionaries import *
 
 '''
 Change the 5 following paths:
 '''
-biggbk = "/Users/fredrikfossheim/Desktop/Master/master/antismash_output/webscraped_fixed/"
-# 1) Folder containing all gbk files you want to translate into metabolic pathways
-#    They are saved as models, and can be merged with the GEM later.
-#    In this repository, the models that are found in "gbk_db_output_models.zip" are the pathways that 
-#    Have been constructed. In that case, this folder contained all antiSMASH output files found in 
-#    antismash_output_mibig_gbk_files1.zip
-#    antismash_output_mibig_gbk_files2.zip
-#    and
-#    antismash_output_mibig_gbk_files3.zip
-output_gbk = "/Users/fredrikfossheim/Desktop/Master/master/gbk_db_output_models/"
-# 2) Folder that regular models are output (empty folder)
-output_gbk_lump = "/Users/fredrikfossheim/Desktop/Master/master/gbk_db_output_models_lump/"
-# 3) Folder that lump models are output (empty folder)
-json_folder = '/Users/fredrikfossheim/Desktop/Master/master/json_files/difficidin/'
-# 4) Folder that json files are output (empty folder)(an unnecessary step, but it may help look at the information that is saved)
-
-# 5) path of the genome scale metabolic model
-model_fn = '../Models/Sco-GEM.xml'
-snorre_model = cobra.io.read_sbml_model(model_fn)
-
-
-
-acid_to_bigg = {'gly': 'gly_c',
-                'ala': 'ala__L_c',
-                'val': 'val__L_c',
-                'leu': 'leu__L_c',
-                'ile': 'ile__L_c',
-                'asp': 'asp__L_c',
-                'asn': 'asn__L_c',
-                'glu': 'glu__L_c',
-                'gln': 'gln__L_c',
-                'ser': 'ser__L_c',
-                'thr': 'thr__L_c',
-                'met': 'met__L_c',
-                'cys': 'cys__L_c',
-                'lys': 'lys__L_c',
-                'arg': 'arg__L_c',
-                'his': 'his__L_c',
-                'pro': 'pro__L_c',
-                'phe': 'phe__L_c',
-                'tyr': 'tyr__L_c',
-                'trp': 'trp__L_c'}
-
-cofactor_metabolites_dict = {
-    'nadph': snorre_model.metabolites.get_by_id('nadph_c'),
-    'nadp': snorre_model.metabolites.get_by_id('nadp_c'),
-    'h2o': snorre_model.metabolites.get_by_id('h2o_c'),
-    'coa': snorre_model.metabolites.get_by_id('coa_c'),
-    'co2': snorre_model.metabolites.get_by_id('co2_c'),
-    'h+': snorre_model.metabolites.get_by_id('h_c'),
-    'sam': snorre_model.metabolites.get_by_id('amet_c'),
-    'sah': snorre_model.metabolites.get_by_id('ahcys_c'),
-    'mxcoa': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
-    '4hbf': cobra.Metabolite('4hbf_c', formula='na', name='4-hydroxy-benzoyl-formate', compartment='c'),
-    'hpg': cobra.Metabolite('4hpg_c', formula='na', name='4-hydroxy-phenyl-glycine', compartment='c'),
-    'dpg': cobra.Metabolite('dpg_c', formula='na', name='dihydroxy-phenyl-glycine', compartment='c'),
-    'bht': cobra.Metabolite('bht_c', formula='na', name='beta-hydroxy-tyrosine', compartment='c'),
-    'pip': cobra.Metabolite('Lpipecol_c', formula='na', name='pipecolic acid', compartment='c')
-}
-
-cofactor_reactions_dict = {  # reactions that are specific to certain domains
-    'PKS_KR': {cofactor_metabolites_dict['nadph']: -1.0, cofactor_metabolites_dict['h+']: -1.0,
-               cofactor_metabolites_dict['nadp']: 1.0},
-    'cMT': {cofactor_metabolites_dict['sam']: -1.0, cofactor_metabolites_dict['sah']: 1.0},
-    'oMT': {cofactor_metabolites_dict['sam']: -1.0, cofactor_metabolites_dict['sah']: 1.0},
-    'PKS_DH': {cofactor_metabolites_dict['h2o']: 1.0},
-    'PKS_ER': {cofactor_metabolites_dict['nadph']: -1.0, cofactor_metabolites_dict['h+']: -1.0,
-               cofactor_metabolites_dict['nadp']: 1.0},
-    'PKS_TE': {cofactor_metabolites_dict['h2o']: -1.0},
-    'PKS_AT': {cofactor_metabolites_dict['coa']: 1.0, cofactor_metabolites_dict['co2']: 1.0},
-    'Condensation': {cofactor_metabolites_dict['h2o']: -1.0},
-    'nMT': {cofactor_metabolites_dict['sam']: -1.0, cofactor_metabolites_dict['sah']: 1.0},
-    'mxmal': {snorre_model.metabolites.get_by_id('coa_c'): -1.0,
-              snorre_model.metabolites.get_by_id('13dpg_c'): -1.0,
-              snorre_model.metabolites.get_by_id('pi_c'): 2.0,
-              snorre_model.metabolites.get_by_id('nadp_c'): -1.0,
-              snorre_model.metabolites.get_by_id('nadph_c'): 1.0,
-              snorre_model.metabolites.get_by_id('h_c'): 1.0,
-              snorre_model.metabolites.get_by_id('amet_c'): -1.0,
-              snorre_model.metabolites.get_by_id('ahcys_c'): 1.0,
-              snorre_model.metabolites.get_by_id('fad_c'): -1.0,
-              snorre_model.metabolites.get_by_id('fadh2_c'): 1.0,
-              cofactor_metabolites_dict['mxcoa']: 1.0},
-
-    'hpg_1': {snorre_model.metabolites.get_by_id('pphn_c'): -1,
-              snorre_model.metabolites.get_by_id('34hpp_c'): 1,
-              snorre_model.metabolites.get_by_id('co2_c'): 1,
-              snorre_model.metabolites.get_by_id('h2o_c'): 1},
-
-    'hpg_2': {snorre_model.metabolites.get_by_id('34hpp_c'): -1,
-              snorre_model.metabolites.get_by_id('o2_c'): -1,
-              snorre_model.metabolites.get_by_id('h2o_c'): 1,
-              snorre_model.metabolites.get_by_id('4hmda_c'): 1},
-
-    'hpg_3': {snorre_model.metabolites.get_by_id('4hmda_c'): -1,
-              snorre_model.metabolites.get_by_id('fmn_c'): -1,
-              snorre_model.metabolites.get_by_id('fmnh2_c'): 1,
-              snorre_model.metabolites.get_by_id('nadh_c'): -1,
-              snorre_model.metabolites.get_by_id('nad_c'): 1,
-              cofactor_metabolites_dict['4hbf']: 1},
-
-    'hpg_4': {cofactor_metabolites_dict['4hbf']: -1,
-              snorre_model.metabolites.get_by_id('tyr__L_c'): -1,
-              snorre_model.metabolites.get_by_id('34hpp_c'): 1,
-              cofactor_metabolites_dict['hpg']: 1},
-
-    'bht': {snorre_model.metabolites.get_by_id('tyr__L_c'): -1,
-            snorre_model.metabolites.get_by_id('o2_c'): -1,
-            snorre_model.metabolites.get_by_id('nadph_c'): -1,
-            snorre_model.metabolites.get_by_id('h_c'): -1,
-            snorre_model.metabolites.get_by_id('nadp_c'): 1,
-            cofactor_metabolites_dict['hpg']: 1},
-
-    'dpg': {snorre_model.metabolites.get_by_id('accoa_c'): -1,
-            snorre_model.metabolites.get_by_id('malcoa_c'): -3,
-            snorre_model.metabolites.get_by_id('coa_c'): 4,
-            snorre_model.metabolites.get_by_id('co2_c'): 3,
-            snorre_model.metabolites.get_by_id('h2o_c'): 1,
-            snorre_model.metabolites.get_by_id('tyr__L_c'): -1,
-            snorre_model.metabolites.get_by_id('34hpp_c'): 1,
-            cofactor_metabolites_dict['dpg']: 1},
-
-    'gnat': {snorre_model.metabolites.get_by_id('malcoa_c'): -1,
-             snorre_model.metabolites.get_by_id('co2_c'): 1,
-             snorre_model.metabolites.get_by_id('coa_c'): 1},
-
-    'fkbh': {snorre_model.metabolites.get_by_id('13dpg_c'): -1.0,
-             snorre_model.metabolites.get_by_id('pi_c'): 2.0},
-
-    'ahba': {snorre_model.metabolites.get_by_id('e4p_c'): -1.0,
-             snorre_model.metabolites.get_by_id('pep_c'): -1.0,
-             snorre_model.metabolites.get_by_id('pi_c'): 1.0,
-             snorre_model.metabolites.get_by_id('h2o_c'): 2.0},
-
-    'acetyl': {snorre_model.metabolites.get_by_id('accoa_c'): -1,
-               snorre_model.metabolites.get_by_id('coa_c'): 1,
-               snorre_model.metabolites.get_by_id('co2_c'): 1},
-
-    'shikimic_acid': {snorre_model.metabolites.get_by_id('skm_c'): -1,
-                      snorre_model.metabolites.get_by_id('co2_c'): 1},
-
-    'fatty_acid': {snorre_model.metabolites.get_by_id('accoa_c'): -1,
-                   snorre_model.metabolites.get_by_id('malcoa_c'): -3,
-                   snorre_model.metabolites.get_by_id('co2_c'): 4,
-                   snorre_model.metabolites.get_by_id('coa_c'): 4},
-
-    'NH2': {snorre_model.metabolites.get_by_id('malcoa_c'): -1,
-            snorre_model.metabolites.get_by_id('co2_c'): 2,
-            snorre_model.metabolites.get_by_id('gly_c'): -1,
-            snorre_model.metabolites.get_by_id('coa_c'): 1
-            },
-
-    'pip': {snorre_model.metabolites.get_by_id('pyr_c'): -1,
-            snorre_model.metabolites.get_by_id('lys__L_c'): -1,
-            snorre_model.metabolites.get_by_id('h2o_c'): 1,
-            snorre_model.metabolites.get_by_id('nadph_c'): -1,
-            snorre_model.metabolites.get_by_id('nadp_c'): 1,
-            snorre_model.metabolites.get_by_id('h_c'): -1,
-            cofactor_metabolites_dict['pip']: 1}
-
-
-}
-
-tailoring_metabolites_dict = {
-    'glucose_6_phosphate': snorre_model.metabolites.get_by_id('g6p_c'),
-    '13biphosphoglycerate': snorre_model.metabolites.get_by_id('13dpg_c'),
-    'succinyl_coa': snorre_model.metabolites.get_by_id('succoa_c'),
-    'glycine': snorre_model.metabolites.get_by_id('gly_c'),
-    'coa': snorre_model.metabolites.get_by_id('coa_c'),
-    'co2': snorre_model.metabolites.get_by_id('co2_c'),
-    'atp': snorre_model.metabolites.get_by_id('atp_c'),
-    'amp': snorre_model.metabolites.get_by_id('amp_c'),
-    'ppi': snorre_model.metabolites.get_by_id('ppi_c'),
-    'pi': snorre_model.metabolites.get_by_id('pi_c'),
-    'nadh': snorre_model.metabolites.get_by_id('nadph_c'),
-    'nad': snorre_model.metabolites.get_by_id('nadp_c'),
-    'h+': snorre_model.metabolites.get_by_id('h_c'),
-    'h2o': snorre_model.metabolites.get_by_id('h2o_c')
-}
-
-tailoring_reactions_dict = {  # remember to add the secondary metabolite to these reactions
-    'glycosyltransferase': {tailoring_metabolites_dict['glucose_6_phosphate']: -1,
-                            tailoring_metabolites_dict['h+']: 1,
-                            tailoring_metabolites_dict['pi']: 1
-                            },
-    'glycerol': {tailoring_metabolites_dict['13biphosphoglycerate']: -1.0,
-                 tailoring_metabolites_dict['pi']: 2.0,
-                 tailoring_metabolites_dict['h+']: -1.0,
-                 tailoring_metabolites_dict['nad']: 1.0,
-                 tailoring_metabolites_dict['nadh']: -1.0,
-                 },
-    'ALA': {tailoring_metabolites_dict['succinyl_coa']: -1.0,
-            tailoring_metabolites_dict['glycine']: -1.0,
-            tailoring_metabolites_dict['atp']: -1.0,
-            tailoring_metabolites_dict['ppi']: 1.0,
-            tailoring_metabolites_dict['co2']: 1.0,
-            tailoring_metabolites_dict['coa']: 1.0,
-            tailoring_metabolites_dict['amp']: 1.0,
-            tailoring_metabolites_dict['h2o']: 1.0
-            }
-
-}
-
-long_to_short = {'Malonyl-CoA': 'mal', 'Methylmalonyl-CoA': 'mmal', 'Methoxymalonyl-CoA': 'mxmal',
-                 'Ethylmalonyl-CoA': 'emal', 'Isobutyryl-CoA': 'isobut', '2-Methylbutyryl-CoA': '2metbut',
-                 'trans-1,2-CPDA': 'trans-1,2-CPDA', 'Acetyl-CoA': 'Acetyl-CoA', 'Benzoyl-CoA': 'benz',
-                 'Propionyl-CoA': 'prop', '3-Methylbutyryl-CoA': '3metbut',
-                 'CE-Malonyl-CoA': 'cemal', '2-Rhyd-Malonyl-CoA': '2Rhydmal', 'CHC-CoA': 'CHC-CoA',
-                 'inactive': 'inactive'}
-
-long_to_bigg = {'Malonyl-CoA': 'malcoa_c',
-                'Methylmalonyl-CoA': 'mmcoa__R_c',
-                'Methoxymalonyl-CoA': 'mxmal_c',
-                'Ethylmalonyl-CoA': 'emcoa__S_c',
-                'Isobutyryl-CoA': 'ibcoa_c',
-                '2-Methylbutyryl-CoA': '2metbut',
-                'trans-1,2-CPDA': 'trans-1,2-CPDA',
-                'Acetyl-CoA': 'accoa',
-                'Benzoyl-CoA': 'benzcoa',
-                'Propionyl-CoA': 'ppcoa_c',
-                '3-Methylbutyryl-CoA': '3metbut',
-                'CE-Malonyl-CoA': 'cemal',
-                '2-Rhyd-Malonyl-CoA': '2Rhydmal',
-                'CHC-CoA': 'CHC-CoA',
-                'inactive': 'inactive',
-                'gly': 'gly_c',
-                'ala': 'ala__L_c',
-                'val': 'val__L_c',
-                'leu': 'leu__L_c',
-                'ile': 'ile__L_c',
-                'asp': 'asp__L_c',
-                'asn': 'asn__L_c',
-                'glu': 'glu__L_c',
-                'gln': 'gln__L_c',
-                'ser': 'ser__L_c',
-                'thr': 'thr__L_c',
-                'met': 'met__L_c',
-                'cys': 'cys__L_c',
-                'lys': 'lys__L_c',
-                'arg': 'arg__L_c',
-                'his': 'his__L_c',
-                'pro': 'pro__L_c',
-                'phe': 'phe__L_c',
-                'tyr': 'tyr__L_c',
-                'trp': 'trp__L_c',
-                'X': 'X_c',
-                '3-me-glu': '3mglutr_c',  # OK
-                'aad': 'L2aadp_c',  # OK
-                '4ppro': '4ppro_c',
-                'abu': '2abu_c',
-                'aeo': '2a89od_c',
-                'ala-b': 'ala_B_c',  # OK
-                'ala-d': 'ala__D',  # OK
-                'allo-thr': 'athr__L_c',  # OK
-                'b-ala': 'ala_B_c',
-                'beta-ala': 'ala_B_c',
-                'bmt': '4b4mt_c',
-                'cap': 'cap_c',
-                'bht': 'bht_c',
-                'dab': '24dab_c',  # OK
-                'dhb': 'd23hb_c',  # OK
-                'dhpg': '35dhpg_c',
-                'dht': 'dht_c',
-                'dpg': '35dhpg_c',
-                'hiv': '2hiv_c',  # OK
-                'hiv-d': 'd2hoiv_c',
-                'hmp-d': '2h3mp_c',  # OK
-                'horn': 'n5horn_c',  # OK?
-                'hpg': '4hpg_c',  # OK ish
-                'hyv': '4hylv_c',
-                'hyv-d': '2hylv_c',
-                'iva': 'iva_c',  # OK
-                'lys-b': '36dahx_c',  # OK
-                'orn': 'orn_c',  # OK
-                'phg': 'phg_c',
-                'pip': 'Lpipecol_c',  # OK
-                'sal': 'salc_c',  # OK
-                'tcl': '555tcl_c',
-                'vol': 'valinol',
-                'LDAP': '26dap__M_c',  # OK
-                'meval': 'meval_c',
-                'alle': '2h3mp_c',
-                'alaninol': 'alaninol_c',
-                'N-(1,1-dimethyl-1-allyl)Trp': 'n11d1at_c',
-                'd-lyserg': '99dlys_c',
-                'ser-thr': 'thr__L_c',  # OK (is actually serine or threonine)
-                'mephe': '99cmphe_c',
-                'haorn': 'haorn_c',
-                'hasn': 'hasn_c',
-                'hforn': 'hforn_c',
-                's-nmethoxy-trp': '99snmet_c',
-                'alpha-hydroxy-isocaproic-acid': '99ahia_c',
-                'MeHOval': '99mehoval',
-                '2-oxo-isovaleric-acid': '992oia_c',
-                'aoda': '99aoda_c'
-                }
-
-t1pks_extenders = {'Malonyl-CoA': 'C00083',
-                   'Methylmalonyl-CoA': 'C00683',  # (S)-methylmalonyl-coa. (R) is C01213
-                   'Methoxymalonyl-CoA': 'NOKEGG',
-                   'Ethylmalonyl-CoA': 'C18026',  # (S)-ethylmalonyl-coa. (R) is C20238
-                   'Isobutyryl-CoA': 'C00630',
-                   '2-Methylbutyryl-CoA': 'C01033',
-                   'trans-1,2-CPDA': 'NOKEGG',
-                   'Acetyl-CoA': 'C00024',
-                   'Benzoyl-CoA': 'C00512',
-                   'Propionyl-CoA': 'C00100',
-                   '3-Methylbutyryl-CoA': 'NOKEGG',
-                   'CE-Malonyl-CoA': 'NOKEGG',
-                   '2-Rhyd-Malonyl-CoA': 'NOKEGG',
-                   'CHC-CoA': 'NOKEGG',
-                   'inactive': 'NOKEGG',
-                   'gly': 'C00037',
-                   'ala': 'C00041',
-                   'val': 'C00183',
-                   'leu': 'C00123',
-                   'ile': 'C00407',
-                   'asp': 'C00049',
-                   'asn': 'C00152',
-                   'glu': 'C00025',
-                   'gln': 'C00064',
-                   'ser': 'C00065',
-                   'thr': 'C00188',
-                   'met': 'C00073',
-                   'cys': 'C00097',
-                   'lys': 'C00047',
-                   'arg': 'C00062',
-                   'his': 'C00135',
-                   'pro': 'C00148',
-                   'phe': 'C00079',
-                   'tyr': 'C00082',
-                   'trp': 'C00078',
-                   'X': 'CXXXXX'
-                   }
-
-std_aa_dic = {
-    'gly': 'C00037',
-    'ala': 'C00041',
-    'val': 'C00183',
-    'leu': 'C00123',
-    'ile': 'C00407',
-    'asp': 'C00049',
-    'asn': 'C00152',
-    'glu': 'C00025',
-    'gln': 'C00064',
-    'ser': 'C00065',
-    'thr': 'C00188',
-    'met': 'C00073',
-    'cys': 'C00097',
-    'lys': 'C00047',
-    'arg': 'C00062',
-    'his': 'C00135',
-    'pro': 'C00148',
-    'phe': 'C00079',
-    'tyr': 'C00082',
-    'trp': 'C00078',
-    'X': 'CXXXXX',
-    '3-me-glu': '3mglutr_c',  # OK
-    'aad': '2-amino-adipic acid',
-    '4ppro': '4-propyl-proline',
-    'abu': '2-amino-butyric acid',
-    'aeo': '2-amino-8-oxo-9,10-decanoate',
-    'ala-b': 'ala_B_c',  # OK
-    'ala-d': 'ala__D',  # OK
-    'allo-thr': 'athr__L_c',  # OK
-    'b-ala': 'ala_B_c',
-    'beta-ala': 'ala_B_c',
-    'bmt': '# 4-butenyl-4-methyl threonine',
-    'cap': 'capreomycidine',
-    'bht': 'beta-hydroxy-tyrosine',
-    'dab': '24dab_c',  # OK
-    'dhb': 'd23hb_c',  # OK
-    'dhpg': '3,5-dihydroxy-phenyl-glycine',
-    'dht': 'dehydro-threonine/2,3-dehydroaminobutyric acid',
-    'dpg': '3,5-dihydroxy-phenyl-glycine (duplicate entry of dhpg)',
-    'hiv': '2hiv_c',  # OK
-    'hiv-d': 'D-2-hydroxyisovalerate',
-    'hmp-d': '2h3mp_c',  # OK
-    'horn': 'n5horn_c',  # OK?
-    'hpg': '4-hydroxy-phenyl-glycine',
-    'hyv': '4-hydroxy-L-valine',
-    'hyv-d': '2-hydroxy-valeric acid',
-    'iva': '# isovaline',
-    'lys-b': '36dahx_c',  # OK
-    'orn': 'orn_c',  # OK
-    'phg': 'phenyl-glycine',
-    'pip': 'Lpipecol_c',  # OK
-    'sal': 'salc_c',  # OK
-    'tcl': '(4S)-5,5,5-trichloro-leucine',
-    'vol': 'valinol',
-    'LDAP': '26dap__M_c',  # OK
-    'meval': 'Me-Val',
-    'alle': '2h3mp_c',
-    'alaninol': ' ',
-    'N-(1,1-dimethyl-1-allyl)Trp': '',
-    'd-lyserg': 'D-lysergic acid',
-    'ser-thr': 'thr__L_c',  # OK (is actually serine or threonine)
-    'mephe': 'Cmethyl-phenylalanine',
-    'haorn': 'L-δ-N-acetyl-δ-N-hydroxyornithine/L-Nδ-hydroxy-Nδ-acylornithine',
-    'hasn': 'hydroxyasparagine',
-    'hforn': 'L-Nδ-hydroxy-Nδ-formylornithine',
-    's-nmethoxy-trp': '',
-    'alpha-hydroxy-isocaproic-acid': '',
-    'MeHOval': '3-Methyl-2-oxovaleric acid',
-    '2-oxo-isovaleric-acid': '',
-    'aoda': 'S-2-amino-8-oxodecanoic acid'
-}
-one_letter_aa = {
-    'G': 'gly',
-    'P': 'pro',
-    'A': 'ala',
-    'V': 'val',
-    'L': 'leu',
-    'I': 'ile',
-    'M': 'met',
-    'C': 'cys',
-    'F': 'phe',
-    'Y': 'tyr',
-    'W': 'trp',
-    'H': 'his',
-    'K': 'lys',
-    'R': 'arg',
-    'Q': 'gln',
-    'N': 'asn',
-    'E': 'glu',
-    'D': 'asp',
-    'S': 'ser',
-    'T': 'thr'
-}
-aa_formula = {
-    'A': 'C3H7NO2',
-    'R': 'C6H14N4O2',
-    'N': 'C4H8N2O3',
-    'D': 'C4H7NO4',
-    'C': 'C3H7NO2S',
-    'E': 'C5H9NO4',
-    'Q': 'C5H10N2O3',
-    'G': 'C2H5NO2',
-    'H': 'C6H9N3O2',
-    'I': 'C6H13NO2',
-    'L': 'C6H13NO2',
-    'K': 'C6H14N2O2',
-    'M': 'C5H11NO2S',
-    'F': 'C9H11NO2',
-    'P': 'C5H9NO2',
-    'S': 'C3H7NO3',
-    'T': 'C4H9NO3',
-    'W': 'C11H12N2O2',
-    'Y': 'C9H11NO3',
-    'V': 'C5H11NO2'
-}
-
-acp_domains = ["ACP", "PP-binding", 'ACP_beta']
-at_domains = ['Trans-AT_docking', 'PKS_AT']
-trans_at_cores = ['transAT-PKS-like', 'transAT-PKS']
-nrps_pks_cores = ['T1PKS', 'NRPS', 'PKS-like', 'NRPS-like']
-compatible_cores = ['transAT-PKS-like', 'transAT-PKS', 'T1PKS', 'NRPS', 'PKS-like', 'NRPS-like']
-RiPPs = ['lanthipeptide', 'thiopeptide', 'lassopeptide']
-prefer_types = ['transAT-PKS', 'transAT-PKS-like', 'NRPS', 'T1PKS', 'NRPS-like', 'PKS-like']
-dh_domains = ['PKS_DH', 'PKS_DH2']
-print_list = ['PKS_KS', 'PKS_DH', 'PKS_DH2', 'PKS_KR', 'MT', 'PKS_ER', 'Condensation', 'Thioesterase']
-alternate_starters = ['CAL_domain', 'FkbH', 'GNAT']
-
 
 def get_gb_list_from_antismash_output(cluster_path):  # yes
     gb_list = []
@@ -738,7 +291,7 @@ def structure_gbk_information(core_list, gb_list):
     return {'core_structure': core_domains, 'data': CDS}
 
 
-def create_json_1(gbk_path):
+def create_json_1(gbk_path, json_path):
     gb_list = get_gb_list_from_antismash_output(gbk_path)
     core_list = find_cores_in_cluster(gb_list)
 
@@ -748,6 +301,7 @@ def create_json_1(gbk_path):
     with open(json_path, 'w+') as f:
         json.dump(CDS, f)
     f.close()
+    return CDS
 
 
 def return_key_by_value(eu):
@@ -1276,12 +830,21 @@ def force_X_nrps_module_flux(substrate):
     for amino_acid in acid_to_bigg:
         reaction = cobra.Reaction(amino_acid + '_to_' + substrate)
         reaction.name = 'Convert known to unknown_amino_acid'
-        reaction.lower_bound = 0.  # This is the default
-        reaction.upper_bound = 1000.
-        reaction.add_metabolites({snorre_model.metabolites.get_by_id(acid_to_bigg[amino_acid]): -1,
+        reaction.lower_bound = 0  # This is the default
+        reaction.upper_bound = 1000
+        reaction.add_metabolites({ref_model.metabolites.get_by_id(acid_to_bigg[amino_acid]): -1,
                                   metabolite: 1})
         reaction_list_aa.append(reaction)
     return reaction_list_aa
+
+def _add_metabolites(r, met_dict):
+    for key, value in met_dict.items():
+        if isinstance(key, str):
+            m = cobra.Metabolite(key, formula = _get_aa_formula(key))
+        else:
+            m = key
+        r.add_metabolites({m: value})
+
 
 
 def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailoring_reactions):
@@ -1312,7 +875,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
         if module['element'] == 'module' and not module['info']['extender_unit'] == 'DHD':
             # Little hack to find out if it is a nrps or pks module. PKS_KS and Condensation
             # domains are obligatory for their respective type of module
-            # This is necessary because sometimes we find metabolites that are not in the snorre_model
+            # This is necessary because sometimes we find metabolites that are not in the ref_model
             module_type = ''
             if module['info']['extender_unit'] == 'custom_starter':
                 module_type = 'PKS'
@@ -1387,10 +950,10 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     reaction.upper_bound = 1000.
                     if module_type == 'NRPS':
                         reaction.add_metabolites(
-                            {snorre_model.metabolites.get_by_id(long_to_bigg[extender_unit]): -1,
-                             snorre_model.metabolites.get_by_id('atp_c'): -1,
-                             snorre_model.metabolites.get_by_id('amp_c'): 1,
-                             snorre_model.metabolites.get_by_id('ppi_c'): 1,
+                            {ref_model.metabolites.get_by_id(long_to_bigg[extender_unit]): -1,
+                             ref_model.metabolites.get_by_id('atp_c'): -1,
+                             ref_model.metabolites.get_by_id('amp_c'): 1,
+                             ref_model.metabolites.get_by_id('ppi_c'): 1,
                              prevmet: -1,
                              postmet: 1})
                         reaction_list.append(reaction)
@@ -1400,15 +963,15 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                             reaction.add_metabolites(
                                 {cobra.Metabolite(long_to_bigg[extender_unit], formula='unknown', name=extender_unit,
                                                   compartment='c'): -1,
-                                 snorre_model.metabolites.get_by_id('coa_c'): 1,
-                                 snorre_model.metabolites.get_by_id('co2_c'): 1,
+                                 ref_model.metabolites.get_by_id('coa_c'): 1,
+                                 ref_model.metabolites.get_by_id('co2_c'): 1,
                                  prevmet: -1,
                                  postmet: 1})
                         else:
                             reaction.add_metabolites(
-                                {snorre_model.metabolites.get_by_id(long_to_bigg[extender_unit]): -1,
-                                 snorre_model.metabolites.get_by_id('coa_c'): 1,
-                                 snorre_model.metabolites.get_by_id('co2_c'): 1,
+                                {ref_model.metabolites.get_by_id(long_to_bigg[extender_unit]): -1,
+                                 ref_model.metabolites.get_by_id('coa_c'): 1,
+                                 ref_model.metabolites.get_by_id('co2_c'): 1,
                                  prevmet: -1,
                                  postmet: 1})
                         reaction_list.append(reaction)
@@ -1555,9 +1118,9 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         reaction.add_metabolites({
                             cobra.Metabolite(long_to_bigg[extender_unit], formula='unknown', name=extender_unit,
                                              compartment='c'): -1,
-                            snorre_model.metabolites.get_by_id('atp_c'): -1,
-                            snorre_model.metabolites.get_by_id('amp_c'): 1,
-                            snorre_model.metabolites.get_by_id('ppi_c'): 1,
+                            ref_model.metabolites.get_by_id('atp_c'): -1,
+                            ref_model.metabolites.get_by_id('amp_c'): 1,
+                            ref_model.metabolites.get_by_id('ppi_c'): 1,
                             prevmet: -1,
                             postmet: 1})
                         reaction_list.append(reaction)
@@ -1567,8 +1130,8 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         reaction.add_metabolites(
                             {cobra.Metabolite(long_to_bigg[extender_unit], formula='unknown', name=extender_unit,
                                               compartment='c'): -1,
-                             snorre_model.metabolites.get_by_id('coa_c'): 1,
-                             snorre_model.metabolites.get_by_id('co2_c'): 1,
+                             ref_model.metabolites.get_by_id('coa_c'): 1,
+                             ref_model.metabolites.get_by_id('co2_c'): 1,
                              prevmet: -1,
                              postmet: 1})
                         reaction_list.append(reaction)
@@ -1675,7 +1238,7 @@ def add_ripp_metabolic_pathway(core_structure, model):
 
         try:
             met_bigg = long_to_bigg[one_letter_aa[metabolite]]
-            metabolite_added = snorre_model.metabolites.get_by_id(met_bigg)
+            metabolite_added = ref_model.metabolites.get_by_id(met_bigg)
             reaction_metabolites[metabolite_added] = aa_metabolites[metabolite]
         except KeyError:
             continue
@@ -1788,29 +1351,59 @@ def add_cores_to_model(data, model_output_path):
     cobra.io.save_json_model(model, model_output_path)
 
 
-def run(bgc_path, output_folder):
+def run(bgc_path, output_folder, json_folder = None):
     """
     The main function used to run BiGMeC on wither a single .gbk file or a folder
     """
-    if os.path.isdir(bgc_path):
-        for filename in os.listdir(bgc_path):
-            if filename.endswith('.gbk'):
-                run(bgc_path, output_folder)
+    bgc_path = Path(bgc_path)
+    
+    if bgc_path.is_dir():
+        for filename in bgc_path.glob("*.gbk"):
+            #Run this script for each file in the folder
+            run(bgc_path, output_folder)
+    else:
+        # This is the core of this function
+        json_path = Path(json_folder) / (bgc_path.stem + '.json')
+        create_json_1(bgc_path, json_path)
+        with open(json_path, 'r') as json_file:
+            data_json = json.load(json_file)
+        
+        # Adds extracted data to model
+        output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
+        add_cores_to_model(data_json, str(output_model_fn))
 
+
+if __name__ == '__main__':
+    biggbk = "../Data/mibig"
+    # 1) Folder containing all gbk files you want to translate into metabolic pathways
+    #    They are saved as models, and can be merged with the GEM later.
+    #    In this repository, the models that are found in "gbk_db_output_models.zip" are the pathways that 
+    #    Have been constructed. In that case, this folder contained all antiSMASH output files found in 
+    #    antismash_output_mibig_gbk_files1.zip
+    #    antismash_output_mibig_gbk_files2.zip
+    #    and
+    #    antismash_output_mibig_gbk_files3.zip
+    output_gbk = "../Data/constructed_pathways/"
+    # 2) Folder that regular models are output (empty folder)
+    output_gbk_lump = "../Data/constructed_GEMs"
+    # 3) Folder that lump models are output (empty folder)
+    json_folder = '../Data/temp'
+    # 4) Folder that json files are output (empty folder)(an unnecessary step, but it may help look at the information that is saved)
+
+    # 5) path of the genome scale metabolic model
+    model_fn = '../Models/Sco-GEM.xml'
+    ref_model = cobra.io.read_sbml_model(model_fn)
+
+    if 0:
+        for filename in os.listdir(biggbk):
+            if filename.endswith('.gbk'):
                 json_path = json_folder + filename.split('.')[0] + '.json'
                 create_json_1(biggbk + filename)
                 with open(json_path, 'r') as json_file:
                     data_json_1 = json.load(json_file)
                 json_file.close()
                 add_cores_to_model(data_json_1, output_gbk + filename[:-4] + ".json")
+    if 1:
 
-
-if __name__ == '__main__':
-    for filename in os.listdir(biggbk):
-        if filename.endswith('.gbk'):
-            json_path = json_folder + filename.split('.')[0] + '.json'
-            create_json_1(biggbk + filename)
-            with open(json_path, 'r') as json_file:
-                data_json_1 = json.load(json_file)
-            json_file.close()
-            add_cores_to_model(data_json_1, output_gbk + filename[:-4] + ".json")
+        bgc_path = biggbk + "/2.gbk"
+        run(bgc_path, output_gbk, json_folder)
