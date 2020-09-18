@@ -16,13 +16,10 @@ from Bio import SeqIO
 import re
 import os
 import json
-import test
-import csv
 import sys
 import re
 import pandas as pd
 import cobra  
-import plotly.graph_objects as go
 import copy
 from itertools import groupby
 import warnings
@@ -323,7 +320,7 @@ def return_key_by_value(eu):
     return 'pk'
 
 
-def unfuck_transat_modules(domain_or_module):
+def fix_transat_modules(domain_or_module):
     '''
 
     :param domain_or_module: a list of domains and modules that antismash have found. This is the first of several
@@ -342,7 +339,7 @@ def unfuck_transat_modules(domain_or_module):
                     # insert domains at end, pop at start
                     if res[index]['domains'][domain_loc]['type'] in acp_domains and \
                             res[index]['domains'][domain_loc + 1]['type'] in at_domains:
-                        res = unfuck_transat_modules(res[0:start] + [{'element': 'domain', 'info': x} for x in
+                        res = fix_transat_modules(res[0:start] + [{'element': 'domain', 'info': x} for x in
                                                                      domain_or_module[index]['domains'][
                                                                      :domain_loc]] + [{'element': 'domain', 'info': x}
                                                                                       for x in domain_or_module[index][
@@ -544,7 +541,7 @@ def add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions)
     # assume that DHD-domains are inactive, however, may still dehydratase the previous domain(?)
     # assue that all others are active.
 
-    domains_x_modules = unfuck_transat_modules(domains_x_modules)
+    domains_x_modules = fix_transat_modules(domains_x_modules)
     domains_x_modules = find_and_replace_DHD_domains(domains_x_modules)
     domains_x_modules = find_and_replace_load_modules(domains_x_modules)
     domains_x_modules = find_and_replace_cut_transat_modules(domains_x_modules)
@@ -866,7 +863,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     in_rx.add_metabolites({cobra.Metabolite(core_structure['type'] + '_0',
                                             formula='dummy',
                                             name=core_structure['type'],
-                                            compartment='d'): 1.0})
+                                            compartment='c'): 1.0})
 
     domain_counter = 1
 
@@ -938,11 +935,11 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     prevmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
                                                formula='unknown',
                                                name=core_structure['type'],
-                                               compartment='d')
+                                               compartment='c')
                     postmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter),
                                                formula='unknown',
                                                name=core_structure['type'],
-                                               compartment='d')
+                                               compartment='c')
 
                     reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
                     reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
@@ -1151,11 +1148,11 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         prevmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
                                                    formula='unknown',
                                                    name=core_structure['type'],
-                                                   compartment='d')
+                                                   compartment='c')
                         postmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter),
                                                    formula='unknown',
                                                    name=core_structure['type'],
-                                                   compartment='d')
+                                                   compartment='c')
                         reaction.add_metabolites({prevmet: -1, postmet: 1})
                         reaction_list.append(reaction)
                         domain_counter += 1
@@ -1176,11 +1173,11 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     prevmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
                                                formula='unknown',
                                                name=core_structure['type'],
-                                               compartment='d')
+                                               compartment='c')
                     postmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter),
                                                formula='unknown',
                                                name=core_structure['type'],
-                                               compartment='d')
+                                               compartment='c')
                     reaction.add_metabolites({prevmet: -1.0, postmet: 1.0})
                     reaction_list.append(reaction)
                     domain_counter += 1
@@ -1189,7 +1186,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     The reaction below is here in order to have a reaction that converts e.g. T1PKS_54 to a general metabolite
     we do this so that we can add tailoring reactions. 
     '''
-    ex_rx = cobra.Reaction('EX_secondary_metabolite')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.name = core_structure['type'] + '_reaction'
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
@@ -1197,7 +1194,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     ex_rx.add_metabolites({cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
                                             formula='unknown',
                                             name=core_structure['type'],
-                                            compartment='d'): - 1.0})
+                                            compartment='c'): - 1.0})
 
     model.add_reactions(reaction_list + [ex_rx] + [in_rx])
     lump_metabolites = {}
@@ -1226,7 +1223,7 @@ def add_ripp_metabolic_pathway(core_structure, model):
     reaction_metabolites = {cobra.Metabolite(core_structure['type'],
                                              formula='unknown_but_can_find',
                                              name=core_structure['type'],
-                                             compartment='d'): 1.0}
+                                             compartment='c'): 1.0}
     aa_metabolites = {}
     for letter in core_structure['RiPP']:
         if letter in aa_metabolites:
@@ -1323,8 +1320,8 @@ def add_tailoring_smcogs(smcog_dict):  # connect these reactions to the metaboli
     return res
 
 
-def add_cores_to_model(data, model_output_path):
-    model = cobra.Model('BGC_name')
+def add_cores_to_model(name, data, model_output_path):
+    model = cobra.Model(name)
 
     smcog_dict = find_tailoring_reactions_from_smcogs(data)
 
@@ -1332,23 +1329,33 @@ def add_cores_to_model(data, model_output_path):
     '''
     First we check to see if methoxymalonyl-coa is synthesized by the BGC:
     '''
-
+    bgc_types = []
     for core_number in data['core_structure']:
-        if data['core_structure'][core_number]['type'] in RiPPs:
+        bgc_type = data['core_structure'][core_number]['type']
+        bgc_types.append(bgc_type)
+        if bgc_type in RiPPs:
             model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model)
 
-        elif data['core_structure'][core_number]['type'] == 'transAT-PKS':
+        elif bgc_type in ['transAT-PKS', 'transAT-PKS-like']:
             model, lump_model = add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
 
-        elif data['core_structure'][core_number]['type'] == 'T1PKS':
+        elif bgc_type == 'T1PKS':
             model, lump_model = add_t1pks_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
 
-        elif data['core_structure'][core_number]['type'] == 'NRPS':
+        elif bgc_type in ['NRPS', 'NRPS-like']:
             model, lump_model = add_nrps_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
+        else:
+            print("Can't handle ", bgc_type)
     '''
     Then finally, we save the model to a file
     '''
-    cobra.io.save_json_model(model, model_output_path)
+    if not len(model.reactions):
+        print("Couldn't construct the pathway for ", name)
+        print(smcog_dict)
+        print(data['core_structure'])
+    else:
+        model.description =  "-".join(bgc_types)
+        cobra.io.save_json_model(model, model_output_path)
 
 
 def run(bgc_path, output_folder, json_folder = None):
@@ -1360,7 +1367,7 @@ def run(bgc_path, output_folder, json_folder = None):
     if bgc_path.is_dir():
         for filename in bgc_path.glob("*.gbk"):
             #Run this script for each file in the folder
-            run(bgc_path, output_folder)
+            run(filename, output_folder, json_folder)
     else:
         # This is the core of this function
         json_path = Path(json_folder) / (bgc_path.stem + '.json')
@@ -1370,7 +1377,8 @@ def run(bgc_path, output_folder, json_folder = None):
         
         # Adds extracted data to model
         output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
-        add_cores_to_model(data_json, str(output_model_fn))
+        name = "BGC-{0}".format(bgc_path.stem)
+        add_cores_to_model(name, data_json, str(output_model_fn))
 
 
 if __name__ == '__main__':
@@ -1406,4 +1414,4 @@ if __name__ == '__main__':
     if 1:
 
         bgc_path = biggbk + "/2.gbk"
-        run(bgc_path, output_gbk, json_folder)
+        run(biggbk, output_gbk, json_folder)
