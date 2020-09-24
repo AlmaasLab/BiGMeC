@@ -47,9 +47,9 @@ def BGC_optknock(model, pathway_fn, optknock_reactions = [], fraction_of_optimum
         results = pd.DataFrame(results)
         results.columns = ["ID", "Growth", "Production"]
         results.set_index("ID", inplace = True)
-    	
-	relative_results = results/results.loc["WT", :]
-	improved_results = relative_results.loc[relative_results["Production"]>(1+EPSION_FRACTION), :]
+        
+    relative_results = results/results.loc["WT", :]
+    improved_results = relative_results.loc[relative_results["Production"]>(1+EPSION_FRACTION), :]
         # improved_results = results.loc[results["Production"] > results.loc["WT", "Production"] + EPSILON, :]
         # improved_results = improved_results/results.loc["WT", :]
         improved_results["BGC type"] = bgc_type
