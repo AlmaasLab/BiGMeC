@@ -1367,23 +1367,27 @@ def run(bgc_path, output_folder, json_folder = None):
         for filename in bgc_path.glob("*.gbk"):
             print(filename)
             #Run this script for each file in the folder
-            run(filename, output_folder, json_folder)
+            result = _run(filename, output_folder, json_folder)
+            report_list.append(result)
     else:
-        # This is the core of this function
-        json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
-        create_json_1(bgc_path, json_path)
-        with open(json_path, 'r') as json_file:
-            data_json = json.load(json_file)
-        
-        # Adds extracted data to model
-        output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
-        name = "BGC-{0}".format(bgc_path.stem)
-        successfull, bgc_type = add_cores_to_model(name, data_json, str(output_model_fn))
-        report_list.append([bgc_path.stem, int(successfull), bgc_type])
+        result = _run(bgc_path, output_folder, json_folder)
+        report_list.append(result)
 
     df = pd.DataFrame(report_list, columns = ["BGC", "Success", "BGC type"])
     df.to_csv(output_folder + "/summary.csv")
 
+def _run(bgc_path, output_folder, json_folder):
+    # This is the core of this function
+    json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
+    create_json_1(bgc_path, json_path)
+    with open(json_path, 'r') as json_file:
+        data_json = json.load(json_file)
+    
+    # Adds extracted data to model
+    output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
+    name = "BGC-{0}".format(bgc_path.stem)
+    successfull, bgc_type = add_cores_to_model(name, data_json, str(output_model_fn))
+    return bgc_path.stem, int(successfull), bgc_type
 
 if __name__ == '__main__':
     biggbk = "../Data/mibig"
