@@ -28,9 +28,6 @@ from pathlib import Path
 from domains import *
 from dictionaries import *
 
-'''
-Change the 5 following paths:
-'''
 
 def get_gb_list_from_antismash_output(cluster_path):  # yes
     gb_list = []
@@ -204,6 +201,7 @@ def structure_gbk_information(core_list, gb_list):
                         core_domains[len(core_domains) + 1] = {'type': feat.qualifiers.get('peptide')[0],
                                                                'RiPP': feat.qualifiers.get('core_sequence')[0]}
                 if feat.type == 'aSDomain':
+                                       
                     if feat.qualifiers.get('aSDomain') == ['PKS_AT']:  # AT Domains
                         CDS[CDS_number]['domains'].append(
                             {'type': feat.qualifiers.get('aSDomain')[0],
@@ -1353,24 +1351,26 @@ def add_cores_to_model(name, data, model_output_path):
         print("Couldn't construct the pathway for ", name)
         print(smcog_dict)
         print(data['core_structure'])
+        return False, "-".join(bgc_types)
     else:
         model.description =  "-".join(bgc_types)
         cobra.io.save_json_model(model, model_output_path)
-
+        return True, "-".join(bgc_types)
 
 def run(bgc_path, output_folder, json_folder = None):
     """
     The main function used to run BiGMeC on wither a single .gbk file or a folder
     """
     bgc_path = Path(bgc_path)
-    
+    report_list = []
     if bgc_path.is_dir():
         for filename in bgc_path.glob("*.gbk"):
+            print(filename)
             #Run this script for each file in the folder
             run(filename, output_folder, json_folder)
     else:
         # This is the core of this function
-        json_path = Path(json_folder) / (bgc_path.stem + '.json')
+        json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
         create_json_1(bgc_path, json_path)
         with open(json_path, 'r') as json_file:
             data_json = json.load(json_file)
@@ -1378,11 +1378,16 @@ def run(bgc_path, output_folder, json_folder = None):
         # Adds extracted data to model
         output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
         name = "BGC-{0}".format(bgc_path.stem)
-        add_cores_to_model(name, data_json, str(output_model_fn))
+        successfull, bgc_type = add_cores_to_model(name, data_json, str(output_model_fn))
+        report_list.append([bgc_path.stem, int(successfull), bgc_type])
+
+    df = pd.DataFrame(report_list, columns = ["BGC", "Success", "BGC type"])
+    df.to_csv(output_folder + "/summary.csv")
 
 
 if __name__ == '__main__':
     biggbk = "../Data/mibig"
+    
     # 1) Folder containing all gbk files you want to translate into metabolic pathways
     #    They are saved as models, and can be merged with the GEM later.
     #    In this repository, the models that are found in "gbk_db_output_models.zip" are the pathways that 
@@ -1413,5 +1418,5 @@ if __name__ == '__main__':
                 add_cores_to_model(data_json_1, output_gbk + filename[:-4] + ".json")
     if 1:
 
-        bgc_path = biggbk + "/2.gbk"
-        run(biggbk, output_gbk, json_folder)
+        bgc_path = biggbk #+"/1.gbk"
+        run(bgc_path, output_gbk, json_folder)

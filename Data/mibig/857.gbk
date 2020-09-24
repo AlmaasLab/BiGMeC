@@ -1,0 +1,245 @@
+LOCUS       BGC0000857              4871 bp    DNA     linear   BCT 31-DEC-2009
+DEFINITION  Methylophaga alcalica strain M8 putative transcriptional regulator
+            gene, complete cds; ectoine biosynthesis gene cluster, complete
+            sequence; and aspartokinase (ask) gene, partial cds.
+ACCESSION   BGC0000857
+VERSION     BGC0000857.1
+KEYWORDS    .
+SOURCE      Methylophaga alcalica
+  ORGANISM  Methylophaga alcalica
+            Bacteria; Proteobacteria; Gammaproteobacteria; Thiotrichales;
+            Piscirickettsiaceae; Methylophaga.
+COMMENT     NOTE: This is a single cluster extracted from a larger record!
+            ##antiSMASH-Data-START##
+            Version      :: 5.1.0-0c1c90d(changed)
+            Run date     :: 2019-11-11 20:55:26
+            ##antiSMASH-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..4871
+                     /db_xref="taxon:182774"
+                     /mol_type="genomic DNA"
+                     /organism="Methylophaga alcalica"
+                     /strain="M8"
+     protocluster    1..4871
+                     /aStool="rule-based-clusters"
+                     /contig_edge="True"
+                     /core_location="[3082:3487](+)"
+                     /cutoff="20000"
+                     /detection_rule="ectoine_synt"
+                     /neighbourhood="5000"
+                     /product="ectoine"
+                     /protocluster_number="1"
+                     /tool="antismash"
+     proto_core      3083..3487
+                     /aStool="rule-based-clusters"
+                     /tool="antismash"
+                     /cutoff="20000"
+                     /detection_rule="ectoine_synt"
+                     /neighbourhood="5000"
+                     /product="ectoine"
+                     /protocluster_number="1"
+     cand_cluster    1..4871
+                     /candidate_cluster_number="1"
+                     /contig_edge="True"
+                     /detection_rules="ectoine_synt"
+                     /kind="single"
+                     /product="ectoine"
+                     /protoclusters="1"
+                     /tool="antismash"
+     region          1..4871
+                     /candidate_cluster_numbers="1"
+                     /contig_edge="True"
+                     /product="ectoine"
+                     /region_number="1"
+                     /rules="ectoine_synt"
+                     /tool="antismash"
+     CDS             complement(301..867)
+                     /codon_start=1
+                     /gene_functions="regulatory (smcogs) SMCOG1135:MarR family
+                     transcriptional regulator (Score: 80; E-value: 2.1e-24)"
+                     /gene_kind="regulatory"
+                     /note="MarR family protein"
+                     /product="putative transcriptional regulator"
+                     /protein_id="ABY40743.1"
+                     /transl_table=11
+                     /translation="MEKSDNRNTTSIDTLGLKPTQREHLLDQIEEVLVALRRVIRATDL
+                     HSKYLVKTTSLTAPQILLLQTLRDKGQLTIGELAQDMSLSQATVTTILDRLEKRQLVYR
+                     QRSQTDKRKVHAYMTDEAMTMLKNAPIPLQDRFTREFSQLQEWEQTMIISSLKRVAQMM
+                     DAKPLTSAAEVSQQINEDKTAAESR"
+     gene            1136..1654
+                     /gene="ectA"
+     CDS             1136..1654
+                     /codon_start=1
+                     /gene="ectA"
+                     /note="EctA"
+                     /product="L-2,4-diaminobutyric acid acetyltransferase"
+                     /protein_id="ABY40744.1"
+                     /transl_table=11
+                     /translation="MQAVKQNTSPITLIQPTAEIGAQVYQLIANCPPLDTNSMYCNLLQ
+                     SSHFAETAVAAMLDEEVVGFISGYRIPQRPDSLFVWQVAVGEKARGQGLATQMLKAILS
+                     RPENQDIKRIETTITPDNRASWALFEGLARKLDTEISSSVMFDKTTHFADQHASEMLVK
+                     VGPFKSQKL"
+     misc_feature    1136..3487
+                     /note="ectoine biosynthesis gene cluster"
+     gene            1709..3037
+                     /gene="ectB"
+     CDS             1709..3037
+                     /NRPS_PKS="Domain: Aminotran_3 (21-358). E-value: 2.8e-80.
+                     Score: 261.6. Matches aSDomain:
+                     nrpspksdomains_ectB_Aminotran_3.1"
+                     /NRPS_PKS="type: other"
+                     /codon_start=1
+                     /gene="ectB"
+                     /gene_functions="biosynthetic-additional (smcogs)
+                     SMCOG1013:aminotransferase class-III (Score: 383.9;
+                     E-value: 1.5e-116)"
+                     /gene_kind="biosynthetic-additional"
+                     /note="EctB"
+                     /product="L-2,4-diaminobutyrate aminotransferase"
+                     /protein_id="ABY40745.1"
+                     /transl_table=11
+                     /translation="MKIFEEIESEVRSYARAFPRVFDRAQGALIYDREGNEYLDFLAGA
+                     GSLNYGHNHPIFKEKLIEYIQADGITQGLDLHTRAKGEFLESFNEHILKPRNLDYVVMF
+                     TGPTGTNAVEAALKIARKKTGRENVISFTNGWHGQTLGALSVTGNSTHRGGAGIALHGS
+                     TRIPYDGYLGDDFDTTNLLDKMLSDSSSGVDKPAAVIVETVQGEGGINAASMTWLKSLS
+                     EICKRHDVLLIIDDIQAGCGRTGTFFSFEEAGIYPDIVTLSKSLSGYGLPFAIVLMKPE
+                     VDQWSPGEHNGTFRGNNHAFVTAKAALDHFWKDDKFAKEVQRKGDYIAKRVDSIVAEYG
+                     EGNFNSHGRGMFRGINCVNGELAGQITRKCFQKGLIIETSGADDHVVKFLCPLIITDEQ
+                     LTKGIDILEEAIKEVCAKADSIPEEKDFFEGDYSVSDEVNKAS"
+     aSDomain        1772..2782
+                     /aSDomain="Aminotran_3"
+                     /aSTool="nrps_pks_domains"
+                     /database="nrpspksdomains.hmm"
+                     /detection="hmmscan"
+                     /domain_id="nrpspksdomains_ectB_Aminotran_3.1"
+                     /evalue="2.80E-80"
+                     /label="ectB_Aminotran_3.1"
+                     /locus_tag="ectB"
+                     /protein_end="358"
+                     /protein_start="21"
+                     /score="261.6"
+                     /tool="antismash"
+                     /translation="FDRAQGALIYDREGNEYLDFLAGAGSLNYGHNHPIFKEKLIEYIQ
+                     ADGITQGLDLHTRAKGEFLESFNEHILKPRNLDYVVMFTGPTGTNAVEAALKIARKKTG
+                     RENVISFTNGWHGQTLGALSVTGNSTHRGGAGIALHGSTRIPYDGYLGDDFDTTNLLDK
+                     MLSDSSSGVDKPAAVIVETVQGEGGINAASMTWLKSLSEICKRHDVLLIIDDIQAGCGR
+                     TGTFFSFEEAGIYPDIVTLSKSLSGYGLPFAIVLMKPEVDQWSPGEHNGTFRGNNHAFV
+                     TAKAALDHFWKDDKFAKEVQRKGDYIAKRVDSIVAEYGEGNFNSHGRGMFRGINCVN"
+     gene            3083..3487
+                     /gene="ectC"
+     CDS             3083..3487
+                     /codon_start=1
+                     /gene="ectC"
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     ectoine: ectoine_synt"
+                     /gene_kind="biosynthetic"
+                     /note="EctC"
+                     /product="ectoine synthase"
+                     /protein_id="ABY40746.1"
+                     /sec_met_domain="ectoine_synt (E-value: 3.7e-48, bitscore:
+                     151.2, seeds: 10, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MIVRQLQEAQKSSRRIVSPDGNWESTRMLLKDDNMGYSFHITTIF
+                     AGADFRMHYQNHLESVYCISGEGEVESLDDGKIYPITPGTLYNLDQHDRHILRAFKELH
+                     LACVFNPPLNGKEVHNKEGAYELDAESVTE"
+     gene            3558..>4871
+                     /gene="ask"
+     CDS             3558..>4871
+                     /codon_start=1
+                     /gene="ask"
+                     /note="Ask"
+                     /product="aspartokinase"
+                     /protein_id="ABY40747.1"
+                     /transl_table=11
+                     /translation="MDFHTVEKIGGTSMSDYVAVRDNVILKPVHSTSLYQRIFVVSAYG
+                     GITNLLLEHKKNGQAGIYGQFANSVNDDGWQASLEQLKQEMLAINATLFDSAETIAKAD
+                     AFISERLDDTERCLADLQRLCQHGHFSLDGHLATVREMLASIGEAHSAWNTVQLLQQDD
+                     INAVFVDLTGWQTDKHMTLDERIETAFAKIDLNTQLPIVTGYAHSIDGLMSTFDRGYSE
+                     MTFSRLAVLTNANEAIIHKEFHLSSADPRLVGEDNAVPIGRTNYDVADQLANLGMEAIH
+                     PKAAKGLRKNEIPLRVRNTFEPEHAGTLITGDYVSSKPCVEIIAGCKGVYAFEVFDQDM
+                     AGEIDSYDKEILAQIRRFKAHIVSKDINANTITHYLTASLKKIRRIRDALQERFPDAEI
+                     NQQKVAIVSAIGSDMKIPGILAKTVAALAEKNISVLAMH"
+ORIGIN
+        1 ggtaccggtt attcgtcact gagttatttg aagcactttc cggttgatac gctgaaaatt
+       61 gataaatcgt ttgtggctga aattgtcttt aactctgcag atgcggccat tgcacggacc
+      121 attatccagc tggcggaaaa tttaggatta aacacggtgg cagaaggagt tgaaacgctg
+      181 gatcaagccg acttattacg caaaatgcag tgtcatattt tgcagggatt ttatttcagc
+      241 aaacccttgc cggtagcgca ggcggaacaa ttactcaaaa actggctaca actgagttag
+      301 tcagcgagat tcagctgccg tcttgtcttc atttatctgc tgcgatacct cagccgctga
+      361 cgtcagcggt ttggcatcca tcatttgggc gacccgtttc agcgatgaaa tgatcatggt
+      421 ttgttcccat tcctgcaatt gactgaattc acgggtgaaa cgatcctgca gcggaatcgg
+      481 cgcatttttc agcatcgtca tggcttcatc agtcatatag gcgtggactt tgcgtttatc
+      541 ggtctgcgaa cgttgccgat acaccagttg gcgtttttcc agccggtcta aaatagtggt
+      601 gacggttgcc tgactcagac tcatatcctg cgccagttca ccaatagtta actggccctt
+      661 atcacgcaaa gtttgtagta acaaaatctg tggcgccgtc aaactggtgg ttttaaccag
+      721 atactttgag tgcaagtcgg tggcccgaat cacccgccgt aaagccacca gtacttcctc
+      781 aatctgatcg agcaaatgtt cccgttgggt gggttttaac cccagcgtgt cgatactggt
+      841 tgtattgcga ttgtctgact tttccatctg ttgcacacct cgttgactga tttatgccta
+      901 agtgcattgc attcatgtgt tttaaaacgc atgtaactta attgacatct aatcgcttta
+      961 tcttaaaagc tgtcattttg acatttgatt tgtttagtgt actatagatt taattgataa
+     1021 gcgatattga tgttaaacaa ttgattaaat gaaatattta acctgaattt aatcctgaat
+     1081 caaaattaaa gtgccacgtt tattaaagta aactaaataa tagagttgat tacatatgca
+     1141 agcagttaaa caaaacactt ccccgatcac cttaatccag ccaaccgctg aaatcggcgc
+     1201 gcaggtgtat caattaattg ccaattgtcc gccactggat accaactcta tgtattgcaa
+     1261 tttgttgcaa agcagtcatt ttgcagaaac agccgttgct gccatgctgg atgaagaagt
+     1321 ggtgggcttt atctcaggct atcggatacc gcaacgccct gacagtttgt ttgtctggca
+     1381 ggttgcagtg ggggaaaagg ccagagggca ggggctggcg acgcagatgt tgaaagccat
+     1441 tttatcgcgg cctgaaaatc aggatattaa acgaattgaa acaacgatca cccctgacaa
+     1501 tcgtgcctca tgggcgttat ttgaaggact ggcgagaaag ctggatactg aaatttccag
+     1561 cagtgtgatg tttgataaaa ctacacattt tgccgatcaa catgcatcag aaatgctggt
+     1621 gaaagtgggg ccgttcaagt cccagaaact gtaagcacca gcacgaaata agtattagaa
+     1681 aaattatcag cttaggagat taccgttaat gaaaattttt gaagaaatcg aatcagaagt
+     1741 ccgttcttat gcccgtgcct ttccccgtgt atttgaccgt gctcagggtg ccttaattta
+     1801 tgatcgtgaa ggtaacgaat atctcgattt tctggcggga gcaggttcgc tgaactacgg
+     1861 ccacaatcac cctatcttta aagaaaagct gattgaatat attcaggccg atggcatcac
+     1921 tcaggggctg gatttacaca cccgtgccaa aggggagttt ttagaaagct tcaatgaaca
+     1981 tattctgaag ccacgcaatt tggattatgt ggtcatgttt accggcccca caggcaccaa
+     2041 tgcggtagaa gcagcattga agattgcccg caaaaaaacc ggtcgtgaaa acgttatttc
+     2101 attcaccaat ggctggcatg gtcagacgct gggtgccttg tcagtgacag gtaactcaac
+     2161 ccaccgtggc ggcgcaggta ttgccttgca tggctctacc cgtattcctt atgacggcta
+     2221 cctaggtgat gattttgata ctaccaatct gctcgacaaa atgctgtcag attccagcag
+     2281 tggtgtcgat aaacctgcag cagttatcgt tgaaaccgtg cagggtgaag gcggtattaa
+     2341 tgcagcctcg atgacctggc tcaagagcct gtcagaaatc tgcaaacgtc atgatgtatt
+     2401 gctgattatt gatgatattc aagcgggctg tggccggacc ggtaccttct tcagttttga
+     2461 agaagccggc atttatccgg acattgttac cttgtcgaaa tcattaagcg gttatggttt
+     2521 accgttcgcc attgtgctga tgaaaccaga agtggatcaa tggtcaccgg gtgaacataa
+     2581 cggtactttc cgcggcaata accatgcgtt tgtcaccgcc aaagcggctt tggatcattt
+     2641 ctggaaagac gataaatttg ccaaggaagt gcaacgcaag ggcgattata ttgccaagcg
+     2701 ggtcgattcg attgtggcgg aatatggtga aggtaacttc aattcacatg gccggggcat
+     2761 gttccgcggt atcaactgtg taaacggtga attggccgga caaatcacgc gcaagtgttt
+     2821 ccagaaaggt ctgattatcg aaaccagtgg tgcagatgat catgtggtca aatttctttg
+     2881 cccattgatt atcaccgatg aacagctgac aaaaggcatt gatattcttg aggaagctat
+     2941 taaagaagtg tgtgctaaag cagattcaat tcctgaagaa aaagactttt tcgaaggcga
+     3001 ttattccgtc agtgatgaag tgaataaagc gagctaattt cgactttttc taatttgcac
+     3061 agactaaata aaggggtcat ttatgatcgt cagacaactt caagaagcac aaaaatcgtc
+     3121 acgtcgtatc gtgtcaccgg atggtaattg ggaaagcaca cgcatgttgt tgaaagatga
+     3181 caatatgggc tattccttcc atatcacaac gatatttgcc ggtgccgatt ttcggatgca
+     3241 ttaccaaaac cacctggaat cggtgtattg catcagtggt gagggtgagg ttgagagcct
+     3301 ggatgatggc aaaatctatc cgataacccc cggcactttg tacaacctgg atcagcacga
+     3361 tcggcatatt ttgcgtgctt ttaaagagtt acatctggcc tgcgtattca atccaccgtt
+     3421 aaatggtaaa gaagtgcaca acaaagaagg cgcttatgag ttggatgctg agtcagtaac
+     3481 tgaataattt tcaacagatt gggtgactgg ctttgcggtc actcgccctt tttgctgaaa
+     3541 cagtaagaga ggatattatg gattttcata ccgttgaaaa aattggcggc acatcaatga
+     3601 gtgattatgt tgccgtgcgt gacaatgtca ttttaaagcc agttcattca acgtctttgt
+     3661 atcaacgcat ttttgtggtt tcggcttacg ggggcattac caacctgtta ctggaacata
+     3721 aaaagaatgg tcaggcgggt atttatggcc agtttgccaa cagcgtcaat gatgatggtt
+     3781 ggcaagcgtc tttggagcag ttgaaacaag aaatgctggc gattaatgcc accttgtttg
+     3841 atagcgcaga aaccattgcc aaagcggatg cctttatcag cgagcgtctg gatgataccg
+     3901 aacgctgttt agcggatctg caacggctgt gtcagcatgg ccatttttct ttagatggtc
+     3961 acctcgccac tgtacgggaa atgctggcca gtatcggtga agcccacagt gcctggaata
+     4021 ctgttcagct attacagcag gatgatatta atgcggtgtt tgtggatttg accggttggc
+     4081 aaaccgataa gcatatgacg ctggatgaac ggatcgaaac ggcttttgcc aagattgatc
+     4141 tcaataccca attacccatt gtcaccggtt atgctcacag tattgatgga ttgatgtcga
+     4201 cctttgaccg gggttacagc gaaatgacgt tcagtcgttt agcggtgtta accaatgcga
+     4261 atgaagccat tattcataaa gaattccatt taagcagtgc ggatccgcgc ttggtgggcg
+     4321 aagacaatgc ggtgccgatt ggccgtacca actacgatgt agccgaccag ctggcaaatc
+     4381 tggggatgga agccattcat ccgaaagcgg ccaaaggtct gcgtaaaaat gagattccgt
+     4441 tacgggttcg taataccttt gaaccagaac atgcgggcac gttgattact ggtgattatg
+     4501 tcagcagcaa gccctgtgtt gagattattg ctggttgtaa aggcgtttat gcttttgaag
+     4561 tatttgatca ggatatggca ggcgaaattg atagctacga caaagagatc ctggcgcaaa
+     4621 tccgccgctt taaagcgcat atcgtctcta aagacattaa tgccaatacc attacgcatt
+     4681 accttaccgc gagtctgaaa aaaatccgcc gtattcgtga tgcgctgcag gaacgttttc
+     4741 cggatgctga aatcaatcag cagaaagtgg cgattgtatc ggccattggc agtgatatga
+     4801 aaatccccgg cattctggca aaaacggtcg cggcattggc agagaaaaat atcagtgtac
+     4861 tggcgatgca t
+//

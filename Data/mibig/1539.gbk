@@ -1,0 +1,229 @@
+LOCUS       BGC0001539              2710 bp    DNA     linear   BCT 27-FEB-2015
+DEFINITION  Streptomyces cattleya str. NRRL 8057 main chromosome, complete
+            genome.
+ACCESSION   BGC0001539
+VERSION     BGC0001539.1
+KEYWORDS    .
+SOURCE      Streptomyces cattleya NRRL 8057 = DSM 46488
+  ORGANISM  Streptomyces cattleya NRRL 8057 = DSM 46488
+            Bacteria; Actinobacteria; Streptomycetales; Streptomycetaceae;
+            Streptomyces.
+COMMENT     Annotation results relative to BLAST similarities, COG
+            assignations, enzymatic function prediction (PRIAM software), TMHMM
+            and SignalP predictions, and synteny conservation (Syntonizer
+            software) are available in the MicroScope annotation system
+            http://www.genoscope.cns.fr/agc/microscope.
+            Accession number for plasmid pSCAT in this genome project:
+            FQ859184.
+            NOTE: This is a single cluster extracted from a larger record!
+            ##antiSMASH-Data-START##
+            Version      :: 5.1.0-0c1c90d(changed)
+            Run date     :: 2019-11-12 02:12:00
+            ##antiSMASH-Data-END##
+FEATURES             Location/Qualifiers
+     CDS_motif       1..72
+                     /prepeptide="leader"
+                     /note="peptide class: lassopeptide"
+                     /note="predicted sequence: MTESIEAYEPPMLVEVGSFAELTR"
+                     /locus_tag="SCAT_0074"
+                     /aSTool="lassopeptides"
+                     /tool="antismash"
+     CDS_motif       73..135
+                     /prepeptide="core"
+                     /locus_tag="SCAT_0074"
+                     /peptide="lassopeptide"
+                     /predicted_class="Class II"
+                     /score="9.70"
+                     /molecular_weight="2687.7"
+                     /monoisotopic_mass="2686.0"
+                     /core_sequence="SYHWGDYHDWHHGWYGWWDD"
+                     /aSTool="lassopeptides"
+                     /tool="antismash"
+                     /leader_sequence="MTESIEAYEPPMLVEVGSFAELTR"
+                     /leader_location="[0:72](+)"
+     protocluster    1..2710
+                     /aStool="rule-based-clusters"
+                     /contig_edge="True"
+                     /core_location="[210:2710]"
+                     /cutoff="10000"
+                     /detection_rule="(PF13471 and Asn_synthase or micJ25 or
+                     mcjC)"
+                     /neighbourhood="10000"
+                     /product="lassopeptide"
+                     /protocluster_number="1"
+                     /tool="antismash"
+     proto_core      211..2710
+                     /aStool="rule-based-clusters"
+                     /tool="antismash"
+                     /cutoff="10000"
+                     /detection_rule="(PF13471 and Asn_synthase or micJ25 or
+                     mcjC)"
+                     /neighbourhood="10000"
+                     /product="lassopeptide"
+                     /protocluster_number="1"
+     cand_cluster    1..2710
+                     /candidate_cluster_number="1"
+                     /contig_edge="True"
+                     /detection_rules="(PF13471 and Asn_synthase or micJ25 or
+                     mcjC)"
+                     /kind="single"
+                     /product="lassopeptide"
+                     /protoclusters="1"
+                     /tool="antismash"
+     region          1..2710
+                     /candidate_cluster_numbers="1"
+                     /contig_edge="True"
+                     /product="lassopeptide"
+                     /region_number="1"
+                     /rules="(PF13471 and Asn_synthase or micJ25 or mcjC)"
+                     /tool="antismash"
+     gene            1..135
+                     /locus_tag="SCAT_0074"
+     CDS             1..135
+                     /codon_start=1
+                     /db_xref="EnsemblGenomes-Gn:SCAT_0074"
+                     /db_xref="EnsemblGenomes-Tr:CCB72812"
+                     /db_xref="UniProtKB/TrEMBL:F8K1X2"
+                     /gene_functions="biosynthetic-additional (lassopeptides)
+                     predicted lassopeptide"
+                     /gene_kind="biosynthetic-additional"
+                     /inference="ab initio prediction:AMIGene:2.0"
+                     /locus_tag="SCAT_0074"
+                     /note="Evidence 4 : Homologs of previously reported genes
+                     of unknown function"
+                     /product="conserved protein of unknown function"
+                     /protein_id="CCB72812.1"
+                     /transl_table=11
+                     /translation="MTESIEAYEPPMLVEVGSFAELTRSYHWGDYHDWHHGWYGWWDD"
+     gene            211..2028
+                     /gene="asnH"
+                     /locus_tag="SCAT_0075"
+     CDS             211..2028
+                     /codon_start=1
+                     /db_xref="EnsemblGenomes-Gn:SCAT_0075"
+                     /db_xref="EnsemblGenomes-Tr:CCB72813"
+                     /db_xref="GOA:F8K1X3"
+                     /db_xref="InterPro:IPR001962"
+                     /db_xref="InterPro:IPR014729"
+                     /db_xref="InterPro:IPR029055"
+                     /db_xref="UniProtKB/TrEMBL:F8K1X3"
+                     /gene="asnH"
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     lassopeptide: Asn_synthase"
+                     /gene_functions="biosynthetic-additional (smcogs)
+                     SMCOG1177:asparagine synthase (glutamine-hydrolyzing)
+                     (Score: 112.4; E-value: 3.7e-34)"
+                     /gene_kind="biosynthetic"
+                     /inference="ab initio prediction:AMIGene:2.0"
+                     /locus_tag="SCAT_0075"
+                     /note="Evidence 3 : Function proposed based on presence of
+                     conserved amino acid motif, structural feature or limited
+                     homology"
+                     /product="putative asparagine synthetase"
+                     /protein_id="CCB72813.1"
+                     /sec_met_domain="Asn_synthase (E-value: 2.2e-37, bitscore:
+                     117.5, seeds: 78, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MGVEFAVFPDHPHGAALARGLQSASGGRSIAHPSGRPWIVGHWAE
+                     DAVVRASVGDRSAVVFGMTDFDERSLAAGLATVVSTDETGALTGPLAGSHHLCLSVGGE
+                     VRLQGSLSGVREVYFAEHHGVTVASGSAALAARLSGRGVDEERLALRLLAPDAPWPVGD
+                     ESGWAGVTTLPVGHWLRLARDGGGRVVRWWVPPEPRLPMAAAAAAVREALAEAVAVRTA
+                     RGGVLSADLSGGLDSAGLCFLAADGPARLVTLHALAVDAGNDDSAWAARSAERLGAARH
+                     VVVAADDGPRWFATPPCADGDLEGPVVLARTRAKAAHAVAHAAREGSRIHLTGIGGDEL
+                     FTMRPALLHAMARAHPAVAVRQLRATRTLGRWSLLTTARQVWGGGDYPRWLARCAERLT
+                     LTPGSSWVTGADWGVPPVMPPWATPRATATARRLLAAAAEARPAPLAPLRVQHDMIRAV
+                     RAAGAAVRGLGHAVAGLQVAYEAPYLDDRVLDAALAVRLADRWALDHYKPVLAAALRGV
+                     VPGELLDRRTKGDYSAELFTGLRRHRDDVLDVCAELADRGLVDGQALRAALTGLHPVTR
+                     GLLPLDATLSCATWLRAVGHDTAWQGGAA"
+     gene            2079..2282
+                     /locus_tag="SCAT_0076"
+     CDS             2079..2282
+                     /codon_start=1
+                     /db_xref="EnsemblGenomes-Gn:SCAT_0076"
+                     /db_xref="EnsemblGenomes-Tr:CCB72814"
+                     /db_xref="InterPro:IPR008792"
+                     /db_xref="UniProtKB/TrEMBL:F8K1X4"
+                     /gene_functions="biosynthetic-additional
+                     (rule-based-clusters) PF05402"
+                     /gene_kind="biosynthetic-additional"
+                     /inference="ab initio prediction:AMIGene:2.0"
+                     /locus_tag="SCAT_0076"
+                     /note="Evidence 4 : Homologs of previously reported genes
+                     of unknown function"
+                     /product="conserved protein of unknown function"
+                     /protein_id="CCB72814.1"
+                     /sec_met_domain="PF05402 (E-value: 1e-14, bitscore: 42.9,
+                     seeds: 461, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MLLDERSGRYWQLNATGATVLEALLDTGDEALAAAALRERCPSAG
+                     DRAERDVGRLVAMLRDAGLVVS"
+     gene            2279..2710
+                     /locus_tag="SCAT_0077"
+     CDS             2279..2710
+                     /codon_start=1
+                     /db_xref="EnsemblGenomes-Gn:SCAT_0077"
+                     /db_xref="EnsemblGenomes-Tr:CCB72815"
+                     /db_xref="UniProtKB/TrEMBL:F8JVW7"
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     lassopeptide: PF13471"
+                     /gene_kind="biosynthetic"
+                     /inference="ab initio prediction:AMIGene:2.0"
+                     /locus_tag="SCAT_0077"
+                     /note="Evidence 4 : Homologs of previously reported genes
+                     of unknown function"
+                     /product="conserved protein of unknown function"
+                     /protein_id="CCB72815.1"
+                     /sec_met_domain="PF13471 (E-value: 3.2e-30, bitscore: 92.8,
+                     seeds: 84, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MSAQVTLDERALLPWWRRAVALCAVFAARLLVRLPPGRLRRVLTR
+                     VCRGARPAGAESAARAREAVVAVSLRCAGPYCLQRSVATALLCRLSGQWPDWCTGVRTE
+                     PFRAHAWVEAEGVPVGEDAAGLRGFRVLLRVSASGRRAG"
+ORIGIN
+        1 gtgaccgaaa gcatcgaggc atacgagccc cccatgctgg tcgaggtcgg ctccttcgcc
+       61 gagctgaccc gttcctacca ctggggtgac taccacgact ggcaccacgg ttggtacggc
+      121 tggtgggacg actgacccag cgcccttgcg gctgcgccgg tgcggggaca ccggcgcagt
+      181 ccgcctgcgc acatcggtga ggggggttgt gtgggggtgg agttcgcggt ctttccggac
+      241 catccgcacg gcgcggcgct ggcgcggggg ttgcagagcg cgagcggggg gcggtcgatc
+      301 gcccatccgt cgggcaggcc ctggatcgtg gggcactggg ccgaggacgc ggtggtgcgc
+      361 gcgtccgtcg gtgaccggag cgccgtggtc ttcggcatga cggacttcga cgagcggtcg
+      421 ctggcggcgg ggctggccac cgtggtctcc accgacgaga caggcgcgct caccggcccg
+      481 ttggccggca gccaccacct gtgtctgtcg gtcggcggtg aagtgcgcct ccagggcagc
+      541 ctgtcggggg tgcgcgaggt ctacttcgcc gagcaccacg gggtgacggt ggcctccggc
+      601 agcgccgcgc tggccgcccg gctgtccggc cgcggggtgg acgaggaacg gctggccctg
+      661 cggctgctgg cgccggacgc gccgtggccg gtcggcgacg agagcggctg ggccggggtc
+      721 accacgctgc cggtcggcca ctggctgcgg ctcgcccggg acggcggcgg acgggtggtg
+      781 cgctggtggg tgccgccgga gccacggctg ccgatggccg ccgccgcggc ggccgtacgg
+      841 gaagcgctgg ccgaggcggt cgcggtccgc acggcacgcg gcggggtgct cagcgccgac
+      901 ctgtccggcg gtctggactc ggccggcctg tgcttcctgg ccgccgacgg cccggcccgg
+      961 ctggtcacgc tgcacgcgct ggcggtcgac gccggcaacg acgacagcgc gtgggcggcc
+     1021 cggtccgccg aacggctcgg cgccgcgcgg cacgtggtgg tggccgccga cgacggcccc
+     1081 cggtggttcg ccacgccgcc gtgcgccgac ggtgatctgg agggcccggt cgtgctggcc
+     1141 cgcacccggg ccaaggccgc ccacgcggtg gcccacgcgg cgcgggaggg ctcccggatc
+     1201 catctcaccg ggatcggcgg tgacgagttg ttcaccatgc gcccggcgtt gctgcacgcg
+     1261 atggcgcggg cccatccggc ggtggcggta cggcagttgc gggccacccg gacgctgggc
+     1321 cggtggtcgc tgctgaccac cgcgcgccag gtatggggcg gcggtgacta cccgcgctgg
+     1381 ctggcgcgct gcgccgagcg gctcacgctc accccgggtt cgtcctgggt caccggtgcc
+     1441 gactgggggg tgcccccggt gatgccgccg tgggcgacgc cacgggccac ggccaccgcg
+     1501 cgccggttgc tggccgccgc ggccgaggcc cgtccggcac cgctggcccc gctgcgggtg
+     1561 cagcacgaca tgatccgcgc ggtgcgcgcg gccggcgcgg cggtacgcgg tctcggtcac
+     1621 gccgtcgccg gcctccaggt cgcctacgag gccccctacc tcgacgaccg ggtgctcgac
+     1681 gcggcgctgg cggtgcggct ggccgaccgc tgggcgctgg accactacaa acccgtactg
+     1741 gcggcggcgc tgcgcggcgt cgtccccggc gaactgctcg accgccgtac caagggcgac
+     1801 tacagcgcgg agctcttcac cgggctgcgc cgccaccggg acgacgtgct cgacgtctgc
+     1861 gcggaactgg ccgaccgggg cctggtggac ggccaggcgc tgcgcgcggc gctcaccggg
+     1921 ctccatccgg tgacccgggg gctgctgccg ctcgacgcca cgttgtcctg cgccacctgg
+     1981 ctgcgggcgg tcgggcacga cacggcgtgg caaggaggtg cggcgtgagt ttcacactgg
+     2041 cccgtcatgt gacccgttcg gccaccgagg gaggcatggt gctgctggac gaacgcagcg
+     2101 gccgttactg gcagttgaac gccaccgggg ccaccgtgct ggaggccctg ctggacaccg
+     2161 gtgacgaggc gctggccgcc gccgctctgc gggagcggtg tccgagcgcg ggcgaccggg
+     2221 cggagcggga cgtcgggcgg ctggtcgcca tgttgcggga cgccgggctg gtggtgtcgt
+     2281 gagcgcccag gtgacgctgg acgagcgggc gttgctgccg tggtggcggc gggcggtggc
+     2341 gttgtgcgcg gtcttcgcgg cccggctgct ggtgcgcctg ccgccggggc ggttgcggcg
+     2401 ggtgctcacc cgggtgtgcc ggggcgcgcg gccggccggc gcggagtcgg cggcccgggc
+     2461 gcgggaggcg gtggtggcgg tgagtctgcg ctgcgccggc ccctactgcc ttcaacggtc
+     2521 ggtggccacc gcgttgttgt gccggctctc cggtcagtgg ccggactggt gcacgggggt
+     2581 gcgcaccgag ccgttccggg cgcacgcctg ggtcgaggcg gagggtgttc cggtcggcga
+     2641 ggacgcggcg gggttgcgcg gtttccgggt gctgctgagg gtctccgcct cggggaggcg
+     2701 ggccgggtag
+//
