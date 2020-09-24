@@ -24,7 +24,8 @@ import datetime
 SOLVER = "gurobi"
 OPTKNOCK_BIOMASS_FRACTION = 0.999
 MINIMUM_FLUX = 0.01
-EPSILON = 1e-2
+EPSILON = 1e-7
+EPSILON_FRACTION = 0.001
 
 def add_metabolic_pathway(model, pathway_fn):
     pathway = cobra.io.load_json_model(pathway_fn)
@@ -46,9 +47,11 @@ def BGC_optknock(model, pathway_fn, optknock_reactions = [], fraction_of_optimum
         results = pd.DataFrame(results)
         results.columns = ["ID", "Growth", "Production"]
         results.set_index("ID", inplace = True)
-    
-        improved_results = results.loc[results["Production"] > results.loc["WT", "Production"] + EPSILON, :]
-        improved_results = improved_results/results.loc["WT", :]
+    	
+	relative_results = results/results.loc["WT", :]
+	improved_results = relative_results.loc[relative_results["Production"]>(1+EPSION_FRACTION), :]
+        # improved_results = results.loc[results["Production"] > results.loc["WT", "Production"] + EPSILON, :]
+        # improved_results = improved_results/results.loc["WT", :]
         improved_results["BGC type"] = bgc_type
         #result = results.sort_values("Production", ascending=False).iloc[:10,:]/results.
         #result.append(results.loc[results["ID"]=="WT", :])
@@ -59,7 +62,7 @@ def BGC_optknock(model, pathway_fn, optknock_reactions = [], fraction_of_optimum
             optknock = OptKnock(model, exclude_reactions = exclude_reactions, fraction_of_optimum=None)
             result = optknock.run(max_knockouts=1, target=target_id, biomass=biomass_rxn_id, max_results = 1)
         except KeyError:
-            logging.warning("No secondary metabolite in model", pathway_fn)
+            logging.warning("No secondary metabolite in model, ".format(pathway_fn))
         return result
 
 
@@ -80,7 +83,7 @@ def folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.9,
                                   fraction_of_optimum = fraction_of_optimum, brute_force = True)
             save_fn = results_folder + "/brute_optknock_{0}_{1}.csv".format(str(pathway_fn.stem), fraction_of_optimum)
             result.to_csv(save_fn)
-            logging.info(pathway_fn, result)
+            logging.info("{0}_{1}".format(pathway_fn, result))
             result["BGC"] = str(pathway_fn.stem)
             all_results.append(result)
 
@@ -108,16 +111,21 @@ def optknock_brute_force(model, biomass_rxn_id, target_reaction, minimum_growth)
     growth = model.slim_optimize()
     #print("Growth: ", growth)
     if growth < minimum_growth:
-        print("Zero growth")
+        logging.info("Zero growth")
         return 0, 0
     elif np.isnan(growth):
-        print("No solution for model")
+        logging.info("No solution for model")
         return 0, 0
     else:
         with model:
             model.reactions.get_by_id(biomass_rxn_id).lower_bound = growth * OPTKNOCK_BIOMASS_FRACTION
-            model.objective = model.reactions.get_by_id(target_reaction)
-            production = model.slim_optimize()
+            try:
+                model.objective = model.reactions.get_by_id(target_reaction)
+            except KeyError:
+                logging.warning("No DM_secondary_metabolite reaction")
+                production = 0
+            else:
+                production = model.slim_optimize()
         return growth, production
 
 
@@ -142,59 +150,6 @@ def optknock_prepare(model, minimum_growth = MINIMUM_FLUX):
     exchanges = [r.id for r in model.exchanges]
     optknock_reactions = [r for r in optknock_reactions if not r in exchanges]
     return optknock_reactions
-
-
-# def optknock_brute_force(model, target_reaction, solver  = "gurobi", n_jobs = -1, output = "optknock_brute_force.csv", minimum_growth = 0.01):
-    
-#     s0 = time.time()
-#     s_arr = []
-
-#         # model.solver = solver
-#     if n_jobs == -1:
-#         n_jobs = multiprocessing.cpu_count()
-
-#     print("Number of jobs; ", n_jobs)
-    
-
-#     # optknock_reactions = optknock_reactions[::20]
-#     print("Number of optknock_reactions:", len(optknock_reactions))
-#     # optknock_triplets = list(itertools.combinations(np.arange(len(optknock_reactions)), 3))
-
-#     print(s_arr)
-
-#     # Find lethal pairs
-    
-#     # print("Found lethal pairs: ", len(lethal_pairs), len(nonlethal_pairs))
-
-#     triple_optknock_df = triple_optknock(model, optknock_reactions, target_reaction, n_jobs, minimum_growth)
-#     s_arr.append(time.time()-s0)
-#     print("Finished triplets")
-    
-#     lethal_pairs, nonlethal_pairs = get_lethal_and_nonlethal_pairs(model, optknock_reactions)
-#     double_optknock_list = double_optknock(model, nonlethal_pairs, target_reaction, minimum_growth)
-#     print("Finished doubles")
-    
-#     s_arr.append(time.time()-s0)
-#     single_optknock_list = single_optknock(model, optknock_reactions, target_reaction, minimum_growth)
-#     s_arr.append(time.time()-s0)
-#     print(s_arr)
-
-#     optknock_list = single_optknock_list + double_optknock_list
-    
-
-#     #Store data
-#     df12 = pd.DataFrame(optknock_list, columns = ["Reaction 1", "Reaction 2", "Reaction 3", "Growth", "Production"])
-#     # df.columns = ["Reaction 1", "Reaction 2", "Reaction 3", "Growth", "Production"]
-#     df_growth = df12[df12["Growth"]>0]
-
-#     df = pd.concat([triple_optknock_df, df_growth], ignore_index = True)
-
-
-#     fn = "env_"+str(env)+"_"+output
-#     path = os.path.join(os.getcwd(), fn)
-#     df.to_csv(path, index = False)
-#     print("Saved!")
-
 
 def get_essential_reactions(model, reaction_list = None, minimum_growth = MINIMUM_FLUX):
     if isinstance(reaction_list, list):
