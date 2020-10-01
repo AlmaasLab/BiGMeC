@@ -1210,15 +1210,14 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     return model, lump_model
 
 
-def add_ripp_metabolic_pathway(core_structure, model):
-    reaction = cobra.Reaction(core_structure['type'])
+def add_ripp_metabolic_pathway(core_structure, model, core_number):
+    reaction_name = "{0}_{1}".format(core_structure['type'], core_number)
+    reaction = cobra.Reaction(reaction_name)
     reaction.name = core_structure['type'] + '_reaction'
     reaction.lower_bound = 0.  # This is the default
     reaction.upper_bound = 1000.
-    ripp_met = cobra.Metabolite(core_structure['type'],
-                                             formula='unknown_but_can_find',
-                                             name=core_structure['type'],
-                                             compartment='c')
+
+    ripp_met = cobra.Metabolite(reaction_name, formula='X', name=core_structure['type'], compartment='c')
     reaction_metabolites = {ripp_met: 1.0}
     aa_metabolites = {}
     for letter in core_structure['RiPP']:
@@ -1238,14 +1237,30 @@ def add_ripp_metabolic_pathway(core_structure, model):
 
     reaction.add_metabolites(reaction_metabolites)
 
-    # Add DM reaction for RiPPs
-    ex_rx = cobra.Reaction('DM_secondary_metabolite')
-    ex_rx.name = core_structure['type'] + '_reaction'
-    ex_rx.lower_bound = 0.  # This is the default
-    ex_rx.upper_bound = 1000.
+    # Make a generic end product (to handle multiple products)
+    generic_met_id = "generic_{0}".format(core_structure['type'])
+    try:
+        generic_met = model.metabolites.get_by_id(generic_met_id)
+    except KeyError:
+        generic_met = cobra.Metabolite(generic_met_id, formula='X', name=core_structure['type'], compartment='c')
 
-    ex_rx.add_metabolites({ripp_met: - 1.0})
-    model.add_reactions([reaction, ex_rx])
+    translation_reaction_name = "translate_{0}".format(core_number)
+    translate_reaction = cobra.Reaction(translation_reaction_name)
+    translate_reaction.add_metabolites({ripp_met:-1, generic_met:1})
+
+    model.add_reactions([reaction, translate_reaction])
+
+    # Add DM reaction for RiPP
+    dm_reaction_name = "DM_secondary_metabolite"
+    try:
+        r = model.reactions.get_by_id(dm_reaction_name)
+    except KeyError:
+        ex_rx = cobra.Reaction(dm_reaction_name)
+        ex_rx.name = core_structure['type'] + '_reaction'
+        ex_rx.lower_bound = 0.  # This is the default
+        ex_rx.upper_bound = 1000.
+        ex_rx.add_metabolites({generic_met: - 1.0})
+        model.add_reactions([ex_rx])
 
     return model
 
@@ -1338,7 +1353,7 @@ def add_cores_to_model(name, data, model_output_path):
         bgc_type = data['core_structure'][core_number]['type']
         bgc_types.append(bgc_type)
         if bgc_type in RiPPs:
-            model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model)
+            model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model, core_number)
 
         elif bgc_type in ['transAT-PKS', 'transAT-PKS-like']:
             model, lump_model = add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
