@@ -332,7 +332,7 @@ def fix_transat_modules(domain_or_module):
         if res[index]['element'] == 'module' and res[index + 1]['element'] == 'domain':
             start = index
             if res[start + 1]['info'][
-                'type'] in reducing_domains:  # COULD INCLUDE ACP HERE, BUT THOSE CASES MIGHT BE TOO FUCKED
+                'type'] in reducing_domains:  # COULD INCLUDE ACP HERE, BUT THOSE CASES MIGHT BE TOO STRANGE
                 for domain_loc in range(0, len(domain_or_module[index]['domains']) - 1):
                     # insert domains at end, pop at start
                     if res[index]['domains'][domain_loc]['type'] in acp_domains and \
@@ -603,8 +603,7 @@ def find_and_replace_load_modules(domain_or_module):
                 # if we are on a new gene, the search continues. # this is only relevant to do on domains, as modules cannot (should not) by antismash definition# should always be extending, and should in theory not contain cal,fkbh or gnat domains
             if dom_mod['info']['core_gene'] and not encountered_a_module:
                 # if this is a core gene. needs to be nested because modules have different structure than domains here
-                if dom_mod['info'][
-                    'type'] in loader_domains:  # if this is a gene that is a giveaway that this is the loader module:
+                if dom_mod['info']['type'] in loader_domains:  # if this is a gene that is a giveaway that this is the loader module:
                     # we have found a loader domain on one of the core genes, before any other modules have been found.
                     found_loader = True
                     loader_type = dom_mod['info']['type']
@@ -617,9 +616,8 @@ def find_and_replace_load_modules(domain_or_module):
                     'extender_unit': loader_type,
                     'loader_activity': loader_activity,
                     'start': domain_or_module[start_of_gene]['info']['start'],
-                    'end': domain_or_module[index]['info']['end']}, 'domains': [x['info'] for x in domain_or_module[
-                                                                                                   loader_start:index]]}] + domain_or_module[
-                                                                                                                            index:]
+                    'end': domain_or_module[index]['info']['end']},
+                    'domains': [x['info'] for x in domain_or_module[loader_start:index]]}] + domain_or_module[index:]
 
         elif dom_mod['element'] == 'module':
             encountered_a_module = True  # to check that we have not passed any real modules
@@ -628,9 +626,8 @@ def find_and_replace_load_modules(domain_or_module):
                     'extender_unit': loader_type,
                     'loader_activity': loader_activity,
                     'start': domain_or_module[start_of_gene]['info']['start'],
-                    'end': domain_or_module[index]['info']['end']}, 'domains': [x['info'] for x in domain_or_module[
-                                                                                                   loader_start:index - 1]]}] + domain_or_module[
-                                                                                                                                index:]
+                    'end': domain_or_module[index]['info']['end']}, 
+                    'domains': [x['info'] for x in domain_or_module[loader_start:index-1]]}] + domain_or_module[index:]
 
             if not dom_mod['domains'][0]['gene'] == prev_gene:
                 start_of_gene = index  # so we know what domains to remove in case we find a loader domain
@@ -1218,10 +1215,11 @@ def add_ripp_metabolic_pathway(core_structure, model):
     reaction.name = core_structure['type'] + '_reaction'
     reaction.lower_bound = 0.  # This is the default
     reaction.upper_bound = 1000.
-    reaction_metabolites = {cobra.Metabolite(core_structure['type'],
+    ripp_met = cobra.Metabolite(core_structure['type'],
                                              formula='unknown_but_can_find',
                                              name=core_structure['type'],
-                                             compartment='c'): 1.0}
+                                             compartment='c')
+    reaction_metabolites = {ripp_met: 1.0}
     aa_metabolites = {}
     for letter in core_structure['RiPP']:
         if letter in aa_metabolites:
@@ -1239,7 +1237,15 @@ def add_ripp_metabolic_pathway(core_structure, model):
             continue
 
     reaction.add_metabolites(reaction_metabolites)
-    model.add_reactions([reaction])
+
+    # Add DM reaction for RiPPs
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
+    ex_rx.name = core_structure['type'] + '_reaction'
+    ex_rx.lower_bound = 0.  # This is the default
+    ex_rx.upper_bound = 1000.
+
+    ex_rx.add_metabolites({ripp_met: - 1.0})
+    model.add_reactions([reaction, ex_rx])
 
     return model
 
