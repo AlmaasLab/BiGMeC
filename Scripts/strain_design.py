@@ -79,14 +79,24 @@ def folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.9,
     all_results = []
     for i, pathway_fn in enumerate(folder.glob("*.json")):
         logging.info(pathway_fn)
-        with model:
-            result = BGC_optknock(model, str(pathway_fn), optknock_reactions = optknock_reactions, 
-                                  fraction_of_optimum = fraction_of_optimum, brute_force = True)
-            save_fn = results_folder + "/brute_optknock_{0}_{1}.csv".format(str(pathway_fn.stem), fraction_of_optimum)
-            result.to_csv(save_fn)
-            logging.info("{0}_{1}".format(pathway_fn, result))
-            result["BGC"] = str(pathway_fn.stem)
-            all_results.append(result)
+        save_fn = results_folder + "/brute_optknock_{0}_{1}.csv".format(str(pathway_fn.stem), fraction_of_optimum)
+        
+        # Find out if the BGC has been run previously
+        already_predicted = False
+        if Path(save_fn).is_file():
+            result = pd.read_csv(save_fn, index_col = 0, header = 0)
+            if len(result):
+                logging.info("This BGC is already predicted")
+                already_predicted = True
+
+        if not already_predicted:
+            with model:
+                result = BGC_optknock(model, str(pathway_fn), optknock_reactions = optknock_reactions, 
+                                      fraction_of_optimum = fraction_of_optimum, brute_force = True)
+                result.to_csv(save_fn)
+        logging.info("{0}_{1}".format(pathway_fn, result))
+        result["BGC"] = str(pathway_fn.stem)
+        all_results.append(result)
 
     df = pd.concat(all_results)
     logging.info(df)

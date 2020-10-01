@@ -332,7 +332,7 @@ def fix_transat_modules(domain_or_module):
         if res[index]['element'] == 'module' and res[index + 1]['element'] == 'domain':
             start = index
             if res[start + 1]['info'][
-                'type'] in reducing_domains:  # COULD INCLUDE ACP HERE, BUT THOSE CASES MIGHT BE TOO FUCKED
+                'type'] in reducing_domains:  # COULD INCLUDE ACP HERE, BUT THOSE CASES MIGHT BE TOO STRANGE
                 for domain_loc in range(0, len(domain_or_module[index]['domains']) - 1):
                     # insert domains at end, pop at start
                     if res[index]['domains'][domain_loc]['type'] in acp_domains and \
@@ -603,8 +603,7 @@ def find_and_replace_load_modules(domain_or_module):
                 # if we are on a new gene, the search continues. # this is only relevant to do on domains, as modules cannot (should not) by antismash definition# should always be extending, and should in theory not contain cal,fkbh or gnat domains
             if dom_mod['info']['core_gene'] and not encountered_a_module:
                 # if this is a core gene. needs to be nested because modules have different structure than domains here
-                if dom_mod['info'][
-                    'type'] in loader_domains:  # if this is a gene that is a giveaway that this is the loader module:
+                if dom_mod['info']['type'] in loader_domains:  # if this is a gene that is a giveaway that this is the loader module:
                     # we have found a loader domain on one of the core genes, before any other modules have been found.
                     found_loader = True
                     loader_type = dom_mod['info']['type']
@@ -617,9 +616,8 @@ def find_and_replace_load_modules(domain_or_module):
                     'extender_unit': loader_type,
                     'loader_activity': loader_activity,
                     'start': domain_or_module[start_of_gene]['info']['start'],
-                    'end': domain_or_module[index]['info']['end']}, 'domains': [x['info'] for x in domain_or_module[
-                                                                                                   loader_start:index]]}] + domain_or_module[
-                                                                                                                            index:]
+                    'end': domain_or_module[index]['info']['end']},
+                    'domains': [x['info'] for x in domain_or_module[loader_start:index]]}] + domain_or_module[index:]
 
         elif dom_mod['element'] == 'module':
             encountered_a_module = True  # to check that we have not passed any real modules
@@ -628,9 +626,8 @@ def find_and_replace_load_modules(domain_or_module):
                     'extender_unit': loader_type,
                     'loader_activity': loader_activity,
                     'start': domain_or_module[start_of_gene]['info']['start'],
-                    'end': domain_or_module[index]['info']['end']}, 'domains': [x['info'] for x in domain_or_module[
-                                                                                                   loader_start:index - 1]]}] + domain_or_module[
-                                                                                                                                index:]
+                    'end': domain_or_module[index]['info']['end']}, 
+                    'domains': [x['info'] for x in domain_or_module[loader_start:index-1]]}] + domain_or_module[index:]
 
             if not dom_mod['domains'][0]['gene'] == prev_gene:
                 start_of_gene = index  # so we know what domains to remove in case we find a loader domain
@@ -1213,15 +1210,15 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     return model, lump_model
 
 
-def add_ripp_metabolic_pathway(core_structure, model):
-    reaction = cobra.Reaction(core_structure['type'])
+def add_ripp_metabolic_pathway(core_structure, model, core_number):
+    reaction_name = "{0}_{1}".format(core_structure['type'], core_number)
+    reaction = cobra.Reaction(reaction_name)
     reaction.name = core_structure['type'] + '_reaction'
     reaction.lower_bound = 0.  # This is the default
     reaction.upper_bound = 1000.
-    reaction_metabolites = {cobra.Metabolite(core_structure['type'],
-                                             formula='unknown_but_can_find',
-                                             name=core_structure['type'],
-                                             compartment='c'): 1.0}
+
+    ripp_met = cobra.Metabolite(reaction_name, formula='X', name=core_structure['type'], compartment='c')
+    reaction_metabolites = {ripp_met: 1.0}
     aa_metabolites = {}
     for letter in core_structure['RiPP']:
         if letter in aa_metabolites:
@@ -1239,7 +1236,31 @@ def add_ripp_metabolic_pathway(core_structure, model):
             continue
 
     reaction.add_metabolites(reaction_metabolites)
-    model.add_reactions([reaction])
+
+    # Make a generic end product (to handle multiple products)
+    generic_met_id = "generic_{0}".format(core_structure['type'])
+    try:
+        generic_met = model.metabolites.get_by_id(generic_met_id)
+    except KeyError:
+        generic_met = cobra.Metabolite(generic_met_id, formula='X', name=core_structure['type'], compartment='c')
+
+    translation_reaction_name = "translate_{0}".format(core_number)
+    translate_reaction = cobra.Reaction(translation_reaction_name)
+    translate_reaction.add_metabolites({ripp_met:-1, generic_met:1})
+
+    model.add_reactions([reaction, translate_reaction])
+
+    # Add DM reaction for RiPP
+    dm_reaction_name = "DM_secondary_metabolite"
+    try:
+        r = model.reactions.get_by_id(dm_reaction_name)
+    except KeyError:
+        ex_rx = cobra.Reaction(dm_reaction_name)
+        ex_rx.name = core_structure['type'] + '_reaction'
+        ex_rx.lower_bound = 0.  # This is the default
+        ex_rx.upper_bound = 1000.
+        ex_rx.add_metabolites({generic_met: - 1.0})
+        model.add_reactions([ex_rx])
 
     return model
 
@@ -1332,7 +1353,7 @@ def add_cores_to_model(name, data, model_output_path):
         bgc_type = data['core_structure'][core_number]['type']
         bgc_types.append(bgc_type)
         if bgc_type in RiPPs:
-            model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model)
+            model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model, core_number)
 
         elif bgc_type in ['transAT-PKS', 'transAT-PKS-like']:
             model, lump_model = add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
@@ -1367,23 +1388,27 @@ def run(bgc_path, output_folder, json_folder = None):
         for filename in bgc_path.glob("*.gbk"):
             print(filename)
             #Run this script for each file in the folder
-            run(filename, output_folder, json_folder)
+            result = _run(filename, output_folder, json_folder)
+            report_list.append(result)
     else:
-        # This is the core of this function
-        json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
-        create_json_1(bgc_path, json_path)
-        with open(json_path, 'r') as json_file:
-            data_json = json.load(json_file)
-        
-        # Adds extracted data to model
-        output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
-        name = "BGC-{0}".format(bgc_path.stem)
-        successfull, bgc_type = add_cores_to_model(name, data_json, str(output_model_fn))
-        report_list.append([bgc_path.stem, int(successfull), bgc_type])
+        result = _run(bgc_path, output_folder, json_folder)
+        report_list.append(result)
 
     df = pd.DataFrame(report_list, columns = ["BGC", "Success", "BGC type"])
     df.to_csv(output_folder + "/summary.csv")
 
+def _run(bgc_path, output_folder, json_folder):
+    # This is the core of this function
+    json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
+    create_json_1(bgc_path, json_path)
+    with open(json_path, 'r') as json_file:
+        data_json = json.load(json_file)
+    
+    # Adds extracted data to model
+    output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
+    name = "BGC-{0}".format(bgc_path.stem)
+    successfull, bgc_type = add_cores_to_model(name, data_json, str(output_model_fn))
+    return bgc_path.stem, int(successfull), bgc_type
 
 if __name__ == '__main__':
     biggbk = "../Data/mibig"
