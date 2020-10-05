@@ -49,13 +49,13 @@ def merge_cores(core_list, high, low):
     for typer in prefer_types:
         for core in core_list:
             if typer == core['type']:
-                return [{'start': low, 'end': high,
+                return {'start': low, 'end': high,
                          'type': typer,
-                         'core_number': core['core_number']}]
+                         'core_number': core['core_number']}
             elif core['type'] in RiPPs:
-                return [core]
+                return core
 
-    return [core]
+    return core
 
 
 def merge_core_list(core_list):
@@ -72,17 +72,13 @@ def merge_core_list(core_list):
                        'transAT-PKS', 'transAT-PKS-like', 'NRPS', 'T1PKS', 'NRPS-like', 'PKS-like'
                        transAT PKS can be treated as NRPS and T1PKS, but T1PKS cannot be treated as transAT-PKS
     '''
-    low = 1000000000
-    high = 0
-    for core in core_list:
-        if core['start'] < low:
-            low = core['start']
-        if core['end'] > high:
-            high = core['end']
+    # Get the range of all core genes
+    low = min([core["start"] for core in core_list])
+    high = max([core["end"] for core in core_list])
 
-    reduced_list = merge_cores(core_list, high, low)
+    merged_core = merge_cores(core_list, high, low)
 
-    return reduced_list
+    return merged_core
 
 
 def find_cores_in_cluster(gb_list):
@@ -94,11 +90,11 @@ def find_cores_in_cluster(gb_list):
     :return: A list of cores (cores are overlapping. we are simply interested in the core genes for this project )
     '''
     core_list = []
+    
+    # backup_core_list is there because some BGCs do not have any locations for their clusters. 
+    # this i think is just for older BGCs that are in mibig, as this does not always happen.
     backup_core_list = []
-    '''
-    backup_core_list is there because some BGCs do not have any locations for their clusters. 
-    this i think is just for older BGCs that are in mibig, as this does not always happen.
-    '''
+    
     core_number = 0
     for gb_record in gb_list:
         for feat in gb_record.features:
@@ -137,7 +133,7 @@ def find_cores_in_cluster(gb_list):
                  'core_number': '1'}]
 
 
-def structure_gbk_information(core_list, gb_list):
+def structure_gbk_information(core, gb_list):
     CDS = []
     core_domains = {}
     CDS_number = -1
@@ -153,145 +149,144 @@ def structure_gbk_information(core_list, gb_list):
 
                 else:
                     smcog = ['No_smCOG']
-                cds_is_core = []
-                for core in core_list:  # this is wrong, because it adds two instead of 1, every time
-                    try:
-                        if feat.location.start >= core['start'] and feat.location.end <= core['end']:
-                            cds_is_core.append(core)
-                    except AttributeError:
-                        warnings.warn('Core has no location. Unsure of consequences')
+
+                cds_is_core = False
+                try:
+                    if feat.location.start >= core['start'] and feat.location.end <= core['end']:
+                        cds_is_core.append(True)
+                except AttributeError:
+                    warnings.warn('Core has no location. Unsure of consequences')
                     # Instantiate CDS-object, consisting of:
                     # list of domains, gene_ontologies, smCOG, EC numbers (possible with many because of many GOs, rxn_in,
                     # rxn_out, core_gene):
-                if len(cds_is_core) > 0:  # test to see if the cds is a core gene
-                    try:
-                        CDS.append(
-                            {'smcog': smcog, 'core_gene': cds_is_core, 'domains': [], 'strand': feat.location.strand})
-                    except AttributeError:
-                        warnings.warn('gene had no location')
-                        CDS_number -= 1
-                else:
-                    try:
-                        CDS.append({'smcog': smcog, 'core_gene': False, 'domains': [], 'strand': feat.location.strand})
-                    except AttributeError:
-                        warnings.warn('gene had no location')
-                        CDS_number -= 1
-                CDS_number += 1
 
-            else:
-                if feat.type == 'aSModule':
-                    if feat.qualifiers.get('monomer_pairings'):
-                        aids = feat.qualifiers.get('monomer_pairings')
-                        for core in core_list:
-                            if feat.location.start >= core['start'] and feat.location.end <= core['end']:
-                                if core['core_number'] not in core_domains:
-                                    core_domains[core['core_number']] = {'type': core['type'], 'modules': [
-                                        {'extender_unit': copy.copy(aids)[0].replace('&gt;', '>'),
-                                         'start': feat.location.start,
-                                         'end': feat.location.end}]}
-                                    #  replace('&gt;', '>') -> sometimes there is some parsing error that cant read '>'
-                                else:
-                                    core_domains[core['core_number']]['modules'] += [
-                                        {'extender_unit': copy.copy(aids)[0].replace('&gt;', '>'),
-                                         'start': feat.location.start,
-                                         'end': feat.location.end}]
 
-                if feat.type == 'CDS_motif':
-                    if feat.qualifiers.get('core_sequence'):
-                        core_domains[len(core_domains) + 1] = {'type': feat.qualifiers.get('peptide')[0],
-                                                               'RiPP': feat.qualifiers.get('core_sequence')[0]}
-                if feat.type == 'aSDomain':
-                                       
-                    if feat.qualifiers.get('aSDomain') == ['PKS_AT']:  # AT Domains
+                try:
+                    CDS.append({'smcog': smcog, 'core_gene': cds_is_core, 
+                                'domains': [], 'strand': feat.location.strand})
+                    CDS_number += 1
+                except AttributeError:
+                    warnings.warn('gene had no location')
+                
+            elif feat.type == 'aSModule':
+                if feat.qualifiers.get('monomer_pairings'):
+                    aids = feat.qualifiers.get('monomer_pairings')
+                    #for core in core_list:
+                    if feat.location.start >= core['start'] and feat.location.end <= core['end']:
+                        if core['core_number'] not in core_domains:
+                            core_domains[core['core_number']] = {'type': core['type'], 'modules': [
+                                {'extender_unit': copy.copy(aids)[0].replace('&gt;', '>'),
+                                 'start': feat.location.start,
+                                 'end': feat.location.end}]}
+                            #  replace('&gt;', '>') -> sometimes there is some parsing error that cant read '>'
+                        else:
+                            core_domains[core['core_number']]['modules'] += [
+                                {'extender_unit': copy.copy(aids)[0].replace('&gt;', '>'),
+                                 'start': feat.location.start,
+                                 'end': feat.location.end}]
+
+            elif feat.type == 'CDS_motif':
+                if feat.qualifiers.get('core_sequence'):
+                    core_domains[len(core_domains) + 1] = {'type': feat.qualifiers.get('peptide')[0],
+                                                           'RiPP': feat.qualifiers.get('core_sequence')[0]}
+            elif feat.type == 'aSDomain':                                   
+                if feat.qualifiers.get('aSDomain') == ['PKS_AT']:  # AT Domains
+                    CDS[CDS_number]['domains'].append(
+                        {'type': feat.qualifiers.get('aSDomain')[0],
+                         'activity': '',
+                         'start': feat.location.start,
+                         'end': feat.location.end,
+                         'gene': feat.qualifiers.get('locus_tag'),
+                         'core_gene': cds_is_core,
+                         'minowa': 'mal',
+                         'AT_specificity': 'mal'}
+                    )
+                    for AT_prediction in feat.qualifiers.get('specificity'):
+                        if 'consensus: ' in AT_prediction:  # there should only be one instance of this happening
+                            CDS[CDS_number]['domains'][-1]['activity'] = AT_prediction.split('consensus: ')[1]
+                        elif 'Minowa: ' in AT_prediction:
+                            CDS[CDS_number]['domains'][-1]['minowa'] = AT_prediction.split('Minowa: ')[1]
+                        elif 'AT_specificity: ' in AT_prediction:
+                            CDS[CDS_number]['domains'][-1]['AT_specificity'] = \
+                            AT_prediction.split('AT_specificity: ')[1]
+
+                if feat.qualifiers.get('aSDomain') == ['PKS_KR']:  # KR domains
+                    kr_list = []
+                    for KR_prediction in feat.qualifiers.get('specificity'):
+                        kr_list.append(KR_prediction)
+                    for list_item in kr_list:
+                        if 'KR activity: ' in list_item:
+                            kr_activity = list_item.split('KR activity: ')[1]
+
+                            if kr_activity == 'active':
+                                CDS[CDS_number]['domains'].append(
+                                    {'type': feat.qualifiers.get('aSDomain')[0],
+                                     'activity': True,
+                                     'start': feat.location.start,
+                                     'end': feat.location.end,
+                                     'gene': feat.qualifiers.get('locus_tag'),
+                                     'core_gene': cds_is_core}
+                                )
+                            elif kr_activity == 'inactive':
+                                CDS[CDS_number]['domains'].append(
+                                    {'type': feat.qualifiers.get('aSDomain')[0],
+                                     'activity': False,
+                                     'start': feat.location.start,
+                                     'end': feat.location.end,
+                                     'gene': feat.qualifiers.get('locus_tag'),
+                                     'core_gene': cds_is_core}
+                                )
+                elif feat.qualifiers.get('aSDomain') == ['MT']:
+                    CDS[CDS_number]['domains'].append(
+                        {'type': feat.qualifiers.get('domain_subtype')[0],
+                         'activity': True,
+                         'start': feat.location.start,
+                         'end': feat.location.end,
+                         'gene': feat.qualifiers.get('locus_tag'),
+                         'core_gene': cds_is_core}
+                    )
+                elif feat.qualifiers.get('aSDomain') == ['CAL_domain']:
+                    for CAL_prediction in feat.qualifiers.get('specificity'):
+                        if 'Minowa: ' in CAL_prediction:
+                            CDS[CDS_number]['domains'].append(
+                                {'type': feat.qualifiers.get('aSDomain')[0],
+                                 'activity': CAL_prediction.split('Minowa: ')[1],
+                                 'start': feat.location.start,
+                                 'end': feat.location.end,
+                                 'gene': feat.qualifiers.get('locus_tag'),
+                                 'core_gene': cds_is_core}
+                            )
+                elif feat.qualifiers.get('aSDomain') != ['PKS_AT']:
+                    try:
                         CDS[CDS_number]['domains'].append(
                             {'type': feat.qualifiers.get('aSDomain')[0],
-                             'activity': '',
-                             'start': feat.location.start,
-                             'end': feat.location.end,
-                             'gene': feat.qualifiers.get('locus_tag'),
-                             'core_gene': cds_is_core,
-                             'minowa': 'mal',
-                             'AT_specificity': 'mal'}
-                        )
-                        for AT_prediction in feat.qualifiers.get('specificity'):
-                            if 'consensus: ' in AT_prediction:  # there should only be one instance of this happening
-                                CDS[CDS_number]['domains'][-1]['activity'] = AT_prediction.split('consensus: ')[1]
-                            elif 'Minowa: ' in AT_prediction:
-                                CDS[CDS_number]['domains'][-1]['minowa'] = AT_prediction.split('Minowa: ')[1]
-                            elif 'AT_specificity: ' in AT_prediction:
-                                CDS[CDS_number]['domains'][-1]['AT_specificity'] = \
-                                AT_prediction.split('AT_specificity: ')[1]
-
-                    if feat.qualifiers.get('aSDomain') == ['PKS_KR']:  # KR domains
-                        kr_list = []
-                        for KR_prediction in feat.qualifiers.get('specificity'):
-                            kr_list.append(KR_prediction)
-                        for list_item in kr_list:
-                            if 'KR activity: ' in list_item:
-                                kr_activity = list_item.split('KR activity: ')[1]
-
-                                if kr_activity == 'active':
-                                    CDS[CDS_number]['domains'].append(
-                                        {'type': feat.qualifiers.get('aSDomain')[0],
-                                         'activity': True,
-                                         'start': feat.location.start,
-                                         'end': feat.location.end,
-                                         'gene': feat.qualifiers.get('locus_tag'),
-                                         'core_gene': cds_is_core}
-                                    )
-                                elif kr_activity == 'inactive':
-                                    CDS[CDS_number]['domains'].append(
-                                        {'type': feat.qualifiers.get('aSDomain')[0],
-                                         'activity': False,
-                                         'start': feat.location.start,
-                                         'end': feat.location.end,
-                                         'gene': feat.qualifiers.get('locus_tag'),
-                                         'core_gene': cds_is_core}
-                                    )
-                    elif feat.qualifiers.get('aSDomain') == ['MT']:
-                        CDS[CDS_number]['domains'].append(
-                            {'type': feat.qualifiers.get('domain_subtype')[0],
                              'activity': True,
                              'start': feat.location.start,
                              'end': feat.location.end,
                              'gene': feat.qualifiers.get('locus_tag'),
                              'core_gene': cds_is_core}
                         )
-                    elif feat.qualifiers.get('aSDomain') == ['CAL_domain']:
-                        for CAL_prediction in feat.qualifiers.get('specificity'):
-                            if 'Minowa: ' in CAL_prediction:
-                                CDS[CDS_number]['domains'].append(
-                                    {'type': feat.qualifiers.get('aSDomain')[0],
-                                     'activity': CAL_prediction.split('Minowa: ')[1],
-                                     'start': feat.location.start,
-                                     'end': feat.location.end,
-                                     'gene': feat.qualifiers.get('locus_tag'),
-                                     'core_gene': cds_is_core}
-                                )
-                    elif feat.qualifiers.get('aSDomain') != ['PKS_AT']:
-                        try:
-                            CDS[CDS_number]['domains'].append(
-                                {'type': feat.qualifiers.get('aSDomain')[0],
-                                 'activity': True,
-                                 'start': feat.location.start,
-                                 'end': feat.location.end,
-                                 'gene': feat.qualifiers.get('locus_tag'),
-                                 'core_gene': cds_is_core}
-                            )
-                        except IndexError:
-                            # We end up here if the data stored in the gbk-file is weird.
-                            # Was necessary in a few cases when the entire mibig database was checked
-                            # is probably not relevant when running this code on more recent antismash output
-                            print(CDS)
+                    except IndexError:
+                        # We end up here if the data stored in the gbk-file is weird.
+                        # Was necessary in a few cases when the entire mibig database was checked
+                        # is probably not relevant when running this code on more recent antismash output
+                        print(CDS)
     return {'core_structure': core_domains, 'data': CDS}
 
+def _get_cluster_type(gb_list):
+    types = []
+    for gb in gb_list:
+        for f in gb.features:
+            if f.type == "region":
+                types.append(f.qualifiers["product"])
 
-def create_json_1(gbk_path, json_path):
+
+def parse_antismash_gbk(gbk_path, json_path):
     gb_list = get_gb_list_from_antismash_output(gbk_path)
     core_list = find_cores_in_cluster(gb_list)
 
-    core_list = merge_core_list(core_list)
-    CDS = structure_gbk_information(core_list, gb_list)
+    merged_core_list = merge_core_list(core_list)
+    CDS = structure_gbk_information(merged_core_list, gb_list)
 
     with open(json_path, 'w+') as f:
         json.dump(CDS, f)
@@ -428,14 +423,12 @@ def find_and_replace_cut_transat_modules(domain_or_module):
                 module_end = True
                 end = index
             if module_start and module_end:
-                res = find_and_replace_cut_transat_modules(res[0:start] + [{'element': 'module',
-                                                                            'info': {
-                                                                                'extender_unit': 'mal',
-                                                                                'start': res[start]['info']['start'],
-                                                                                'end': res[end]['info']['end']},
-                                                                            'domains': [domain_or_module[a]['info'] for
-                                                                                        a in range(start, end)]}] + res[
-                                                                                                                    end + 1:])
+                res = find_and_replace_cut_transat_modules(res[0:start] + 
+                        [{'element': 'module', 
+                          'info': {'extender_unit': 'mal', 'start': res[start]['info']['start'],
+                                                           'end': res[end]['info']['end']},
+                          'domains': [domain_or_module[a]['info'] for a in range(start, end)]}] + 
+                          res[end + 1:])
                 return res
     return res
 
@@ -1350,6 +1343,7 @@ def add_cores_to_model(name, data, model_output_path):
     '''
     bgc_types = []
     for core_number in data['core_structure']:
+        print("Core number: ", core_number)
         bgc_type = data['core_structure'][core_number]['type']
         bgc_types.append(bgc_type)
         if bgc_type in RiPPs:
@@ -1400,7 +1394,7 @@ def run(bgc_path, output_folder, json_folder = None):
 def _run(bgc_path, output_folder, json_folder):
     # This is the core of this function
     json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
-    create_json_1(bgc_path, json_path)
+    parse_antismash_gbk(bgc_path, json_path)
     with open(json_path, 'r') as json_file:
         data_json = json.load(json_file)
     
@@ -1436,11 +1430,11 @@ if __name__ == '__main__':
         for filename in os.listdir(biggbk):
             if filename.endswith('.gbk'):
                 json_path = json_folder + filename.split('.')[0] + '.json'
-                create_json_1(biggbk + filename)
+                parse_antismash_gbk(biggbk + filename)
                 with open(json_path, 'r') as json_file:
-                    data_json_1 = json.load(json_file)
+                    data_json = json.load(json_file)
                 json_file.close()
-                add_cores_to_model(data_json_1, output_gbk + filename[:-4] + ".json")
+                add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
     if 1:
 
         bgc_path = biggbk #+"/1.gbk"
