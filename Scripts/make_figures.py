@@ -49,6 +49,9 @@ def figure_prediction_accuracy_bar_chart():
     # plt.show()
     print(df)
 
+def prediction_accuracy_stacked_bar_chart():
+    
+
 def autolabel(rects):
     """Attach a text label above each bar in *rects*, displaying its height."""
     for rect in rects:

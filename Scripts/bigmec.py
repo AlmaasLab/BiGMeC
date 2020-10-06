@@ -133,7 +133,7 @@ def find_cores_in_cluster(gb_list):
                  'core_number': '1'}]
 
 
-def structure_gbk_information(core, gb_list):
+def structure_gbk_information(merged_core, gb_list):
     CDS = []
     core_domains = {}
     CDS_number = -1
@@ -152,8 +152,8 @@ def structure_gbk_information(core, gb_list):
 
                 cds_is_core = False
                 try:
-                    if feat.location.start >= core['start'] and feat.location.end <= core['end']:
-                        cds_is_core.append(True)
+                    if feat.location.start >= merged_core['start'] and feat.location.end <= merged_core['end']:
+                        cds_is_core = True
                 except AttributeError:
                     warnings.warn('Core has no location. Unsure of consequences')
                     # Instantiate CDS-object, consisting of:
@@ -172,15 +172,15 @@ def structure_gbk_information(core, gb_list):
                 if feat.qualifiers.get('monomer_pairings'):
                     aids = feat.qualifiers.get('monomer_pairings')
                     #for core in core_list:
-                    if feat.location.start >= core['start'] and feat.location.end <= core['end']:
-                        if core['core_number'] not in core_domains:
-                            core_domains[core['core_number']] = {'type': core['type'], 'modules': [
+                    if feat.location.start >= merged_core['start'] and feat.location.end <= merged_core['end']:
+                        if merged_core['core_number'] not in core_domains:
+                            core_domains[merged_core['core_number']] = {'type': merged_core['type'], 'modules': [
                                 {'extender_unit': copy.copy(aids)[0].replace('&gt;', '>'),
                                  'start': feat.location.start,
                                  'end': feat.location.end}]}
                             #  replace('&gt;', '>') -> sometimes there is some parsing error that cant read '>'
                         else:
-                            core_domains[core['core_number']]['modules'] += [
+                            core_domains[merged_core['core_number']]['modules'] += [
                                 {'extender_unit': copy.copy(aids)[0].replace('&gt;', '>'),
                                  'start': feat.location.start,
                                  'end': feat.location.end}]
@@ -273,24 +273,29 @@ def structure_gbk_information(core, gb_list):
                         print(CDS)
     return {'core_structure': core_domains, 'data': CDS}
 
-def _get_cluster_type(gb_list):
+def _get_cluster_type(gb_list, merged_core):
     types = []
     for gb in gb_list:
         for f in gb.features:
-            if f.type == "region":
-                types.append(f.qualifiers["product"])
+            if f.location.start >= merged_core['start'] and f.location.end <= merged_core['end']:
+                if f.type == "region":
+                    types += f.qualifiers["product"]
+
+    return list(set(types))
 
 
-def parse_antismash_gbk(gbk_path, json_path):
+def parse_antismash_gbk(gbk_path, json_path, save_json = True):
     gb_list = get_gb_list_from_antismash_output(gbk_path)
     core_list = find_cores_in_cluster(gb_list)
+    merged_core = merge_core_list(core_list)
+    cluster_type = _get_cluster_type(gb_list, merged_core)
+    CDS = structure_gbk_information(merged_core, gb_list)
+    CDS["Cluster types"] = cluster_type
 
-    merged_core_list = merge_core_list(core_list)
-    CDS = structure_gbk_information(merged_core_list, gb_list)
-
-    with open(json_path, 'w+') as f:
-        json.dump(CDS, f)
-    f.close()
+    if save_json:
+        with open(json_path, 'w+') as f:
+            json.dump(CDS, f)
+        f.close()
     return CDS
 
 
@@ -433,54 +438,55 @@ def find_and_replace_cut_transat_modules(domain_or_module):
     return res
 
 
-def add_rogue_transat_domains(domain_or_module):
-    res = domain_or_module
-    # removes duplicate acp-domains - - -
-    # This phenoenon is commonly observed for transAT-PKS and from anecdotal evidence they never have any effect on
-    # the biosynthesis of the secondary metabolite. The reason they are removed is that this makes it easier to
-    # look for modules that are wrongly predicted by antismash
+def add_rogue_transat_domains(module):
+    """
+    Removes duplicate acp-domains from a domain or module.
+    This phenoenon is commonly observed for transAT-PKS and from anecdotal evidence they never have any effect on
+    the biosynthesis of the secondary metabolite. The reason they are removed is that this makes it easier to
+    look for modules that are wrongly predicted by antismash
+    """
 
-    for ind, domain in enumerate(res):
+    for ind, domain in enumerate(module):
         if domain['element'] == 'domain':
             if domain['info']['type'] in acp_domains:
-                res.pop(ind)
+                module.pop(ind)
 
-    for index in range(1, len(res) - 1):
-        if res[index]['element'] == 'module' and res[index + 1]['element'] == 'domain':
+    for index in range(1, len(module) - 1):
+        if module[index]['element'] == 'module' and module[index + 1]['element'] == 'domain':
 
-            if res[index + 1]['info']['type'] in reducing_domains and not res[index]['info']['extender_unit'] == 'DHD':
+            if module[index + 1]['info']['type'] in reducing_domains and not module[index]['info']['extender_unit'] == 'DHD':
                 # case where domain is located right next to module
                 not_domain_exists_in_prev_mod = True
-                for donk in res[index]['domains']:
-                    if res[index + 1]['info']['type'] == donk['type']:
+                for donk in module[index]['domains']:
+                    if module[index + 1]['info']['type'] == donk['type']:
                         # check to see if the rogue domain exists in the module we want to add it to
                         not_domain_exists_in_prev_mod = False
                 if not_domain_exists_in_prev_mod:
-                    res[index]['domains'].append(res[index + 1]['info'])
+                    module[index]['domains'].append(module[index + 1]['info'])
 
-            elif res[index + 1]['info']['type'] in reducing_domains and res[index]['info']['extender_unit'] == 'DHD' and \
-                    res[index - 1]['element'] == 'module':
+            elif module[index + 1]['info']['type'] in reducing_domains and module[index]['info']['extender_unit'] == 'DHD' and \
+                    module[index - 1]['element'] == 'module':
                 # case where domain is located right next to DHD module, located right next to another module
                 not_domain_exists_in_prev_mod = True
-                for donk in res[index - 1]['domains']:
-                    if res[index + 1]['info']['type'] == donk['type']:
+                for donk in module[index - 1]['domains']:
+                    if module[index + 1]['info']['type'] == donk['type']:
                         # check to see if the rogue domain exists in the module we want to add it to
                         not_domain_exists_in_prev_mod = False
 
                 if not_domain_exists_in_prev_mod:
-                    res[index - 1]['domains'].append(res[index + 1]['info'])
+                    module[index - 1]['domains'].append(module[index + 1]['info'])
 
-    for ind, a in enumerate(res):
-        if ind < len(res) - 1:
+    for ind, a in enumerate(module):
+        if ind < len(module) - 1:
             if a['element'] == 'module':
                 for dom in a['domains']:
-                    if dom == res[ind + 1]['info']:
-                        res.pop(ind + 1)
-                    elif ind < len(res) - 2:
-                        if dom == res[ind + 2]['info']:
-                            res.pop(ind + 2)
+                    if dom == module[ind + 1]['info']:
+                        module.pop(ind + 1)
+                    elif ind < len(module) - 2:
+                        if dom == module[ind + 2]['info']:
+                            module.pop(ind + 2)
 
-    return res
+    return module
 
 
 def add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions):
@@ -1394,15 +1400,13 @@ def run(bgc_path, output_folder, json_folder = None):
 def _run(bgc_path, output_folder, json_folder):
     # This is the core of this function
     json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
-    parse_antismash_gbk(bgc_path, json_path)
-    with open(json_path, 'r') as json_file:
-        data_json = json.load(json_file)
+    data = parse_antismash_gbk(bgc_path, json_path)
     
     # Adds extracted data to model
     output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
     name = "BGC-{0}".format(bgc_path.stem)
-    successfull, bgc_type = add_cores_to_model(name, data_json, str(output_model_fn))
-    return bgc_path.stem, int(successfull), bgc_type
+    successfull, bgc_type = add_cores_to_model(name, data, str(output_model_fn))
+    return bgc_path.stem, int(successfull), data["Cluster types"]
 
 if __name__ == '__main__':
     biggbk = "../Data/mibig"
