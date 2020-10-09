@@ -277,9 +277,8 @@ def _get_cluster_type(gb_list, merged_core):
     types = []
     for gb in gb_list:
         for f in gb.features:
-            if f.location.start >= merged_core['start'] and f.location.end <= merged_core['end']:
-                if f.type == "region":
-                    types += f.qualifiers["product"]
+            if f.type == "region":
+                types += f.qualifiers["product"]
 
     return list(set(types))
 
@@ -496,44 +495,9 @@ def add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions)
     Modules mid: All modules that contain KS, AT and ACP domain.
     the modules_min is
     """
-    domains = []
-    actual_domains = []
-    domains_x_modules = []
-    reverse_or_positive = 0
-    for gene in range(len(data['data'])):
-        if data['data'][gene]['core_gene']:
-            reverse_or_positive += int(data['data'][gene]['strand'])
-    if reverse_or_positive < 0:
-        for gene in range(len(data['data'])):
-            domains.append([])
-            for domain in data['data'][gene]['domains']:
-                domains[gene].insert(0, domain)
-        domains.reverse()
 
-    else:
-        for gene in range(len(data['data'])):
-            domains.append([])
-            for domain in data['data'][gene]['domains']:
-                domains[gene].append(domain)
-
-    for list_of_domains in domains:
-        actual_domains += list_of_domains
-
-    for domain in actual_domains:
-        domain_is_in_a_module = False
-        for module_index, module in enumerate(data['core_structure'][core_number]['modules']):
-            if module['start'] <= domain['start'] <= domain['end'] <= module['end']:
-                domain_is_in_a_module = True
-                if {'element': 'module', 'info': module, 'domains': []} not in domains_x_modules:
-                    domains_x_modules.append({'element': 'module', 'info': module, 'domains': []})
-        if domain_is_in_a_module == False:
-            domains_x_modules.append({'element': 'domain', 'info': domain})
-
-    for domain in actual_domains:
-        for module_index, module in enumerate(domains_x_modules):
-            if module['info']['start'] <= domain['start'] <= domain['end'] <= module['info']['end'] and module[
-                'element'] == 'module':
-                domains_x_modules[module_index]['domains'].append(domain)
+    
+    domains, actual_domains, domains_x_modules = _get_domains(data, core_number)
 
     # assume that DHD-domains are inactive, however, may still dehydratase the previous domain(?)
     # assue that all others are active.
@@ -694,49 +658,14 @@ def search_and_destroy_omt_modules(domain_or_module):
 
 def add_t1pks_metabolic_pathway(data, model, core_number, tailoring_reactions):
     """
-        :param data: all data that has been structured from gbk-file
-        :return: modules max: The maximum detected modules, following rule that it needs a KS-domain and an ACP domain
-        Modules mid: All modules that contain KS, AT and ACP domain.
-        the modules_min is
-        """
-    domains = []
-    actual_domains = []
-    domains_x_modules = []
-    reverse_or_positive = 0
-    for gene in range(len(data['data'])):
-        if data['data'][gene]['core_gene']:
-            reverse_or_positive += int(data['data'][gene]['strand'])
+    :param data: all data that has been structured from gbk-file
+    :return: modules max: The maximum detected modules, following rule that it needs a KS-domain and an ACP domain
+    Modules mid: All modules that contain KS, AT and ACP domain.
+    the modules_min is
+    """
 
-    if reverse_or_positive < 0:
-        for gene in range(len(data['data'])):
-            domains.append([])
-            for domain in data['data'][gene]['domains']:
-                domains[gene].insert(0, domain)
-        domains.reverse()
-    else:
-        for gene in range(len(data['data'])):
-            domains.append([])
-            for domain in data['data'][gene]['domains']:
-                domains[gene].append(domain)
-
-    for list_of_domains in domains:
-        actual_domains += list_of_domains
-
-    for domain in actual_domains:
-        domain_is_in_a_module = False
-        for module_index, module in enumerate(data['core_structure'][core_number]['modules']):
-            if module['start'] <= domain['start'] <= domain['end'] <= module['end']:
-                domain_is_in_a_module = True
-                if {'element': 'module', 'info': module, 'domains': []} not in domains_x_modules:
-                    domains_x_modules.append({'element': 'module', 'info': module, 'domains': []})
-        if domain_is_in_a_module == False:
-            domains_x_modules.append({'element': 'domain', 'info': domain})
-
-    for domain in actual_domains:
-        for module_index, module in enumerate(domains_x_modules):
-            if module['info']['start'] <= domain['start'] <= domain['end'] <= module['info']['end'] and module[
-                'element'] == 'module':
-                domains_x_modules[module_index]['domains'].append(domain)
+    
+    domains, actual_domains, domains_x_modules = _get_domains(data, core_number)
 
     # assume that DHD-domains are inactive, however, may still dehydratase the previous domain(?)
     # assue that all others are active.
@@ -752,17 +681,12 @@ def add_t1pks_metabolic_pathway(data, model, core_number, tailoring_reactions):
     # do this to find out if domains are found in this sequence: ks-at-acp
 
 
-def add_nrps_metabolic_pathway(data, model, core_number, tailoring_reactions):
-    """
-        :param data: all data that has been structured from gbk-file
-        :return: modules max: The maximum detected modules, following rule that it needs a KS-domain and an ACP domain
-        Modules mid: All modules that contain KS, AT and ACP domain.
-        the modules_min is
-        """
+def _get_domains(data, core_number):
     domains = []
     actual_domains = []
     domains_x_modules = []
     reverse_or_positive = 0
+
     for gene in range(len(data['data'])):
         if data['data'][gene]['core_gene']:
             reverse_or_positive += int(data['data'][gene]['strand'])
@@ -796,6 +720,18 @@ def add_nrps_metabolic_pathway(data, model, core_number, tailoring_reactions):
             if module['info']['start'] <= domain['start'] <= domain['end'] <= module['info']['end'] and module[
                 'element'] == 'module':
                 domains_x_modules[module_index]['domains'].append(domain)
+
+    return domains, actual_domains, domains_x_modules
+
+def add_nrps_metabolic_pathway(data, model, core_number, tailoring_reactions):
+    """
+    :param data: all data that has been structured from gbk-file
+    :return: modules max: The maximum detected modules, following rule that it needs a KS-domain and an ACP domain
+    Modules mid: All modules that contain KS, AT and ACP domain.
+    the modules_min is
+    """
+    
+    domains, actual_domains, domains_x_modules = _get_domains(data, core_number)
 
     domains_x_modules = find_and_replace_load_modules(domains_x_modules)
     model = create_t1_transat_nrps_model(data['core_structure'][core_number], domains_x_modules, model,
@@ -945,6 +881,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                              ref_model.metabolites.get_by_id('atp_c'): -1,
                              ref_model.metabolites.get_by_id('amp_c'): 1,
                              ref_model.metabolites.get_by_id('ppi_c'): 1,
+                             ref_model.metabolites.get_by_id('h2o_c'): 1,
                              prevmet: -1,
                              postmet: 1})
                         reaction_list.append(reaction)
@@ -1352,8 +1289,11 @@ def add_cores_to_model(name, data, model_output_path):
         print("Core number: ", core_number)
         bgc_type = data['core_structure'][core_number]['type']
         bgc_types.append(bgc_type)
+        
         if bgc_type in RiPPs:
-            model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model, core_number)
+            print("Ripps not successfully implemented yet")
+            pass
+            #model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model, core_number)
 
         elif bgc_type in ['transAT-PKS', 'transAT-PKS-like']:
             model, lump_model = add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
@@ -1405,8 +1345,9 @@ def _run(bgc_path, output_folder, json_folder):
     # Adds extracted data to model
     output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
     name = "BGC-{0}".format(bgc_path.stem)
-    successfull, bgc_type = add_cores_to_model(name, data, str(output_model_fn))
-    return bgc_path.stem, int(successfull), data["Cluster types"]
+    successfull, _ = add_cores_to_model(name, data, str(output_model_fn))
+    bgc_type_str = "/".join(data["Cluster types"])
+    return bgc_path.stem, int(successfull), bgc_type_str
 
 if __name__ == '__main__':
     biggbk = "../Data/mibig"
