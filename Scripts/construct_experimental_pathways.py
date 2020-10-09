@@ -124,7 +124,7 @@ def create_baf_pathway(ref_model):
     mx_rx.upper_bound = 1000.
     mx_rx.add_metabolites(mx_rxn_mets)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['bafB']: -1})
@@ -154,7 +154,7 @@ def create_difficidin_pathway(ref_model):
     pk_reaction.upper_bound = 1000.
     pk_reaction.add_metabolites(pk_metabolites)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
@@ -166,9 +166,9 @@ def create_anabaenopeptin_pathway(ref_model):
     pk_metabolites = {
         ref_model.metabolites.get_by_id('atp_c'): -6,
         ref_model.metabolites.get_by_id('amp_c'): 6,
-        ref_model.metabolites.get_by_id('h2o_c'): 5,
+        ref_model.metabolites.get_by_id('h2o_c'): 6,
         ref_model.metabolites.get_by_id('ppi_c'): 6,
-        ref_model.metabolites.get_by_id('amet_c'): 1,
+        ref_model.metabolites.get_by_id('amet_c'): -1,
         ref_model.metabolites.get_by_id('ahcys_c'): 1,
         ref_model.metabolites.get_by_id('tyr__L_c'): -2,
         ref_model.metabolites.get_by_id('lys__L_c'): -1,
@@ -184,7 +184,7 @@ def create_anabaenopeptin_pathway(ref_model):
     pk_reaction.upper_bound = 1000.
     pk_reaction.add_metabolites(pk_metabolites)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
@@ -276,7 +276,7 @@ def create_leupyrrin_pathway(ref_model):
     otherrx_2_rx.upper_bound = 1000.
     otherrx_2_rx.add_metabolites(otherrx_2)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
@@ -297,6 +297,7 @@ def create_tolaasin_pathway(ref_model):
         ref_model.metabolites.get_by_id('atp_c'): -18,
         ref_model.metabolites.get_by_id('amp_c'): 18,
         ref_model.metabolites.get_by_id('ppi_c'): 18,
+        ref_model.metabolites.get_by_id('h2o_c'): 18,
         cofactor_metabolites_dict['final_product']: 1
     }
 
@@ -306,7 +307,7 @@ def create_tolaasin_pathway(ref_model):
     pk_reaction.upper_bound = 1000.
     pk_reaction.add_metabolites(pk_metabolites)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
@@ -337,7 +338,7 @@ def create_geldanamycin_pathway(ref_model):
     pk_reaction.upper_bound = 1000.
     pk_reaction.add_metabolites(pk_metabolites)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
@@ -355,12 +356,10 @@ def create_oxazolo_pathway(ref_model):
         ref_model.metabolites.get_by_id('h_c'): -8,
         ref_model.metabolites.get_by_id('co2_c'): 10,
         ref_model.metabolites.get_by_id('malcoa_c'): -9,
-        ref_model.metabolites.get_by_id('amet_c'): -5,
-        ref_model.metabolites.get_by_id('ahcys_c'): 5,
+        ref_model.metabolites.get_by_id('amet_c'): -6,
+        ref_model.metabolites.get_by_id('ahcys_c'): 6,
         ref_model.metabolites.get_by_id('13dpg_c'): -1,
         ref_model.metabolites.get_by_id('pi_c'): 2,
-        ref_model.metabolites.get_by_id('amet_c'): -1,
-        ref_model.metabolites.get_by_id('ahcys_c'): 1,
         ref_model.metabolites.get_by_id('fad_c'): -1,
         ref_model.metabolites.get_by_id('fadh2_c'): 1,
         ref_model.metabolites.get_by_id('10fthf_c'): -1,
@@ -377,7 +376,7 @@ def create_oxazolo_pathway(ref_model):
     pk_reaction.upper_bound = 1000.
     pk_reaction.add_metabolites(pk_metabolites)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
@@ -407,7 +406,7 @@ def create_oocydin_pathway(ref_model):
     pk_reaction.upper_bound = 1000.
     pk_reaction.add_metabolites(pk_metabolites)
 
-    ex_rx = cobra.Reaction('EX_final_product')
+    ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
@@ -426,7 +425,7 @@ def make_json_pathways(ref_model):
         "Oocydin": create_oocydin_pathway,
         "Oxazolomycin": create_oxazolo_pathway
     }
-    folder = Path("../Data/pathways")
+    folder = Path("../Data/validation_pathways")
     folder.mkdir(exist_ok=True)
     
     for key, value in pathway_dict.items():

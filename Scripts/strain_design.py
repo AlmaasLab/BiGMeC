@@ -19,6 +19,7 @@ import time
 import numpy as np
 import logging
 import datetime
+from tqdm import tqdm
 
 
 SOLVER = "gurobi"
@@ -75,15 +76,19 @@ def folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.9,
     optknock_reactions = optknock_prepare(model, max_growth*fraction_of_optimum)
     #optknock_reactions = optknock_reactions[::10]
 
+    results_folder = Path(results_folder)
+    results_folder.mkdir(exist_ok = True)
+
     folder = Path(folder)
     all_results = []
-    for i, pathway_fn in enumerate(folder.glob("*.json")):
+    for i, pathway_fn in enumerate(tqdm(folder.glob("*.json"))):
+        print(pathway_fn)
         logging.info(pathway_fn)
-        save_fn = results_folder + "/brute_optknock_{0}_{1}.csv".format(str(pathway_fn.stem), fraction_of_optimum)
+        save_fn = results_folder / "brute_optknock_{0}_{1}.csv".format(str(pathway_fn.stem), fraction_of_optimum)
         
         # Find out if the BGC has been run previously
         already_predicted = False
-        if Path(save_fn).is_file():
+        if save_fn.is_file():
             result = pd.read_csv(save_fn, index_col = 0, header = 0)
             if len(result):
                 logging.info("This BGC is already predicted")
@@ -91,16 +96,17 @@ def folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.9,
 
         if not already_predicted:
             with model:
+                print(save_fn)
                 result = BGC_optknock(model, str(pathway_fn), optknock_reactions = optknock_reactions, 
                                       fraction_of_optimum = fraction_of_optimum, brute_force = True)
-                result.to_csv(save_fn)
+                result.to_csv(str(save_fn))
         logging.info("{0}_{1}".format(pathway_fn, result))
         result["BGC"] = str(pathway_fn.stem)
         all_results.append(result)
 
     df = pd.concat(all_results)
     logging.info(df)
-    df.to_csv("{0}/all_optknock_results_{1}.csv".format(results_folder, fraction_of_optimum))
+    df.to_csv(str(results_folder / "all_optknock_results_{0}.csv".format(fraction_of_optimum)))
 
 def single_optknock(model, reaction_list, biomass_rxn_id, target_reaction, minimum_growth = 0.01):
     single_optknock_list = []
@@ -110,7 +116,7 @@ def single_optknock(model, reaction_list, biomass_rxn_id, target_reaction, minim
     single_optknock_list.append(["WT", growth, production])
     print("Wild-type: ", growth, production)
 
-    for r_id in reaction_list:
+    for r_id in tqdm(reaction_list):
         with model as model:
             model.reactions.get_by_id(r_id).knock_out()
             growth, production = optknock_brute_force(model, biomass_rxn_id, target_reaction, minimum_growth)
@@ -175,14 +181,14 @@ def get_essential_reactions(model, reaction_list = None, minimum_growth = MINIMU
 
 if __name__ == '__main__':
     model_fn = "../Models/Sco-GEM.xml"
-    pathway_fn = "../Data/constructed_pathways/1.json"
-    folder = "../Data/constructed_pathways/"
-    results_folder = "../Data/knockouts"
+    folder = "../Data/validation_pathways/"
+    path = "../Data/validation_pathways/Bafilomycin.json"
+    results_folder = "../Data/validation_pathways/knockouts"
 
 
     time = datetime.datetime.now()
 
-    logging.basicConfig(filename='strain_design_{0}_{1}.log'.format(time.month, time.day), filemode='w', format='%(name)s - %(levelname)s - %(message)s', level = logging.INFO)
+    logging.basicConfig(filename='strain_design_{0}_{1}_{2}.log'.format(time.month, time.day, time.hour), filemode='w', format='%(name)s - %(levelname)s - %(message)s', level = logging.INFO)
     
     folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.5, results_folder = results_folder)
 
