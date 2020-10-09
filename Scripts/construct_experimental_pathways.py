@@ -8,6 +8,7 @@ these reactions are returned as a list of cobra reactions.
 
 
 import cobra
+from pathlib import Path
 
 
 # create metabolites that do not exist in ref_model
@@ -413,7 +414,35 @@ def create_oocydin_pathway(ref_model):
 
     return [pk_reaction, ex_rx]
 
+def make_json_pathways(ref_model):
+
+    pathway_dict = {
+        "Bafilomycin": create_baf_pathway,
+        "Difficidin": create_difficidin_pathway,
+        "Anabaenopeptin": create_anabaenopeptin_pathway,
+        "Tolaasin": create_tolaasin_pathway,
+        "Leupyrrin": create_leupyrrin_pathway,
+        "Geldanamycin": create_geldanamycin_pathway,
+        "Oocydin": create_oocydin_pathway,
+        "Oxazolomycin": create_oxazolo_pathway
+    }
+    folder = Path("../Data/pathways")
+    folder.mkdir(exist_ok=True)
+    
+    for key, value in pathway_dict.items():
+        fn = folder / "{0}.json".format(key)
+        model = cobra.Model()
+        reactions = value(ref_model)
+        model.add_reactions(reactions)
+        cobra.io.save_json_model(model, str(fn))
+
+
+
 if __name__ == '__main__':
     ref_model_fn = "../Models/Sco-GEM.xml"
     model = cobra.io.read_sbml_model(ref_model_fn)
-    create_oocydin_pathway(model)
+    
+    if 0:
+        create_oocydin_pathway(model)
+    if 1:
+        make_json_pathways(model)
