@@ -12,8 +12,8 @@ This file contains dictionaries that are used to look up metabolite and reaction
 
 """
 import cobra
-model_fn = '../Models/Sco-GEM.xml'
-ref_model = cobra.io.read_sbml_model(model_fn)
+model_fn = '../Models/BiGG_universal_model.json'
+ref_model = cobra.io.load_json_model(model_fn)
 
 cofactor_metabolites_dict = {
     'nadph': ref_model.metabolites.get_by_id('nadph_c'),
@@ -133,8 +133,8 @@ cofactor_reactions_dict = {  # reactions that are specific to certain domains
             ref_model.metabolites.get_by_id('h_c'): -1,
             cofactor_metabolites_dict['pip']: 1}
 
-
 }
+
 
 tailoring_metabolites_dict = {
     'glucose_6_phosphate': ref_model.metabolites.get_by_id('g6p_c'),
