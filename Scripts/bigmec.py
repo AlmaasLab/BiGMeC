@@ -24,6 +24,7 @@ import copy
 from itertools import groupby
 import warnings
 from pathlib import Path
+import numpy as np
 
 from domains import *
 from dictionaries import *
@@ -139,6 +140,7 @@ def structure_gbk_information(merged_core, gb_list):
     CDS_number = -1
     for gb_record in gb_list:
         for feat in gb_record.features:
+            print(feat, CDS_number, feat.qualifiers)
             if feat.type == 'CDS':
                 if feat.qualifiers.get('gene_functions'):
                     smcog = []
@@ -210,7 +212,7 @@ def structure_gbk_information(merged_core, gb_list):
                             CDS[CDS_number]['domains'][-1]['AT_specificity'] = \
                             AT_prediction.split('AT_specificity: ')[1]
 
-                if feat.qualifiers.get('aSDomain') == ['PKS_KR']:  # KR domains
+                elif feat.qualifiers.get('aSDomain') == ['PKS_KR']:  # KR domains
                     kr_list = []
                     for KR_prediction in feat.qualifiers.get('specificity'):
                         kr_list.append(KR_prediction)
@@ -256,6 +258,7 @@ def structure_gbk_information(merged_core, gb_list):
                                  'gene': feat.qualifiers.get('locus_tag'),
                                  'core_gene': cds_is_core}
                             )
+                
                 elif feat.qualifiers.get('aSDomain') != ['PKS_AT']:
                     try:
                         CDS[CDS_number]['domains'].append(
@@ -349,25 +352,39 @@ def fix_transat_modules(domain_or_module):
 
 def find_and_replace_DHD_domains(domain_or_module):
     '''
-    
     :param domain_or_module: sequence of domains and modules
     :return: find all domain sequences that are KS-DH-ACP and span across two genes. 
     These we put into a non-extending module with extender_unit: 'DHD'
     '''
-    res = domain_or_module
-    for index in range(len(res)):
-        if index + 2 < len(res):
-            if res[index]['element'] == res[index + 1]['element'] == res[index + 1]['element'] == 'domain':
-                if res[index]['info']['type'] == 'PKS_KS':
-                    if res[index + 1]['info']['type'] in dh_domains and res[index + 2]['info']['type'] in acp_domains \
-                            and res[index]['info']['gene'] != res[index + 1]['info'][
-                        'gene']:  # check that KS and DH is actually on two different genes
-                        res = res[0:index] + [{'element': 'module',
-                                               'info': {'extender_unit': 'DHD', 'start': res[index]['info']['start'],
-                                                        'end': res[index]['info']['end']},
-                                               'domains': [res[index]['info'], res[index + 1]['info'],
-                                                           res[index + 2]['info']]}] + res[index + 3:]
-    return res
+    DHD_modules = []
+    for index in range(len(domain_or_module)-2):
+        three_domains = [domain_or_module[index], domain_or_module[index+1], domain_or_module[index+2]]
+        # Check if all three are domains
+        if np.all([d["element"] == "domain" for d in three_domains]):
+            d_types = [d["info"]["type"] for d in three_domains]
+            if (d_types[0] == 'PKS_KS') and (d_types[1] in dh_domains) and (d_types[2] in acp_domains):
+                # check that KS and DH is actually on two different genes
+                if domain_or_module[index]['info']['gene'] != domain_or_module[index + 1]['info']['gene']:
+                    DHD_module = {'element': 'module',
+                                  'info': {'extender_unit': 'DHD', 
+                                           'start': domain_or_module[index]['info']['start'],
+                                           'end':   domain_or_module[index+2]['info']['end']},
+                                  'domains': [d['info'] for d in three_domains]}
+                    DHD_modules.append([index, DHD_module])              
+                    # domain_or_module = domain_or_module[0:index] + [new_module] + domain_or_module[index + 3:]
+    if len(DHD_modules):
+        all_domains = []
+        prev_idx = 0
+        for index, new_module in DHD_modules:
+            if index < prev_idx:
+                raise IndexError
+            all_domains += domain_or_module[prev_idx:index]
+            all_domains.append(new_module)
+            prev_idx = index + 3
+        all_domains += domain_or_module[prev_idx:]
+    else:
+        all_domains = domain_or_module
+    return all_domains
 
 
 def deactivate_reducing_domains_when_kr_is_inactive(domain_or_module):
@@ -530,30 +547,37 @@ def add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions)
     # do this to find out if domains are found in this sequence: ks-at-acp
 
 
+
+def _is_standard_load_module(module):
+    """
+    Determines if the module is a classical load module with the A/AT-ACP/PCP-domains
+    """
+    
+    if module['element'] == 'module':
+        if len(module['domains']) == 2:
+            if module['domains'][0]['type'] in loader_at_domains:
+                if module['domains'][1]['type'] in loader_acp_domains:
+                    return True
+    return False
+
 def find_and_replace_load_modules(domain_or_module):
     '''
-    :param domain_or_module: dictionary of modules and domains
+    :param domain_or_module: list of modules and domains
     :return: domain or module, but add a starter module.
-
-    first check if we have CAL,FkbH or GNAT domains present
-    the way this is done is a little wonky, because there aren't really any good ways to do this due to
-    how antiSMASH determines the cores.
+    
+    Function that identifies / add load modules
     we are just interested in the first domains on a gene.
     when we encounter a new gene,
     we want to stop checking if the gene has a starter module.
     we also want to start checking again when we go over to a new gene.
 
-    First we check to see if antismash has located a typical A/AT-ACP/PCP-module:
-    if this is the case, we dont want to add a loader module.
     '''
+    # First we check to see if antismash has located a typical A/AT-ACP/PCP-module:
+    # if this is the case, we dont want to add a loader module.
+
     for module in domain_or_module:
-        if module['element'] == 'module':
-            if len(module['domains']) == 2:
-                if module['domains'][0]['type'] in loader_at_domains and module['domains'][1][
-                    'type'] in loader_acp_domains:
-                    # (if the first domain is an at/a domain and the second domain is an ACP/PCP-domain:
-                    # this solution is a bit hacky, but it should never go through incorrectly based on antiSMASH rules
-                    return domain_or_module
+        if _is_standard_load_module(module):
+            return domain_or_module
 
     found_loader = False
     prev_gene = ''
@@ -562,77 +586,127 @@ def find_and_replace_load_modules(domain_or_module):
         if dom_mod['element'] == 'domain':  # if this is a domain and not a module
             if not dom_mod['info']['gene'] == prev_gene:
                 encountered_a_module = False
-                start_of_gene = index  # so we know what domains to remove in case we find a loader domain
-                # if we are on a new gene, the search continues. # this is only relevant to do on domains, as modules cannot (should not) by antismash definition# should always be extending, and should in theory not contain cal,fkbh or gnat domains
+                start_of_gene = index  
+                # so we know what domains to remove in case we find a loader domain
+                # if we are on a new gene, the search continues. 
+                # this is only relevant to do on domains, as modules cannot (should not) by antismash definition
+                # should always be extending, and should in theory not contain cal,fkbh or gnat domains
             if dom_mod['info']['core_gene'] and not encountered_a_module:
                 # if this is a core gene. needs to be nested because modules have different structure than domains here
-                if dom_mod['info']['type'] in loader_domains:  # if this is a gene that is a giveaway that this is the loader module:
+                # Check if the domain is either Cal, GNAT or FkbH
+                if dom_mod['info']['type'] in loader_domains:  
+                    # if this is a gene that is a giveaway that this is the loader module:
                     # we have found a loader domain on one of the core genes, before any other modules have been found.
                     found_loader = True
                     loader_type = dom_mod['info']['type']
                     loader_activity = dom_mod['info']['activity']
                     loader_start = start_of_gene
                     loader_gene = dom_mod['info']['gene']
+
             prev_gene = dom_mod['info']['gene']
             if found_loader and dom_mod['info']['type'] in loader_acp_domains:
-                return domain_or_module[0:start_of_gene] + [{'element': 'module', 'info': {
-                    'extender_unit': loader_type,
-                    'loader_activity': loader_activity,
-                    'start': domain_or_module[start_of_gene]['info']['start'],
-                    'end': domain_or_module[index]['info']['end']},
-                    'domains': [x['info'] for x in domain_or_module[loader_start:index]]}] + domain_or_module[index:]
+                new_domains = [x['info'] for x in domain_or_module[loader_start:index]]
+                info = {'extender_unit': loader_type,
+                        'loader_activity': loader_activity,
+                        'start': domain_or_module[start_of_gene]['info']['start'],
+                        'end': domain_or_module[index]['info']['end']}
+                new_module = {'element': 'module', 'info': info,'domains': new_domains}
+                return domain_or_module[0:start_of_gene] + [new_module] + domain_or_module[index:]
 
         elif dom_mod['element'] == 'module':
-            encountered_a_module = True  # to check that we have not passed any real modules
+            # to check that we have not passed any real modules
+            encountered_a_module = True  
+            # If we have previously found either a Cal, GNAT or FkbH loader domain
+            # and this module is on the same gene we have now found the starter module
             if found_loader and dom_mod['domains'][0]['gene'] == prev_gene:
-                return domain_or_module[0:start_of_gene] + [{'element': 'module', 'info': {
-                    'extender_unit': loader_type,
-                    'loader_activity': loader_activity,
-                    'start': domain_or_module[start_of_gene]['info']['start'],
-                    'end': domain_or_module[index]['info']['end']}, 
-                    'domains': [x['info'] for x in domain_or_module[loader_start:index-1]]}] + domain_or_module[index:]
+                info = {'extender_unit': loader_type,
+                        'loader_activity': loader_activity,
+                        'start': domain_or_module[start_of_gene]['info']['start'],
+                        'end': domain_or_module[index]['info']['end']}
+                new_domains = [x['info'] for x in domain_or_module[loader_start:index-1]]
+                new_module = {'element': 'module', 'info': info,'domains': new_domains}
+                return domain_or_module[0:start_of_gene] + [new_module] + domain_or_module[index:]
 
             if not dom_mod['domains'][0]['gene'] == prev_gene:
-                start_of_gene = index  # so we know what domains to remove in case we find a loader domain
+                # so we know what domains to remove in case we find a loader domain
+                start_of_gene = index  
+
+            # the [0] part is just because modules can in theory span across several genes
             prev_gene = dom_mod['domains'][0]['gene']
-            '''
-            the [0] part of the above line is just because modules can in theory span across several genes
-            '''
+            
 
     # Then we check if there are any loader modules that can be found within the core genes that are not inside a
     # module as defined by antiSMASH. These are the [A/AT]-[ACP/PCP/PP] modules.
-    prev_domain = ''
-    start_of_loader = 0
+    prev_domain_type = ''
     prev_act = ''
+    prev_gene = ''
+    # encountered_a_module = False
     for index, dom_mod in enumerate(domain_or_module):  # dom_mod is either a domain or a module
         if dom_mod['element'] == 'domain':  # if this is a domain and not a module (implicitly not a module)
             if not dom_mod['info']['gene'] == prev_gene:  # If the domain is the first domain on a gene.
                 started_new_gene = True
 
             # starter_module
-            if dom_mod['info']['core_gene'] and not encountered_a_module:
+            if dom_mod['info']['core_gene']:# and not encountered_a_module:
                 # if this is a core gene. needs to be nested because modules have different structure than domains
-                if prev_domain in loader_at_domains and dom_mod['info']['type'] in loader_acp_domains and prev_gene == \
-                        dom_mod['info']['gene']:
-                    # if this is a gene that contains the [A/AT]-[ACP/PCP/PP] module outside of a regular
-                    # extending module:
-                    return domain_or_module[0:start_of_loader] + [{'element': 'module', 'info': {
-                        'extender_unit': 'starter_unit',
-                        'activity': prev_act,
-                        'start': domain_or_module[start_of_loader]['info']['start'],
-                        'end': domain_or_module[index]['info']['end']},
-                                                                   'domains': [domain_or_module[index - 1]['info'],
-                                                                               domain_or_module[index][
-                                                                                   'info']]}] + domain_or_module[index:]
-                start_of_loader = index
-            prev_domain = dom_mod['info']['type']
+                if prev_domain_type in loader_at_domains and dom_mod['info']['type'] in loader_acp_domains:
+                    if prev_gene == dom_mod['info']['gene']:
+                        # if this is a gene that contains the [A/AT]-[ACP/PCP/PP] module outside of a regular
+                        # extending module:
+                        info = {'extender_unit': 'starter_unit',
+                                'activity': prev_act,
+                                'start': domain_or_module[index-1]['info']['start'],
+                                'end': domain_or_module[index]['info']['end']}
+                        new_domains = [domain_or_module[index - 1]['info'], domain_or_module[index]['info']]
+                        new_module = {'element': 'module', 'info': info,'domains': new_domains}
+                        return domain_or_module[:index] + [new_module] + domain_or_module[index:]
+
+            prev_domain_type = dom_mod['info']['type']
             prev_act = dom_mod['info']['activity']
             prev_gene = dom_mod['info']['gene']
 
 
         elif dom_mod['element'] == 'module':
-            encountered_a_module = True  # to check that we have not passed any real modules
-            prev_gene = dom_mod['domains'][0]['gene']
+            # Only looking for loader domains before the modules
+            break
+            # encountered_a_module = True  # to check that we have not passed any real modules
+            
+            # prev_gene = dom_mod['domains'][0]['gene']
+
+    # If we still haven't found a load module we check if the load module is a C-A-PCP module for NRPS
+    prev_domain_types = ["", "", ""]
+    for index, dom_mod in enumerate(domain_or_module):
+        # Update the prev domain list
+        if dom_mod['element'] == 'domain':
+            prev_domain_types.pop(0)
+            prev_domain_types.append(dom_mod['info']['type'])
+
+            if prev_domain_types == NRPS_acylating_loader:
+                # We have found a particular C-A-PCP loader module
+                info = {'extender_unit': 'NRPS_acylating_loader',
+                        'activity': prev_act,
+                        'start': domain_or_module[index]['info']['start'],
+                        'end': domain_or_module[index]['info']['end']}
+                new_domains = [domain_or_module[index-2]]
+                new_module = {'element': 'module', 'info': info,'domains': new_domains}
+
+                return domain_or_module[:index] + [new_module] + domain_or_module[index:]
+
+        elif dom_mod['element'] == 'module':
+            # Either the first module has these three domains or we don't know what the load module is
+            if _all_NRPS_acylating_domains(dom_mod):
+                
+                # Have found a loader C-A-PCP module
+                info = {'extender_unit': 'NRPS_acylating_loader',
+                        'activity': prev_act,
+                        'start': domain_or_module[index]['info']['start'],
+                        'end': domain_or_module[index]['info']['end']}
+                new_domains = [dom_mod["domains"][0]]
+                new_module = {'element': 'module', 'info': info,'domains': new_domains}
+                return domain_or_module[:index] + [new_module] + domain_or_module[index:]
+            else:
+                break
+
 
     # in case we dont find any loader module, we assume its existence anyways, based on the finding that
     # this is usually the case. We first try to find a free-standing A or AT-domain in order to predict wether the
@@ -642,6 +716,13 @@ def find_and_replace_load_modules(domain_or_module):
         'end': 0}, 'domains': []})
 
     return domain_or_module
+
+def _all_NRPS_acylating_domains(module):
+    module_domain_types = [d["type"] for d in module["domains"]]
+    for d in NRPS_acylating_loader:
+        if not d in module_domain_types:
+            return False
+    return True
 
 
 def search_and_destroy_omt_modules(domain_or_module):
@@ -676,9 +757,9 @@ def add_t1pks_metabolic_pathway(data, model, core_number, tailoring_reactions):
                                          tailoring_reactions)
 
 
-    return model
     # domains x modules is now a dict sorted by placement on BGC.
     # do this to find out if domains are found in this sequence: ks-at-acp
+    return model
 
 
 def _get_domains(data, core_number):
@@ -751,18 +832,17 @@ def force_X_nrps_module_flux(substrate):
     consider the biosynthesis of HPG which can be the literal conversion of tyrosine to hpg, using only o2 as a
     cofactor.
     '''
-
-    metabolite = cobra.Metabolite(substrate + '_c', formula='na', name='Unknown amino acid', compartment='c')
+    met_id = long_to_bigg[substrate]
+    metabolite = _new_met(met_id, name='Generic amino acid')
     reaction_list_aa = []
     for amino_acid in acid_to_bigg:
         reaction = cobra.Reaction(amino_acid + '_to_' + substrate)
-        reaction.name = 'Convert known to unknown_amino_acid'
+        reaction.name = 'Convert known to generic amino acid'
         reaction.lower_bound = 0  # This is the default
         reaction.upper_bound = 1000
-        reaction.add_metabolites({ref_model.metabolites.get_by_id(acid_to_bigg[amino_acid]): -1,
-                                  metabolite: 1})
+        reaction.add_metabolites({ref_model.metabolites.get_by_id(acid_to_bigg[amino_acid]): -1, metabolite: 1})
         reaction_list_aa.append(reaction)
-    return reaction_list_aa
+    return reaction_list_aa, metabolite
 
 def _add_metabolites(r, met_dict):
     for key, value in met_dict.items():
@@ -773,320 +853,336 @@ def _add_metabolites(r, met_dict):
         r.add_metabolites({m: value})
 
 
+def _make_methoxymalACP_reaction():
+    reaction = cobra.Reaction('Mxmal-ACP')
+    reaction.name = 'Methoxymalonyl-ACP synthesis'
+    reaction.lower_bound = 0.  # This is the default
+    reaction.upper_bound = 1000.
+    reaction.add_metabolites(cofactor_reactions_dict['mxmal'])
+    return reaction
 
-def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailoring_reactions):
-    # DUMMY-REACTION som er startmetabolitt ettersom det alltid kreves at det finnes en tidligere undermetabolitt når
-    # vi lager modellen som inneholder alle reaksjonene.
-    reaction_list = []  # list of reactions that take place
-    if tailoring_reactions['methoxymalonyl']:
-        reaction = cobra.Reaction('Mxmal-ACP')
-        reaction.name = 'Methoxymalonyl-ACP synthesis'
-        reaction.lower_bound = 0.  # This is the default
-        reaction.upper_bound = 1000.
-        reaction.add_metabolites(cofactor_reactions_dict['mxmal'])
-        reaction_list.append(reaction)
-
+def _make_IN_reaction(core_structure):
     in_rx = cobra.Reaction('IN_' + core_structure['type'])
     in_rx.name = core_structure['type'] + '_reaction'
     in_rx.lower_bound = 0.  # This is the default
     in_rx.upper_bound = 1000.
-    in_rx.add_metabolites({cobra.Metabolite(core_structure['type'] + '_0',
-                                            formula='dummy',
-                                            name=core_structure['type'],
-                                            compartment='c'): 1.0})
+    new_met = _new_met(core_structure['type'] + '_0', name=core_structure['type'])
+    in_rx.add_metabolites({new_met: 1.0})
+    return in_rx
 
+def _new_met(met_id, name = None, formula = "X"):
+    if not name:
+        name = met_id
+    new_met = cobra.Metabolite(met_id, formula = formula, name  = name, compartment = "c")
+    return new_met
+
+
+def _is_pks_or_nrps(module):
+    """
+    Little hack to find out if it is a nrps or pks module. PKS_KS and Condensation domains are obligatory for their
+    respective type of module
+    """
+    if module['info']['extender_unit'] == "DHD":
+        return False
+    else:
+        return True
+
+
+def _get_gene_reaction_rule(module):
+    genes = []
+    for d in module["domains"]:
+        try:
+            gene = d["gene"][0]
+        except KeyError:
+            continue
+        else:
+            if len(gene):
+                genes.append(gene)
+
+    genes = list(set(genes))
+    if len(genes) == 0:
+        return ""
+    elif len(genes) == 1:
+        return genes[0]
+    else:
+        return " and ".join(genes)
+
+def _get_module_type(module):
+    """
+    Determine the type of module (PKS or NRPS) based on the domains in the module
+    """
+    NRPS_signature_domains = ["Condensation", "AMP-binding"]
+    PKS_signature_domains = ["PKS_KS", "PKS_AT"]
+    if module['info']['extender_unit'] == 'custom_starter':
+        return 'PKS'
+    else:
+        for domain in module['domains']:
+            if domain['type'] in PKS_signature_domains:
+                return 'PKS'
+
+            elif domain['type'] in NRPS_signature_domains:
+               return 'NRPS'
+            else:
+                pass
+    return None
+
+def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailoring_reactions):
+    # vi lager modellen som inneholder alle reaksjonene.
+    reaction_list = []  # list of reactions that take place
+    if tailoring_reactions['methoxymalonyl']:
+        reaction_list.append(_make_methoxymalACP_reaction())
+
+    # Make an sink reaction for the initial start of the polyketide, this is required in the following loop
+    in_rx = _make_IN_reaction(core_structure)
+    
+    # Make a flag so the conversion reactions from specific to generic AA's only are added once
     domain_counter = 1
-
     for module in domains_x_modules:
-
-        if module['element'] == 'module' and not module['info']['extender_unit'] == 'DHD':
-            # Little hack to find out if it is a nrps or pks module. PKS_KS and Condensation
-            # domains are obligatory for their respective type of module
-            # This is necessary because sometimes we find metabolites that are not in the ref_model
-            module_type = ''
-            if module['info']['extender_unit'] == 'custom_starter':
-                module_type = 'PKS'
-
-            for domain in module['domains']:
-
-                if domain['type'] == 'PKS_KS' or domain['type'] == 'PKS_AT':
-                    module_type = 'PKS'
-                elif domain['type'] == 'Condensation' or domain['type'] == 'AMP-binding':
-                    module_type = 'NRPS'
+        # We are only interested in modules
+        if module['element'] == 'domain':
+            continue
+        
+        module_type = _get_module_type(module)
+        if module_type in ["PKS", "NRPS"]:
 
             # This needs to be first because we want to add extender unit as first step of a module, but for transAT
             # modules, the at domain is not always present.
-
-            if module['info']['extender_unit'] not in exclude_modules:
+            
+            if module['info']['extender_unit'] not in non_extending_modules:
                 # essentially: if the module is a regular extender module
-                try:
-                    # This is just a way that we can separate extender units that exist in the GEM
-                    # from those that do not exist in the GEM. if the TRY fails, it means that
-                    # the extender unit does not exist in the GEM
-                    if not module_type == 'starter_module':
-                        extender_unit = return_key_by_value(module['info']['extender_unit'].split(' -> ')[0])
-                    else:
-                        extender_unit = return_key_by_value(module['info']['activity'].split(' -> ')[0])
-                    # happens if extender unit is not malcoa, mmcoa, mxcoa or emcoa,
-                    # (or minowa and at_specificity disagrees):
-                    if extender_unit == 'pk':
-
-                        # if this is the empty loader we created:
-                        if module['info']['extender_unit'] == 'custom_starter':
-                            extender_unit = 'Malonyl-CoA'
-
-                        # if this is a alternate loader, i.e gnat, fkbh, cal loader:
-                        elif module['info']['extender_unit'] in alternate_starters:
-                            if module['info']['extender_unit'] == 'CAL_domain':
-                                module_type = module['info']['loader_activity']
-                            elif module['info']['extender_unit'] == 'FkbH':
-                                module_type = 'FkbH'
-                            elif module['info']['extender_unit'] == 'GNAT':
-                                module_type = 'GNAT'
-                            elif module['info']['extender_unit'] == 'starter_unit':
-                                module_type = 'starter_module'
-
-                        # then  we check if this should be mxmal:
-                        # if minowa and at_prediction had no consensus, we set extender unit to mxmal if there is
-                        # machinery that synthesises it. if not, we assume the extender is malcoa
-                        for domains in module['domains']:
-                            if domains['type'] == 'PKS_AT':
-                                if tailoring_reactions['methoxymalonyl'] and domains['minowa'] == 'mxmal' or domains[
-                                    'AT_specificity'] == 'mxmal':
-                                    extender_unit = 'Methoxymalonyl-CoA'
-                                else:
-                                    # we have to chose between minowa and AT_specificity, so we chose minowa:
-                                    # this also has the consequence that if minowa is emal: the next step may convert
-                                    # the extender into methoxymalonyl-CoA
-                                    extender_unit = return_key_by_value(domains['minowa'])
-
-                    if tailoring_reactions['methoxymalonyl'] and extender_unit == 'Ethylmalonyl-CoA':
-                        extender_unit = 'Methoxymalonyl-CoA'
-                    prevmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
-                                               formula='unknown',
-                                               name=core_structure['type'],
-                                               compartment='c')
-                    postmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter),
-                                               formula='unknown',
-                                               name=core_structure['type'],
-                                               compartment='c')
-
-                    reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
-                    reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
-                    reaction.lower_bound = 0.  # This is the default
-                    reaction.upper_bound = 1000.
-                    if module_type == 'NRPS':
-                        reaction.add_metabolites(
-                            {ref_model.metabolites.get_by_id(long_to_bigg[extender_unit]): -1,
-                             ref_model.metabolites.get_by_id('atp_c'): -1,
-                             ref_model.metabolites.get_by_id('amp_c'): 1,
-                             ref_model.metabolites.get_by_id('ppi_c'): 1,
-                             ref_model.metabolites.get_by_id('h2o_c'): 1,
-                             prevmet: -1,
-                             postmet: 1})
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'PKS':
-                        if extender_unit == 'Methoxymalonyl-CoA' or extender_unit == 'Ethylmalonyl-CoA':
-                            reaction.add_metabolites(
-                                {cobra.Metabolite(long_to_bigg[extender_unit], formula='unknown', name=extender_unit,
-                                                  compartment='c'): -1,
-                                 ref_model.metabolites.get_by_id('coa_c'): 1,
-                                 ref_model.metabolites.get_by_id('co2_c'): 1,
-                                 prevmet: -1,
-                                 postmet: 1})
-                        else:
-                            reaction.add_metabolites(
-                                {ref_model.metabolites.get_by_id(long_to_bigg[extender_unit]): -1,
-                                 ref_model.metabolites.get_by_id('coa_c'): 1,
-                                 ref_model.metabolites.get_by_id('co2_c'): 1,
-                                 prevmet: -1,
-                                 postmet: 1})
-                        reaction_list.append(reaction)
-
-                        domain_counter += 1
-
-
-                    elif module_type == 'FkbH':
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['fkbh'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'GNAT':
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['gnat'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'fatty_acid':
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['fatty_acid'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'AHBA':
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['ahba'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'shikimic_acid':
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['shikimic_acid'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'Acetyl-CoA':
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['acetyl'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'NH2':
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['NH2'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    elif module_type == 'starter_module':
-                        raise IndexError
-                        reaction.add_metabolites(
-                            {prevmet: -1,
-                             postmet: 1})
-                        reaction.add_metabolites(cofactor_reactions_dict['NH2'])
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    else:
-                        # raise arbitrary error because something has gone terribly wrong
-                        raise IndexError
-                except KeyError:  # the substrate is not in the model you want to insert into
-                    
-                    warnings.warn('Predicted substrate does not exist in the model')
+                # Get extender unit
+                if module_type == 'starter_module':
+                    extender_unit = return_key_by_value(module['info']['activity'].split(' -> ')[0])
+                else:
                     extender_unit = return_key_by_value(module['info']['extender_unit'].split(' -> ')[0])
 
-                    if module_type == 'PKS':
+                # This is just a way that we can separate extender units that exist in the GEM
+                # from those that do not exist in the GEM. if the TRY fails, it means that
+                # the extender unit does not exist in the GEM
+                # happens if extender unit is not malcoa, mmcoa, mxcoa or emcoa,
+                # (or minowa and at_specificity disagrees):
+                if extender_unit == 'pk':
+
+                    # if this is the empty loader we created:
+                    if module['info']['extender_unit'] == 'custom_starter':
                         extender_unit = 'Malonyl-CoA'
+
+                    # if this is an alternate loader, i.e gnat, fkbh, cal loader:
+                    elif module['info']['extender_unit'] in alternate_starters:
+                        if module['info']['extender_unit'] == 'CAL_domain':
+                            module_type = module['info']['loader_activity']
+                        elif module['info']['extender_unit'] == 'FkbH':
+                            module_type = 'FkbH'
+                        elif module['info']['extender_unit'] == 'GNAT':
+                            module_type = 'GNAT'
+                        elif module['info']['extender_unit'] == 'starter_unit':
+                            module_type = 'starter_module'
+                        elif module['info']['extender_unit'] == 'NRPS_acylating_loader':
+                            module_type = 'NRPS_acylating_loader'
+
+
+                    # then  we check if this should be mxmal:
+                    # if minowa and at_prediction had no consensus, we set extender unit to mxmal if there is
+                    # machinery that synthesises it. if not, we assume the extender is malcoa
+                    for domains in module['domains']:
+                        if domains['type'] == 'PKS_AT':
+                            if tailoring_reactions['methoxymalonyl'] and domains['minowa'] == 'mxmal' or domains[
+                                'AT_specificity'] == 'mxmal':
+                                extender_unit = 'Methoxymalonyl-CoA'
+                            else:
+                                # we have to choose between minowa and AT_specificity, so we chose minowa:
+                                # this also has the consequence that if minowa is emal: the next step may convert
+                                # the extender into methoxymalonyl-CoA
+                                extender_unit = return_key_by_value(domains['minowa'])
+
+                if tailoring_reactions['methoxymalonyl'] and extender_unit == 'Ethylmalonyl-CoA':
+                    extender_unit = 'Methoxymalonyl-CoA'
+
+                prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
+                postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
+                
+                reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
+                reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
+                reaction.lower_bound = 0.  # This is the default
+                reaction.upper_bound = 1000.
+                reaction.gene_reaction_rule = _get_gene_reaction_rule(module)
+
+                if module_type == 'NRPS':
+                    if extender_unit == "hpg":
+                        hpg_synthesis_reactions = make_hpg_reactions()
+                        model.add_reactions(hpg_synthesis_reactions)
+                        extender_met = cofactor_metabolites_dict["hpg"]
+                    elif extender_unit == 'dpg' or extender_unit == 'dhpg':
+                        # duplicate entries
+                        # dpg and dhpg are the same substrates
+                        dpg_reaction1 = cobra.Reaction('hpg_synthesis')
+                        dpg_reaction1.name = 'synthesis of dhpg'
+                        dpg_reaction1.lower_bound = 0.  # This is the default
+                        dpg_reaction1.upper_bound = 1000.
+                        dpg_reaction1.add_metabolites(cofactor_reactions_dict['dpg'])
+                        model.add_reactions([dpg_reaction1])
+                        extender_met = cofactor_metabolites_dict["dpg"]
+                        
+                    elif extender_unit in ['pip', 'bht', 'abu']:
+                        synthesis_reaction = cobra.Reaction('{0}_synthesis'.format(extender_unit))
+                        synthesis_reaction.name = 'synthesis of {0}'.format(std_aa_dic[extender_unit])
+                        synthesis_reaction.lower_bound = 0.  # This is the default
+                        synthesis_reaction.upper_bound = 1000.
+                        synthesis_reaction.add_metabolites(cofactor_reactions_dict[extender_unit])
+                        model.add_reactions([synthesis_reaction])
+                        extender_met = cofactor_metabolites_dict[extender_unit]
+
+                    else:
+                        try:
+                            extender_met = ref_model.metabolites.get_by_id(long_to_bigg[extender_unit])
+                        except KeyError:
+                            # There are a range of very specific metabolites that are not accounted for
+                            # including the cases where antiSMASH can't predict the specific AA
+                            print(module)
+                            print(module_type)
+                            print(extender_unit)
+                
+                            AA_to_X_reactions, extender_met = force_X_nrps_module_flux(extender_unit)
+                            model.add_reactions(AA_to_X_reactions)
+
+
+                    
+                    reaction.add_metabolites(
+                        {extender_met:-1,
+                         ref_model.metabolites.get_by_id('atp_c'): -1,
+                         ref_model.metabolites.get_by_id('amp_c'): 1,
+                         ref_model.metabolites.get_by_id('ppi_c'): 1,
+                         ref_model.metabolites.get_by_id('h2o_c'): 1})
+                    
+                elif module_type == 'PKS':
+                    if extender_unit == 'Methoxymalonyl-CoA' or extender_unit == 'Ethylmalonyl-CoA':
+                        extender_met = _new_met(long_to_bigg[extender_unit], name = extender_unit)
+                    else:
+                        try:
+                            extender_met = ref_model.metabolites.get_by_id(long_to_bigg[extender_unit])
+                        except KeyError:
+                            print(extender_unit, " is not in model, assume malonyl-CoA")
+                            # If we don't now what the extender unit is we assume malonyl-CoA
+                            extender_met = ref_model.metabolites.get_by_id(long_to_bigg["Malonyl-CoA"])
+
+                    reaction.add_metabolites({extender_met: -1, ref_model.metabolites.get_by_id('coa_c'): 1,
+                                              ref_model.metabolites.get_by_id('co2_c'): 1})
+                    
+                elif module_type == 'FkbH':
+                    reaction.add_metabolites(cofactor_reactions_dict['fkbh'])
+                    
+                elif module_type == 'GNAT':
+                    reaction.add_metabolites(cofactor_reactions_dict['gnat'])
+                    
+                elif module_type == 'fatty_acid':
+                    reaction.add_metabolites(cofactor_reactions_dict['fatty_acid'])
+                    
+                elif module_type == 'AHBA':
+                    reaction.add_metabolites(cofactor_reactions_dict['ahba'])
+                    
+                elif module_type == 'shikimic_acid':
+                    reaction.add_metabolites(cofactor_reactions_dict['shikimic_acid'])
+                    
+                elif module_type == 'Acetyl-CoA':
+                    reaction.add_metabolites(cofactor_reactions_dict['acetyl'])
+                    
+                elif module_type == 'NH2':
+                    reaction.add_metabolites(cofactor_reactions_dict['NH2'])
+                elif module_type == "NRPS_acylating_loader":
+                    reaction.add_metabolites(cofactor_reactions_dict["NRPS_acylating_loader"])
+                    # Add reactions making a generic fatty acid
+                    fatty_acid_generic_reactions = make_generic_fatty_acid_conversion()
+                    model.add_reactions(fatty_acid_generic_reactions)
+                    
+                elif module_type == 'starter_module':
+                    print("Module type is starter module")
+                    raise ValueError
+                    # reaction.add_metabolites(
+                    #     {prevmet: -1,
+                    #      postmet: 1})
+                    # reaction.add_metabolites(cofactor_reactions_dict['NH2'])
+                    # reaction_list.append(reaction)
+                    # domain_counter += 1
+                else:
+                    # raise arbitrary error because something has gone terribly wrong
+                    raise ValueError
+
+                    # Add the polyketide chain metabolites to the reation and add reaction to list
+                    reaction.add_metabolites({prevmet: -1, postmet: 1})
+                    reaction_list.append(reaction)
+                    domain_counter += 1
+
+
+                # except KeyError:  # the substrate is not in the model you want to insert into
+                    
+                    # warnings.warn('Predicted substrate does not exist in the model')
+                    # extender_unit = return_key_by_value(module['info']['extender_unit'].split(' -> ')[0])
+
+                    # if module_type == 'PKS':
+                    #     extender_unit = 'Malonyl-CoA'
                         # the only cases we end up here when the module type is PKS, is when a
                         # starter unit is predicted as the extender unit. This Cannot be true for starters that antiSMASH
                         # predicts, so we set this extender to malonyl-CoA
 
-                    prevmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
-                                               formula='unknown',
-                                               name=core_structure['type'],
-                                               compartment='c')
-                    postmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter),
-                                               formula='unknown',
-                                               name=core_structure['type'],
-                                               compartment='c')
-                    reaction = cobra.Reaction(
-                        core_structure['type'] + '_' + str(domain_counter))  # this line is different
-                    reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
-                    reaction.lower_bound = 0.  # This is the default
-                    reaction.upper_bound = 1000.
-                    if module_type == 'NRPS':
-                        if extender_unit == 'hpg':
-                            # the 4 next reactions enable the synthesis of hpg from common metabolites
-                            hpg_reaction1 = cobra.Reaction('hpg_synthesis_1')
-                            hpg_reaction1.name = 'synthesis of hpg'
-                            hpg_reaction1.lower_bound = 0.  # This is the default
-                            hpg_reaction1.upper_bound = 1000.
-                            hpg_reaction1.add_metabolites(cofactor_reactions_dict['hpg_1'])
+                    # prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
+                    # postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
 
-                            hpg_reaction2 = cobra.Reaction('hpg_synthesis_2')
-                            hpg_reaction2.name = 'synthesis of hpg'
-                            hpg_reaction2.lower_bound = 0.  # This is the default
-                            hpg_reaction2.upper_bound = 1000.
-                            hpg_reaction2.add_metabolites(cofactor_reactions_dict['hpg_2'])
+                    # # Make reaction
+                    # reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter)) 
+                    # reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
+                    # reaction.lower_bound = 0.  # This is the default
+                    # reaction.upper_bound = 1000.
+                    # if module_type == 'NRPS':
+                        
 
-                            hpg_reaction3 = cobra.Reaction('hpg_synthesis_3')
-                            hpg_reaction3.name = 'synthesis of hpg'
-                            hpg_reaction3.lower_bound = 0.  # This is the default
-                            hpg_reaction3.upper_bound = 1000.
-                            hpg_reaction3.add_metabolites(cofactor_reactions_dict['hpg_3'])
-
-                            hpg_reaction4 = cobra.Reaction('hpg_synthesis_4')
-                            hpg_reaction4.name = 'synthesis of hpg'
-                            hpg_reaction4.lower_bound = 0.  # This is the default
-                            hpg_reaction4.upper_bound = 1000.
-                            hpg_reaction4.add_metabolites(cofactor_reactions_dict['hpg_4'])
-
-                            model.add_reactions([hpg_reaction1, hpg_reaction2, hpg_reaction3, hpg_reaction4])
-
-                        elif extender_unit == 'dpg' or extender_unit == 'dhpg':
-                            # duplicate entries
-                            # dpg and dhpg are the same substrates
-                            dpg_reaction1 = cobra.Reaction('hpg_synthesis')
-                            dpg_reaction1.name = 'synthesis of dhpg'
-                            dpg_reaction1.lower_bound = 0.  # This is the default
-                            dpg_reaction1.upper_bound = 1000.
-                            dpg_reaction1.add_metabolites(cofactor_reactions_dict['dpg'])
-                            model.add_reactions([dpg_reaction1])
-                        elif extender_unit == 'pip':
-                            # duplicate entries
-                            # dpg and dhpg are the same substrates
-                            pip_reaction1 = cobra.Reaction('pipecolic_acid_synthesis')
-                            pip_reaction1.name = 'synthesis of pipecolic acid'
-                            pip_reaction1.lower_bound = 0.  # This is the default
-                            pip_reaction1.upper_bound = 1000.
-                            pip_reaction1.add_metabolites(cofactor_reactions_dict['pip'])
-                            model.add_reactions([pip_reaction1])
-                        else:
-                            # we dont know the specificity of the A-domain, so we let any amino acid take the role
-                            # as this amino acid. If you want this to be true for ALL amino acids (i.e. haorn, pip etc.)
-                            # change the elif above to a simple "else"
-                            model.add_reactions(force_X_nrps_module_flux(extender_unit))
-                        reaction.add_metabolites({
-                            cobra.Metabolite(long_to_bigg[extender_unit], formula='unknown', name=extender_unit,
-                                             compartment='c'): -1,
-                            ref_model.metabolites.get_by_id('atp_c'): -1,
-                            ref_model.metabolites.get_by_id('amp_c'): 1,
-                            ref_model.metabolites.get_by_id('ppi_c'): 1,
-                            prevmet: -1,
-                            postmet: 1})
-                        reaction_list.append(reaction)
-                        warnings.warn('Predicted substrate does not exist in the model')
-                        domain_counter += 1
-                    elif module_type == 'PKS':
-                        reaction.add_metabolites(
-                            {cobra.Metabolite(long_to_bigg[extender_unit], formula='unknown', name=extender_unit,
-                                              compartment='c'): -1,
-                             ref_model.metabolites.get_by_id('coa_c'): 1,
-                             ref_model.metabolites.get_by_id('co2_c'): 1,
-                             prevmet: -1,
-                             postmet: 1})
-                        reaction_list.append(reaction)
-                        domain_counter += 1
-                    else:
-                        raise IndexError
+                        
+                    #     else:
+                    #         print(module_type)
+                    #         print(module)
+                    #         # we dont know the specificity of the A-domain, so we let any amino acid take the role
+                    #         # as this amino acid. 
+                    #         if not added_generic_AAs:
+                    #             model.add_reactions(force_X_nrps_module_flux(extender_unit))
+                    #             added_generic_AAs = True
+                    #         new_met = cobra.Metabolite(long_to_bigg[extender_unit], formula='X', name=extender_unit,compartment='c')
+                    #         reaction.add_metabolites({
+                    #             new_met: -1,
+                    #             ref_model.metabolites.get_by_id('atp_c'): -1,
+                    #             ref_model.metabolites.get_by_id('amp_c'): 1,
+                    #             ref_model.metabolites.get_by_id('ppi_c'): 1,
+                    #             prevmet: -1,
+                    #             postmet: 1})
+                    #     reaction_list.append(reaction)
+                    #     warnings.warn('Predicted substrate does not exist in the model')
+                    #     domain_counter += 1
+                    # if module_type == 'PKS':
+                    #     reaction.add_metabolites(
+                    #         {cobra.Metabolite(long_to_bigg[extender_unit], formula='X', name=extender_unit,
+                    #                           compartment='c'): -1,
+                    #          ref_model.metabolites.get_by_id('coa_c'): 1,
+                    #          ref_model.metabolites.get_by_id('co2_c'): 1,
+                    #          prevmet: -1,
+                    #          postmet: 1})
+                    #     reaction_list.append(reaction)
+                    #     domain_counter += 1
+                    # else:
+                    #     raise IndexError
 
             for domains in module['domains']:
                 if domains['activity']:
-
                     if domains['type'] in general_domain_dict:
                         reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
                         reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
                         reaction.lower_bound = 0.  # This is the default
                         reaction.upper_bound = 1000.
                         reaction.add_metabolites(cofactor_reactions_dict[general_domain_dict[domains['type']]])
-                        prevmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
-                                                   formula='unknown',
-                                                   name=core_structure['type'],
-                                                   compartment='c')
-                        postmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter),
-                                                   formula='unknown',
-                                                   name=core_structure['type'],
-                                                   compartment='c')
+
+                        prevmet = _new_met(core_structure['type']+'_'+ str(domain_counter - 1), core_structure['type'])
+                        postmet = _new_met(core_structure['type']+'_'+ str(domain_counter), core_structure['type'])
                         reaction.add_metabolites({prevmet: -1, postmet: 1})
                         reaction_list.append(reaction)
                         domain_counter += 1
+
 
     '''
     this part below is to add tailoring reactions:
@@ -1101,14 +1197,8 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                 for repetition in range(tailoring_reactions[tailoring_reaction]):
                     reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
                     reaction.add_metabolites(tailoring_reactions_dict[tailoring_reaction])
-                    prevmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
-                                               formula='unknown',
-                                               name=core_structure['type'],
-                                               compartment='c')
-                    postmet = cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter),
-                                               formula='unknown',
-                                               name=core_structure['type'],
-                                               compartment='c')
+                    prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
+                    postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
                     reaction.add_metabolites({prevmet: -1.0, postmet: 1.0})
                     reaction_list.append(reaction)
                     domain_counter += 1
@@ -1121,11 +1211,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     ex_rx.name = core_structure['type'] + '_reaction'
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
-
-    ex_rx.add_metabolites({cobra.Metabolite(core_structure['type'] + '_' + str(domain_counter - 1),
-                                            formula='unknown',
-                                            name=core_structure['type'],
-                                            compartment='c'): - 1.0})
+    ex_rx.add_metabolites({postmet: - 1.0})
 
     model.add_reactions(reaction_list + [ex_rx] + [in_rx])
     lump_metabolites = {}
@@ -1153,7 +1239,7 @@ def add_ripp_metabolic_pathway(core_structure, model, core_number):
     reaction.lower_bound = 0.  # This is the default
     reaction.upper_bound = 1000.
 
-    ripp_met = cobra.Metabolite(reaction_name, formula='X', name=core_structure['type'], compartment='c')
+    ripp_met = _new_met(reaction_name, name=core_structure['type'])
     reaction_metabolites = {ripp_met: 1.0}
     aa_metabolites = {}
     for letter in core_structure['RiPP']:
@@ -1178,7 +1264,7 @@ def add_ripp_metabolic_pathway(core_structure, model, core_number):
     try:
         generic_met = model.metabolites.get_by_id(generic_met_id)
     except KeyError:
-        generic_met = cobra.Metabolite(generic_met_id, formula='X', name=core_structure['type'], compartment='c')
+        generic_met = _new_met(generic_met_id, name=core_structure['type'])
 
     translation_reaction_name = "translate_{0}".format(core_number)
     translate_reaction = cobra.Reaction(translation_reaction_name)
@@ -1200,6 +1286,47 @@ def add_ripp_metabolic_pathway(core_structure, model, core_number):
 
     return model
 
+def make_generic_fatty_acid_conversion():
+    reactions = []
+    for name, met in fatty_acyl_CoAs.items():
+        reaction = cobra.Reaction("{0}_to_generic".format(name))
+        reaction.lower_bound = 0
+        reaction.upper_bound = 1000
+        mets = {met:-1, cofactor_metabolites_dict["fatty_acid_X"]:1}
+        reaction.add_metabolites(mets)
+        reactions.append(reaction)
+    return reactions
+
+def make_hpg_reactions():
+    """
+    Make reactions required to syntesize the extender unit hpg
+    """
+    # the 4 next reactions enable the synthesis of hpg from common metabolites
+    hpg_reaction1 = cobra.Reaction('hpg_synthesis_1')
+    hpg_reaction1.name = 'synthesis of hpg'
+    hpg_reaction1.lower_bound = 0.  # This is the default
+    hpg_reaction1.upper_bound = 1000.
+    hpg_reaction1.add_metabolites(cofactor_reactions_dict['hpg_1'])
+
+    hpg_reaction2 = cobra.Reaction('hpg_synthesis_2')
+    hpg_reaction2.name = 'synthesis of hpg'
+    hpg_reaction2.lower_bound = 0.  # This is the default
+    hpg_reaction2.upper_bound = 1000.
+    hpg_reaction2.add_metabolites(cofactor_reactions_dict['hpg_2'])
+
+    hpg_reaction3 = cobra.Reaction('hpg_synthesis_3')
+    hpg_reaction3.name = 'synthesis of hpg'
+    hpg_reaction3.lower_bound = 0.  # This is the default
+    hpg_reaction3.upper_bound = 1000.
+    hpg_reaction3.add_metabolites(cofactor_reactions_dict['hpg_3'])
+
+    hpg_reaction4 = cobra.Reaction('hpg_synthesis_4')
+    hpg_reaction4.name = 'synthesis of hpg'
+    hpg_reaction4.lower_bound = 0.  # This is the default
+    hpg_reaction4.upper_bound = 1000.
+    hpg_reaction4.add_metabolites(cofactor_reactions_dict['hpg_4'])
+
+    return [hpg_reaction1, hpg_reaction2, hpg_reaction3, hpg_reaction4]
 
 def find_tailoring_reactions_from_smcogs(data):
     '''
@@ -1214,18 +1341,19 @@ def find_tailoring_reactions_from_smcogs(data):
 
     tailoring_genes_based_on_smCOG_definition_dict = {}
 
-    tailoring_genes_based_on_smCOG_definition_dict[
-        1256] = False  # FkbH_like protein with smcog number 1256 - for methoxymalonyl-coa
-    tailoring_genes_based_on_smCOG_definition_dict[
-        1095] = False  # 3-Hydroxybutyryl-CoA dehydrogenase like protein with smcog number 1095 - for methoxymalonyl-coa
-    tailoring_genes_based_on_smCOG_definition_dict[
-        1062] = False  # glycosyltransferase with smcog 1062 - For glycosyl groups
-    tailoring_genes_based_on_smCOG_definition_dict[
-        1084] = False  # for tailoring reaction that adds glycerol to PK through 1,3-biphosphoglycerate
-    tailoring_genes_based_on_smCOG_definition_dict[
-        1002] = False  # AMP-dependent synthase and ligase with smcog 1002 - 2-Amino-3-hydroxycyclopent-2-enone
-    tailoring_genes_based_on_smCOG_definition_dict[
-        1109] = False  # 8-amino-7-oxononanoate synthase with smcog 1109- For 2-Amino-3-hydroxycyclopent-2-enone
+    # FkbH_like protein with smcog number 1256 - for methoxymalonyl-coa
+    tailoring_genes_based_on_smCOG_definition_dict[1256] = False  
+    # 3-Hydroxybutyryl-CoA dehydrogenase like protein with smcog number 1095 - for methoxymalonyl-coa
+    tailoring_genes_based_on_smCOG_definition_dict[1095] = False  
+    # glycosyltransferase with smcog 1062 - For glycosyl groups
+    tailoring_genes_based_on_smCOG_definition_dict[1062] = False  
+    # for tailoring reaction that adds glycerol to PK through 1,3-biphosphoglycerate
+    tailoring_genes_based_on_smCOG_definition_dict[1084] = False  
+    # AMP-dependent synthase and ligase with smcog 1002 - 2-Amino-3-hydroxycyclopent-2-enone
+    tailoring_genes_based_on_smCOG_definition_dict[1002] = False  
+    # 8-amino-7-oxononanoate synthase with smcog 1109- For 2-Amino-3-hydroxycyclopent-2-enone
+    tailoring_genes_based_on_smCOG_definition_dict[1109] = False  
+
     for gene in range(len(data['data'])):
         for smcog in data['data'][gene]['smcog']:
             if smcog == '1256':
@@ -1382,5 +1510,5 @@ if __name__ == '__main__':
                 add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
     if 1:
 
-        bgc_path = biggbk #+"/1.gbk"
+        bgc_path = biggbk + "/2057.gbk"
         run(bgc_path, output_gbk, json_folder)

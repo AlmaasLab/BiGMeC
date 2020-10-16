@@ -52,8 +52,9 @@ loader_acp_domains = [
     'ACP_beta',
     'PCP'
 ]
+NRPS_acylating_loader = ["Condensation", "AMP-binding", "PCP"]
 
-exclude_modules = [
+non_extending_modules = [
     'DHD',
     'oMT'
 ]
@@ -79,4 +80,4 @@ RiPPs = ['lanthipeptide', 'thiopeptide', 'lassopeptide']
 prefer_types = ['transAT-PKS', 'transAT-PKS-like', 'NRPS', 'T1PKS', 'NRPS-like', 'PKS-like']
 dh_domains = ['PKS_DH', 'PKS_DH2']
 print_list = ['PKS_KS', 'PKS_DH', 'PKS_DH2', 'PKS_KR', 'MT', 'PKS_ER', 'Condensation', 'Thioesterase']
-alternate_starters = ['CAL_domain', 'FkbH', 'GNAT']
+alternate_starters = ['CAL_domain', 'FkbH', 'GNAT', 'NRPS_acylating_loader']

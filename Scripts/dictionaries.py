@@ -12,8 +12,10 @@ This file contains dictionaries that are used to look up metabolite and reaction
 
 """
 import cobra
-model_fn = '../Models/BiGG_universal_model.json'
-ref_model = cobra.io.load_json_model(model_fn)
+# model_fn = '../Models/BiGG_universal_model.json'
+model_fn = '../Models/Sco-GEM.xml'
+#ref_model = cobra.io.load_json_model(model_fn)
+ref_model = cobra.io.read_sbml_model(model_fn)
 
 cofactor_metabolites_dict = {
     'nadph': ref_model.metabolites.get_by_id('nadph_c'),
@@ -25,11 +27,14 @@ cofactor_metabolites_dict = {
     'sam': ref_model.metabolites.get_by_id('amet_c'),
     'sah': ref_model.metabolites.get_by_id('ahcys_c'),
     'mxcoa': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
-    '4hbf': cobra.Metabolite('4hbf_c', formula='na', name='4-hydroxy-benzoyl-formate', compartment='c'),
-    'hpg': cobra.Metabolite('4hpg_c', formula='na', name='4-hydroxy-phenyl-glycine', compartment='c'),
-    'dpg': cobra.Metabolite('dpg_c', formula='na', name='dihydroxy-phenyl-glycine', compartment='c'),
-    'bht': cobra.Metabolite('bht_c', formula='na', name='beta-hydroxy-tyrosine', compartment='c'),
-    'pip': cobra.Metabolite('Lpipecol_c', formula='na', name='pipecolic acid', compartment='c')
+    '4hbf': cobra.Metabolite('4hbf_c', formula='X', name='4-hydroxy-benzoyl-formate', compartment='c'),
+    'hpg': cobra.Metabolite('4hpg_c', formula='X', name='4-hydroxy-phenyl-glycine', compartment='c'),
+    'dpg': cobra.Metabolite('dpg_c', formula='X', name='dihydroxy-phenyl-glycine', compartment='c'),
+    'bht': cobra.Metabolite('bht_c', formula='X', name='beta-hydroxy-tyrosine', compartment='c'),
+    'pip': cobra.Metabolite('Lpipecol_c', formula='X', name='pipecolic acid', compartment='c'),
+    'fatty_acid_X': cobra.Metabolite('fatty_acid_X_c', formula='X', 
+                                name='generic fatty acid for acylation in NRPS initiation', compartment='c'),
+    'abu': cobra.Metabolite('2abu_c', formula='X', name='2-aminobutyrate', compartment='c'),
 }
 
 
@@ -131,10 +136,33 @@ cofactor_reactions_dict = {  # reactions that are specific to certain domains
             ref_model.metabolites.get_by_id('nadph_c'): -1,
             ref_model.metabolites.get_by_id('nadp_c'): 1,
             ref_model.metabolites.get_by_id('h_c'): -1,
-            cofactor_metabolites_dict['pip']: 1}
+            cofactor_metabolites_dict['pip']: 1},
 
+    'NRPS_acylating_loader': {cofactor_metabolites_dict["fatty_acid_X"]: -1,
+                              ref_model.metabolites.get_by_id("coa_c"): 1},
+    # R10992 in KEGG, could also be R10991
+    'abu': {ref_model.metabolites.get_by_id('2obut_c'): -1,
+            ref_model.metabolites.get_by_id('ala__L_c'): -1,
+            ref_model.metabolites.get_by_id('pyr_c'): 1,
+            cofactor_metabolites_dict["abu"]: 1},
 }
 
+# beta_hydroxy_acids = {
+#     '3hpp':  ref_model.metabolites.get_by_id("3hpp_c"),
+#     'bhb': ref_model.metabolites.get_by_id("bhb_c"),
+# }
+fatty_acyl_CoAs = {
+    "3hpcoa": ref_model.metabolites.get_by_id("3hpcoa_c"),
+    # "ptpcoa": ref_model.metabolites.get_by_id("ptpcoa_c"),
+    "hxcoa":  ref_model.metabolites.get_by_id("hxcoa_c"),
+    # "hepcoa":  ref_model.metabolites.get_by_id("hepcoa_c"),
+    "occoa":  ref_model.metabolites.get_by_id("occoa_c"),
+    "dcacoa": ref_model.metabolites.get_by_id("dcacoa_c")
+}
+
+condensation_initiation_cofactors = {
+    ref_model.metabolites.get_by_id('h2o_c'): 1 
+}
 
 tailoring_metabolites_dict = {
     'glucose_6_phosphate': ref_model.metabolites.get_by_id('g6p_c'),
