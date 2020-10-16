@@ -1,6 +1,97 @@
 {
 "metabolites":[
 {
+"id":"3hpcoa_c",
+"name":"3-Hydroxypropanoyl coenzymeA",
+"compartment":"c",
+"charge":-4,
+"formula":"C24H36N7O18P3S",
+"annotation":{
+"bigg.metabolite":"3hpcoa",
+"chebi":[
+"CHEBI:27762",
+"CHEBI:58528",
+"CHEBI:20081"
+],
+"kegg.compound":"C05668",
+"metanetx.chemical":[
+"MNXM1263",
+"MNXM36548"
+],
+"origin":"iMA789",
+"sbo":"SBO:0000247"
+}
+},
+{
+"id":"fatty_acid_X_c",
+"name":"generic fatty acid for acylation in NRPS initiation",
+"compartment":"c",
+"formula":"X"
+},
+{
+"id":"hxcoa_c",
+"name":"Hexanoyl-CoA (n-C6:0CoA)",
+"compartment":"c",
+"charge":-4,
+"formula":"C27H42N7O17P3S",
+"annotation":{
+"bigg.metabolite":"hxcoa",
+"biocyc":"HEXANOYL-COA",
+"chebi":[
+"CHEBI:62620",
+"CHEBI:27540"
+],
+"kegg.compound":"C05270",
+"metanetx.chemical":[
+"MNXM162502",
+"MNXM553"
+],
+"origin":"iMK1208",
+"sbo":"SBO:0000247"
+}
+},
+{
+"id":"occoa_c",
+"name":"Octanoyl-CoA (n-C8:0CoA)",
+"compartment":"c",
+"charge":-4,
+"formula":"C29H46N7O17P3S",
+"annotation":{
+"bigg.metabolite":"occoa",
+"biocyc":"CPD-196",
+"chebi":[
+"CHEBI:15533",
+"CHEBI:57386"
+],
+"kegg.compound":"C01944",
+"metanetx.chemical":"MNXM342",
+"origin":"iMK1208",
+"sbo":"SBO:0000247"
+}
+},
+{
+"id":"dcacoa_c",
+"name":"Decanoyl-CoA (n-C10:0CoA)",
+"compartment":"c",
+"charge":-4,
+"formula":"C31H50N7O17P3S",
+"annotation":{
+"bigg.metabolite":"dcacoa",
+"biocyc":"CPD-10267",
+"chebi":[
+"CHEBI:61430",
+"CHEBI:28493"
+],
+"kegg.compound":"C05274",
+"metanetx.chemical":[
+"MNXM162283",
+"MNXM486"
+],
+"origin":"iMK1208",
+"sbo":"SBO:0000247"
+}
+},
+{
 "id":"gly_c",
 "name":"Glycine",
 "compartment":"c",
@@ -23,9 +114,9 @@
 },
 {
 "id":"X_c",
-"name":"Unknown amino acid",
+"name":"Generic amino acid",
 "compartment":"c",
-"formula":"na"
+"formula":"X"
 },
 {
 "id":"ala__L_c",
@@ -650,7 +741,7 @@
 "id":"dpg_c",
 "name":"dihydroxy-phenyl-glycine",
 "compartment":"c",
-"formula":"na"
+"formula":"X"
 },
 {
 "id":"pphn_c",
@@ -794,25 +885,25 @@
 "id":"4hbf_c",
 "name":"4-hydroxy-benzoyl-formate",
 "compartment":"c",
-"formula":"na"
+"formula":"X"
 },
 {
 "id":"4hpg_c",
 "name":"4-hydroxy-phenyl-glycine",
 "compartment":"c",
-"formula":"na"
+"formula":"X"
 },
 {
 "id":"NRPS_0",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
+"formula":"X"
 },
 {
 "id":"NRPS_1",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
+"formula":"X"
 },
 {
 "id":"atp_c",
@@ -881,49 +972,93 @@
 "id":"NRPS_2",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
-},
-{
-"id":"35dhpg_c",
-"name":"dhpg",
-"compartment":"c",
-"formula":"unknown"
+"formula":"X"
 },
 {
 "id":"NRPS_3",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
+"formula":"X"
 },
 {
 "id":"NRPS_4",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
+"formula":"X"
 },
 {
 "id":"NRPS_5",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
+"formula":"X"
 },
 {
 "id":"NRPS_6",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
+"formula":"X"
 },
 {
 "id":"NRPS_7",
 "name":"NRPS",
 "compartment":"c",
-"formula":"unknown"
+"formula":"X"
+},
+{
+"id":"NRPS_8",
+"name":"NRPS",
+"compartment":"c",
+"formula":"X"
 }
 ],
 "reactions":[
 {
+"id":"3hpcoa_to_generic",
+"name":"",
+"metabolites":{
+"3hpcoa_c":-1,
+"fatty_acid_X_c":1
+},
+"lower_bound":0,
+"upper_bound":1000,
+"gene_reaction_rule":""
+},
+{
+"id":"hxcoa_to_generic",
+"name":"",
+"metabolites":{
+"fatty_acid_X_c":1,
+"hxcoa_c":-1
+},
+"lower_bound":0,
+"upper_bound":1000,
+"gene_reaction_rule":""
+},
+{
+"id":"occoa_to_generic",
+"name":"",
+"metabolites":{
+"fatty_acid_X_c":1,
+"occoa_c":-1
+},
+"lower_bound":0,
+"upper_bound":1000,
+"gene_reaction_rule":""
+},
+{
+"id":"dcacoa_to_generic",
+"name":"",
+"metabolites":{
+"dcacoa_c":-1,
+"fatty_acid_X_c":1
+},
+"lower_bound":0,
+"upper_bound":1000,
+"gene_reaction_rule":""
+},
+{
 "id":"gly_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "gly_c":-1
@@ -934,7 +1069,7 @@
 },
 {
 "id":"ala_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "ala__L_c":-1
@@ -945,7 +1080,7 @@
 },
 {
 "id":"val_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "val__L_c":-1
@@ -956,7 +1091,7 @@
 },
 {
 "id":"leu_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "leu__L_c":-1
@@ -967,7 +1102,7 @@
 },
 {
 "id":"ile_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "ile__L_c":-1
@@ -978,7 +1113,7 @@
 },
 {
 "id":"asp_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "asp__L_c":-1
@@ -989,7 +1124,7 @@
 },
 {
 "id":"asn_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "asn__L_c":-1
@@ -1000,7 +1135,7 @@
 },
 {
 "id":"glu_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "glu__L_c":-1
@@ -1011,7 +1146,7 @@
 },
 {
 "id":"gln_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "gln__L_c":-1
@@ -1022,7 +1157,7 @@
 },
 {
 "id":"ser_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "ser__L_c":-1
@@ -1033,7 +1168,7 @@
 },
 {
 "id":"thr_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "thr__L_c":-1
@@ -1044,7 +1179,7 @@
 },
 {
 "id":"met_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "met__L_c":-1
@@ -1055,7 +1190,7 @@
 },
 {
 "id":"cys_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "cys__L_c":-1
@@ -1066,7 +1201,7 @@
 },
 {
 "id":"lys_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "lys__L_c":-1
@@ -1077,7 +1212,7 @@
 },
 {
 "id":"arg_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "arg__L_c":-1
@@ -1088,7 +1223,7 @@
 },
 {
 "id":"his_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "his__L_c":-1
@@ -1099,7 +1234,7 @@
 },
 {
 "id":"pro_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "pro__L_c":-1
@@ -1110,7 +1245,7 @@
 },
 {
 "id":"phe_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "phe__L_c":-1
@@ -1121,7 +1256,7 @@
 },
 {
 "id":"tyr_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "tyr__L_c":-1
@@ -1132,7 +1267,7 @@
 },
 {
 "id":"trp_to_X",
-"name":"Convert known to unknown_amino_acid",
+"name":"Convert to generic metabolite",
 "metabolites":{
 "X_c":1,
 "trp__L_c":-1
@@ -1218,13 +1353,12 @@
 "metabolites":{
 "NRPS_0":-1,
 "NRPS_1":1,
-"co2_c":1,
 "coa_c":1,
-"malcoa_c":-1
+"fatty_acid_X_c":-1
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":""
+"gene_reaction_rule":"BKM31_54135"
 },
 {
 "id":"NRPS_2",
@@ -1235,26 +1369,28 @@
 "X_c":-1,
 "amp_c":1,
 "atp_c":-1,
+"h2o_c":1,
 "ppi_c":1
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":""
+"gene_reaction_rule":"BKM31_54135"
 },
 {
 "id":"NRPS_3",
 "name":"NRPS_reaction_3",
 "metabolites":{
-"35dhpg_c":-1,
 "NRPS_2":-1,
 "NRPS_3":1,
 "amp_c":1,
 "atp_c":-1,
+"dpg_c":-1,
+"h2o_c":1,
 "ppi_c":1
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":""
+"gene_reaction_rule":"BKM31_54140"
 },
 {
 "id":"NRPS_4",
@@ -1265,11 +1401,12 @@
 "NRPS_4":1,
 "amp_c":1,
 "atp_c":-1,
+"h2o_c":1,
 "ppi_c":1
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":""
+"gene_reaction_rule":"BKM31_54145"
 },
 {
 "id":"NRPS_5",
@@ -1280,11 +1417,12 @@
 "NRPS_5":1,
 "amp_c":1,
 "atp_c":-1,
+"h2o_c":1,
 "ppi_c":1
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":""
+"gene_reaction_rule":"BKM31_54145"
 },
 {
 "id":"NRPS_6",
@@ -1294,12 +1432,13 @@
 "NRPS_6":1,
 "amp_c":1,
 "atp_c":-1,
+"h2o_c":1,
 "ppi_c":1,
 "tyr__L_c":-1
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":""
+"gene_reaction_rule":"BKM31_54145"
 },
 {
 "id":"NRPS_7",
@@ -1310,7 +1449,20 @@
 "NRPS_7":1,
 "amp_c":1,
 "atp_c":-1,
+"h2o_c":1,
 "ppi_c":1
+},
+"lower_bound":0.0,
+"upper_bound":1000.0,
+"gene_reaction_rule":"BKM31_54150"
+},
+{
+"id":"NRPS_8",
+"name":"PKS_TE",
+"metabolites":{
+"NRPS_7":-1,
+"NRPS_8":1,
+"h2o_c":-1.0
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
@@ -1320,7 +1472,7 @@
 "id":"DM_secondary_metabolite",
 "name":"NRPS_reaction",
 "metabolites":{
-"NRPS_7":-1.0
+"NRPS_8":-1.0
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
@@ -1337,7 +1489,24 @@
 "gene_reaction_rule":""
 }
 ],
-"genes":[],
+"genes":[
+{
+"id":"BKM31_54135",
+"name":""
+},
+{
+"id":"BKM31_54140",
+"name":""
+},
+{
+"id":"BKM31_54145",
+"name":""
+},
+{
+"id":"BKM31_54150",
+"name":""
+}
+],
 "id":"BGC-1635",
 "name":"NRPS",
 "compartments":{
