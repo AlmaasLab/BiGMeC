@@ -454,12 +454,14 @@ def find_and_replace_cut_transat_modules(domain_or_module):
                 module_end = True
                 end = index
             if module_start and module_end:
-                res = find_and_replace_cut_transat_modules(res[0:start] + 
-                        [{'element': 'module', 
-                          'info': {'extender_unit': 'mal', 'start': res[start]['info']['start'],
-                                                           'end': res[end]['info']['end']},
-                          'domains': [domain_or_module[a]['info'] for a in range(start, end)]}] + 
-                          res[end + 1:])
+                new_module = {'element': 'module', 
+                              'info': {'extender_unit': 'mal', 
+                                       'start': res[start]['info']['start'],
+                                        'end': res[end]['info']['end']},
+                              'domains': [domain_or_module[a]['info'] for a in range(start, end)]
+                              }
+                all_modules = res[0:start] + [new_module] + res[end + 1:]
+                res = find_and_replace_cut_transat_modules(all_modules)
                 return res
     return res
 
@@ -1054,13 +1056,9 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         except KeyError:
                             # There are a range of very specific metabolites that are not accounted for
                             # including the cases where antiSMASH can't predict the specific AA
-                            print(module)
-                            print(module_type)
-                            print(extender_unit)
-                
+       
                             AA_to_X_reactions, extender_met = force_X_nrps_module_flux(extender_unit)
                             model.add_reactions(AA_to_X_reactions)
-
 
                     
                     reaction.add_metabolites(
