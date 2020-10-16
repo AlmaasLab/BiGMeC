@@ -140,7 +140,7 @@ def structure_gbk_information(merged_core, gb_list):
     CDS_number = -1
     for gb_record in gb_list:
         for feat in gb_record.features:
-            print(feat, CDS_number, feat.qualifiers)
+            # print(feat, CDS_number, feat.qualifiers)
             if feat.type == 'CDS':
                 if feat.qualifiers.get('gene_functions'):
                     smcog = []
@@ -251,14 +251,24 @@ def structure_gbk_information(merged_core, gb_list):
                     for CAL_prediction in feat.qualifiers.get('specificity'):
                         if 'Minowa: ' in CAL_prediction:
                             CDS[CDS_number]['domains'].append(
-                                {'type': feat.qualifiers.get('aSDomain')[0],
+                                {'type': 'CAL_domain',
                                  'activity': CAL_prediction.split('Minowa: ')[1],
                                  'start': feat.location.start,
                                  'end': feat.location.end,
                                  'gene': feat.qualifiers.get('locus_tag'),
                                  'core_gene': cds_is_core}
                             )
-                
+                elif feat.qualifiers.get('aSDomain') == ["AMP-binding"]:
+                    specificity = feat.qualifiers.get('specificity')[0].split(":")[-1].strip()
+                    CDS[CDS_number]['domains'].append(
+                        {'type': "AMP-binding",
+                         'activity': True,
+                         'start': feat.location.start,
+                         'end': feat.location.end,
+                         'gene': feat.qualifiers.get('locus_tag'),
+                         'core_gene': cds_is_core,
+                         'AT_specificity': specificity}
+                    )
                 elif feat.qualifiers.get('aSDomain') != ['PKS_AT']:
                     try:
                         CDS[CDS_number]['domains'].append(
@@ -324,7 +334,7 @@ def fix_transat_modules(domain_or_module):
     '''
 
     :param domain_or_module: a list of domains and modules that antismash have found. This is the first of several
-    "fixings" of this and only applies to transAS BGCs.
+    "fixings" of this and only applies to transAT BGCs.
 
     :return: domain_or_module, except some modules have been broken down if they are ks-
     this might be a truly shit function
@@ -333,8 +343,8 @@ def fix_transat_modules(domain_or_module):
     for index in range(len(res) - 1):
         if res[index]['element'] == 'module' and res[index + 1]['element'] == 'domain':
             start = index
-            if res[start + 1]['info'][
-                'type'] in reducing_domains:  # COULD INCLUDE ACP HERE, BUT THOSE CASES MIGHT BE TOO STRANGE
+            # COULD INCLUDE ACP HERE, BUT THOSE CASES MIGHT BE TOO STRANGE
+            if res[start + 1]['info']['type'] in reducing_domains:  
                 for domain_loc in range(0, len(domain_or_module[index]['domains']) - 1):
                     # insert domains at end, pop at start
                     if res[index]['domains'][domain_loc]['type'] in acp_domains and \
@@ -653,7 +663,13 @@ def find_and_replace_load_modules(domain_or_module):
                     if prev_gene == dom_mod['info']['gene']:
                         # if this is a gene that contains the [A/AT]-[ACP/PCP/PP] module outside of a regular
                         # extending module:
-                        info = {'extender_unit': 'starter_unit',
+                        # try:
+                        # print(domain_or_module[index - 1])
+                        extender_unit = domain_or_module[index - 1]["info"]["AT_specificity"]
+                        # except KeyError:
+                        #     extender_unit = 'starter_unit'
+
+                        info = {'extender_unit': extender_unit,
                                 'activity': prev_act,
                                 'start': domain_or_module[index-1]['info']['start'],
                                 'end': domain_or_module[index]['info']['end']}
@@ -837,7 +853,7 @@ def force_X_nrps_module_flux(substrate):
     reaction_list_aa = []
     for amino_acid in acid_to_bigg:
         reaction = cobra.Reaction(amino_acid + '_to_' + substrate)
-        reaction.name = 'Convert known to generic amino acid'
+        reaction.name = 'Convert to generic metabolite'
         reaction.lower_bound = 0  # This is the default
         reaction.upper_bound = 1000
         reaction.add_metabolites({ref_model.metabolites.get_by_id(acid_to_bigg[amino_acid]): -1, metabolite: 1})
@@ -1107,10 +1123,10 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     # raise arbitrary error because something has gone terribly wrong
                     raise ValueError
 
-                    # Add the polyketide chain metabolites to the reation and add reaction to list
-                    reaction.add_metabolites({prevmet: -1, postmet: 1})
-                    reaction_list.append(reaction)
-                    domain_counter += 1
+                # Add the polyketide chain metabolites to the reation and add reaction to list
+                reaction.add_metabolites({prevmet: -1, postmet: 1})
+                reaction_list.append(reaction)
+                domain_counter += 1
 
 
                 # except KeyError:  # the substrate is not in the model you want to insert into
@@ -1168,21 +1184,25 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     # else:
                     #     raise IndexError
 
-            for domains in module['domains']:
-                if domains['activity']:
-                    if domains['type'] in general_domain_dict:
+            for domain in module['domains']:
+                if domain['activity']:
+                    if domain['type'] in general_domain_dict:
+                        print(domain_counter, domain)
+                        std_domain_name = general_domain_dict[domain['type']]
                         reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
-                        reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
+                        reaction.name = std_domain_name
                         reaction.lower_bound = 0.  # This is the default
                         reaction.upper_bound = 1000.
-                        reaction.add_metabolites(cofactor_reactions_dict[general_domain_dict[domains['type']]])
+                        reaction.add_metabolites(cofactor_reactions_dict[std_domain_name])
 
                         prevmet = _new_met(core_structure['type']+'_'+ str(domain_counter - 1), core_structure['type'])
                         postmet = _new_met(core_structure['type']+'_'+ str(domain_counter), core_structure['type'])
                         reaction.add_metabolites({prevmet: -1, postmet: 1})
                         reaction_list.append(reaction)
                         domain_counter += 1
-
+        # else:
+        #     print(module)
+        #     raise ValueError
 
     '''
     this part below is to add tailoring reactions:
@@ -1510,5 +1530,5 @@ if __name__ == '__main__':
                 add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
     if 1:
 
-        bgc_path = biggbk + "/2057.gbk"
+        bgc_path = biggbk #+ "/28.gbk"
         run(bgc_path, output_gbk, json_folder)

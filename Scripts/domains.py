@@ -68,7 +68,8 @@ general_domain_dict = {
     "MT": "PKS_cMT",
     "cMT": "cMT",
     "oMT": "oMT",
-    "nMT": "nMT"
+    "nMT": "nMT",
+    "Thioesterase": "PKS_TE"
 }
 
 acp_domains = ["ACP", "PP-binding", 'ACP_beta']
