@@ -349,6 +349,12 @@
 "name":"transAT-PKS",
 "compartment":"c",
 "formula":"X"
+},
+{
+"id":"transAT-PKS_12",
+"name":"transAT-PKS",
+"compartment":"c",
+"formula":"X"
 }
 ],
 "reactions":[
@@ -433,7 +439,7 @@
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":"CCG06113.1 and CCG06109.1 and CCG06112.1"
+"gene_reaction_rule":"CCG06113.1 and CCG06112.1 and CCG06109.1"
 },
 {
 "id":"transAT-PKS_7",
@@ -493,13 +499,25 @@
 },
 {
 "id":"transAT-PKS_11",
-"name":"transAT-PKS_reaction_11",
+"name":"PKS_DH",
+"metabolites":{
+"h2o_c":1.0,
+"transAT-PKS_10":-1,
+"transAT-PKS_11":1
+},
+"lower_bound":0.0,
+"upper_bound":1000.0,
+"gene_reaction_rule":""
+},
+{
+"id":"transAT-PKS_12",
+"name":"transAT-PKS_reaction_12",
 "metabolites":{
 "co2_c":1,
 "coa_c":1,
 "malcoa_c":-1,
-"transAT-PKS_10":-1,
-"transAT-PKS_11":1
+"transAT-PKS_11":-1,
+"transAT-PKS_12":1
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
@@ -509,7 +527,7 @@
 "id":"DM_secondary_metabolite",
 "name":"transAT-PKS_reaction",
 "metabolites":{
-"transAT-PKS_11":-1.0
+"transAT-PKS_12":-1.0
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
@@ -540,11 +558,11 @@
 "name":""
 },
 {
-"id":"CCG06112.1",
+"id":"CCG06109.1",
 "name":""
 },
 {
-"id":"CCG06109.1",
+"id":"CCG06112.1",
 "name":""
 },
 {
