@@ -332,32 +332,32 @@ def return_key_by_value(eu):
 
 def fix_transat_modules(domain_or_module):
     '''
+    Removes extra acp domains (?)
 
     :param domain_or_module: a list of domains and modules that antismash have found. This is the first of several
     "fixings" of this and only applies to transAT BGCs.
-
+    
     :return: domain_or_module, except some modules have been broken down if they are ks-
-    this might be a truly shit function
     '''
-    res = domain_or_module
-    for index in range(len(res) - 1):
-        if res[index]['element'] == 'module' and res[index + 1]['element'] == 'domain':
-            start = index
-            # COULD INCLUDE ACP HERE, BUT THOSE CASES MIGHT BE TOO STRANGE
-            if res[start + 1]['info']['type'] in reducing_domains:  
-                for domain_loc in range(0, len(domain_or_module[index]['domains']) - 1):
+    
+    N = len(domain_or_module)
+    for i in range(N - 1):
+        module = domain_or_module[i]
+        domain = domain_or_module[i + 1]
+        if module['element'] == 'module' and domain['element'] == 'domain':
+            if domain['info']['type'] in reducing_domains:
+                N_d = len(module['domains'])
+                for j in range(N_d - 1):
                     # insert domains at end, pop at start
-                    if res[index]['domains'][domain_loc]['type'] in acp_domains and \
-                            res[index]['domains'][domain_loc + 1]['type'] in at_domains:
-                        res = fix_transat_modules(res[0:start] + [{'element': 'domain', 'info': x} for x in
-                                                                     domain_or_module[index]['domains'][
-                                                                     :domain_loc]] + [{'element': 'domain', 'info': x}
-                                                                                      for x in domain_or_module[index][
-                                                                                                   'domains'][
-                                                                                               domain_loc + 1:]] + res[
-                                                                                                                   start + 1:])
-                return res
-    return res
+                    if module['domains'][j]['type'] in acp_domains:
+                        if module['domains'][j+1]['type'] in at_domains:
+
+                            pre_domains  = [{'element': 'domain', 'info': x} for x in module['domains'][:j]]
+                            post_domains = [{'element': 'domain', 'info': x} for x in module['domains'][j + 1:]]
+                            domain_or_module = fix_transat_modules(domain_or_module[0:i] + pre_domains + 
+                                                post_domains + domain_or_module[i + 1:])
+                return domain_or_module
+    return domain_or_module
 
 
 def find_and_replace_DHD_domains(domain_or_module):
@@ -405,9 +405,7 @@ def deactivate_reducing_domains_when_kr_is_inactive(domain_or_module):
     is inactive. The reason is that antismash only predicts the activity of the KR domains, so by default the DH
     and ER domains are always active. This is impossible if the KR domain is inactive.)
     '''
-    res = domain_or_module
-
-    for domod in res:  # domod is a domain or a module
+    for domod in domain_or_module:  # domod is a domain or a module
         kr_activity = False
         if domod['element'] == 'module':
             for domain in domod['domains']:
@@ -417,7 +415,7 @@ def deactivate_reducing_domains_when_kr_is_inactive(domain_or_module):
                 if domain['type'] in dh_er_domains:
                     domain['activity'] = kr_activity
 
-    return res
+    return domain_or_module
 
 
 def activate_kr_domains(domain_or_module):
@@ -454,12 +452,12 @@ def find_and_replace_cut_transat_modules(domain_or_module):
                 module_end = True
                 end = index
             if module_start and module_end:
+                new_domains = [domain_or_module[i]['info'] for i in range(start, end)]
                 new_module = {'element': 'module', 
                               'info': {'extender_unit': 'mal', 
                                        'start': res[start]['info']['start'],
-                                        'end': res[end]['info']['end']},
-                              'domains': [domain_or_module[a]['info'] for a in range(start, end)]
-                              }
+                                       'end': res[end]['info']['end']},
+                              'domains': new_domains}
                 all_modules = res[0:start] + [new_module] + res[end + 1:]
                 res = find_and_replace_cut_transat_modules(all_modules)
                 return res
@@ -526,37 +524,36 @@ def add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions)
     """
 
     
+    # domains x modules is now a dict sorted by placement on BGC.
+    # do this to find out if domains are found in this sequence: ks-at-acp
     domains, actual_domains, domains_x_modules = _get_domains(data, core_number)
 
     # assume that DHD-domains are inactive, however, may still dehydratase the previous domain(?)
     # assue that all others are active.
-
     domains_x_modules = fix_transat_modules(domains_x_modules)
     domains_x_modules = find_and_replace_DHD_domains(domains_x_modules)
     domains_x_modules = find_and_replace_load_modules(domains_x_modules)
+    
     domains_x_modules = find_and_replace_cut_transat_modules(domains_x_modules)
+    
     domains_x_modules = add_rogue_transat_domains(domains_x_modules)
 
-    # domains_x_modules = deactivate_reducing_domains_when_kr_is_inactive(domains_x_modules)
-    # the above line seems to be much more untrue than true KR domains are basically always active
-    # Thus:
+    # KR domains are basically always active
     domains_x_modules = activate_kr_domains(domains_x_modules)
 
     # The line below is for the case that there is no KR domain present.
     # Because then we dont want dh/er domains to be active
-    domains_x_modules = deactivate_reducing_domains_when_kr_is_inactive(domains_x_modules)
-    domains_x_modules = search_and_destroy_omt_modules(domains_x_modules)
-
-    # this needs to be last so that we dont add omt domains first as this would delete the previous model.
+    # Try to drop this in trans AT modules
+    # domains_x_modules = deactivate_reducing_domains_when_kr_is_inactive(domains_x_modules)
+    # Remove omt modules. 
     # these "rogue" omt domains are usually for tailoring reactions of the pks and is therefore just a bonus
     # It is a weird case, but should make it more correct for the most part, although the methodology behind
     # it is completely wrong.
+    domains_x_modules = search_and_destroy_omt_modules(domains_x_modules)
     model = create_t1_transat_nrps_model(data['core_structure'][core_number], domains_x_modules, model,
                                          tailoring_reactions)
 
     return model
-    # domains x modules is now a dict sorted by placement on BGC.
-    # do this to find out if domains are found in this sequence: ks-at-acp
 
 
 
@@ -596,7 +593,7 @@ def find_and_replace_load_modules(domain_or_module):
     encountered_a_module = False
     for index, dom_mod in enumerate(domain_or_module):  # dom_mod is either a domain or a module
         if dom_mod['element'] == 'domain':  # if this is a domain and not a module
-            if not dom_mod['info']['gene'] == prev_gene:
+            if dom_mod['info']['gene'] != prev_gene:
                 encountered_a_module = False
                 start_of_gene = index  
                 # so we know what domains to remove in case we find a loader domain
@@ -942,6 +939,12 @@ def _get_module_type(module):
                return 'NRPS'
             else:
                 pass
+
+    # No signature domains. Look for specific starters
+    for domain in module['domains']:
+        if domain['type'] in alternate_starters:
+            return 'starter_module'
+
     return None
 
 def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailoring_reactions):
@@ -961,18 +964,17 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
             continue
         
         module_type = _get_module_type(module)
-        if module_type in ["PKS", "NRPS"]:
-
+        if module_type in ["PKS", "NRPS", "starter_module"]:
             # This needs to be first because we want to add extender unit as first step of a module, but for transAT
             # modules, the at domain is not always present.
             
             if module['info']['extender_unit'] not in non_extending_modules:
                 # essentially: if the module is a regular extender module
                 # Get extender unit
-                if module_type == 'starter_module':
-                    extender_unit = return_key_by_value(module['info']['activity'].split(' -> ')[0])
-                else:
-                    extender_unit = return_key_by_value(module['info']['extender_unit'].split(' -> ')[0])
+                # if module_type == 'starter_module':
+                #     extender_unit = return_key_by_value(module['info']['activity'].split(' -> ')[0])
+                # else:
+                extender_unit = return_key_by_value(module['info']['extender_unit'].split(' -> ')[0])
 
                 # This is just a way that we can separate extender units that exist in the GEM
                 # from those that do not exist in the GEM. if the TRY fails, it means that
@@ -1181,11 +1183,11 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     #     domain_counter += 1
                     # else:
                     #     raise IndexError
-
+            
             for domain in module['domains']:
                 if domain['activity']:
                     if domain['type'] in general_domain_dict:
-                        print(domain_counter, domain)
+                        print(domain)
                         std_domain_name = general_domain_dict[domain['type']]
                         reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
                         reaction.name = std_domain_name
@@ -1427,9 +1429,7 @@ def add_cores_to_model(name, data, model_output_path):
     smcog_dict = find_tailoring_reactions_from_smcogs(data)
 
     tailoring_reactions_dict = add_tailoring_smcogs(smcog_dict)
-    '''
-    First we check to see if methoxymalonyl-coa is synthesized by the BGC:
-    '''
+
     bgc_types = []
     for core_number in data['core_structure']:
         print("Core number: ", core_number)
@@ -1528,5 +1528,5 @@ if __name__ == '__main__':
                 add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
     if 1:
 
-        bgc_path = biggbk #+ "/28.gbk"
+        bgc_path = biggbk + "/1032.gbk"
         run(bgc_path, output_gbk, json_folder)
