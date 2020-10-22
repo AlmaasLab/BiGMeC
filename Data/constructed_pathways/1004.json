@@ -43,6 +43,18 @@
 }
 },
 {
+"id":"T1PKS_0",
+"name":"T1PKS",
+"compartment":"c",
+"formula":"X"
+},
+{
+"id":"T1PKS_1",
+"name":"T1PKS",
+"compartment":"c",
+"formula":"X"
+},
+{
 "id":"co2_c",
 "name":"CO2",
 "compartment":"c",
@@ -61,18 +73,6 @@
 "pubchem.substance":"3313",
 "sbo":"SBO:0000247"
 }
-},
-{
-"id":"T1PKS_0",
-"name":"T1PKS",
-"compartment":"c",
-"formula":"X"
-},
-{
-"id":"T1PKS_1",
-"name":"T1PKS",
-"compartment":"c",
-"formula":"X"
 },
 {
 "id":"T1PKS_2",
@@ -467,7 +467,6 @@
 "metabolites":{
 "T1PKS_0":-1,
 "T1PKS_1":1,
-"co2_c":1,
 "coa_c":1,
 "mmcoa__R_c":-1
 },
@@ -794,7 +793,7 @@
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":"lobC3"
+"gene_reaction_rule":"lobC3 and lobC2"
 },
 {
 "id":"T1PKS_26",
@@ -988,6 +987,10 @@
 },
 {
 "id":"lobC3",
+"name":""
+},
+{
+"id":"lobC2",
 "name":""
 },
 {

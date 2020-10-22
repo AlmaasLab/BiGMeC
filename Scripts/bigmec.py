@@ -397,23 +397,57 @@ def find_and_replace_DHD_domains(domain_or_module):
     return all_domains
 
 
-def deactivate_reducing_domains_when_kr_is_inactive(domain_or_module):
-    '''
+def deactivate_dh_domains_in_DHD_modules(domain_or_module):
+    """
+    The DH domains in DHD modules seems to not be active, and they are therefore deactivated
+    """
+    for module in domain_or_module:
+        if module['element'] == 'domain':
+            # Only interested in modules
+            continue
 
-    :param domain_or_module:
-    :return: res (the same as the input, however this time the er and dh domains have been inactivated if the KR domain
-    is inactive. The reason is that antismash only predicts the activity of the KR domains, so by default the DH
-    and ER domains are always active. This is impossible if the KR domain is inactive.)
+        if module["info"]["extender_unit"] == "DHD":
+            for domain in module["domains"]:
+                if domain["type"] in dh_domains:
+                    domain["activity"] = False
+    return domain_or_module
+
+
+
+def deactivate_reducing_domains_when_kr_is_inactive(domain_or_module, deactivate_if_no_KR):
     '''
-    for domod in domain_or_module:  # domod is a domain or a module
-        kr_activity = False
-        if domod['element'] == 'module':
-            for domain in domod['domains']:
-                if domain['type'] == 'PKS_KR':
-                    kr_activity = domain['activity']
-            for domain in domod['domains']:
+    If there is a KR domain in a module the activity of other reducing domains is set to the same activity (True or False). This is because the activity is only predicted for the KR domain, but if the KR domain is inactive, the other reducing domains are neither active (They need to act on the OH-group created by the KR domain).
+
+    :param domain_or_module
+        - List of domains and modules
+    :param deactivate_if_no_KR
+        - bool, determine the action if no KR domain is present in the module. In T1PKS we would like to set this to True, but for trans-AT we set it false since it is possible that a KR domain acts in trans. 
+
+    :return: List of domains and module with corrected activity
+    '''
+    for module in domain_or_module:
+        if module['element'] == 'domain':
+            # Only interested in modules
+            continue
+
+        # Find KR domain
+        KR_domain = False
+        KR_activity = False
+        for domain in module["domains"]:
+            if domain['type'] == 'PKS_KR':
+                KR_domain = True
+                KR_activity = domain['activity']
+
+        # Skip to next module if there is no KR domain in this module and we don't want to deactive other domains 
+        # in case of missing KR domain 
+        if KR_domain or deactivate_if_no_KR:
+            # Set activity of other DH / ER domains to the activity of the KR domain
+             for domain in module["domains"]:
                 if domain['type'] in dh_er_domains:
-                    domain['activity'] = kr_activity
+                    domain['activity'] = KR_activity
+        else:
+            continue
+
 
     return domain_or_module
 
@@ -539,12 +573,11 @@ def add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions)
     domains_x_modules = add_rogue_transat_domains(domains_x_modules)
 
     # KR domains are basically always active
-    domains_x_modules = activate_kr_domains(domains_x_modules)
+    # domains_x_modules = activate_kr_domains(domains_x_modules)
 
-    # The line below is for the case that there is no KR domain present.
-    # Because then we dont want dh/er domains to be active
-    # Try to drop this in trans AT modules
-    # domains_x_modules = deactivate_reducing_domains_when_kr_is_inactive(domains_x_modules)
+    # Set the activity of the DH / ER domains 
+    domains_x_modules = deactivate_reducing_domains_when_kr_is_inactive(domains_x_modules, False)
+    domains_x_modules = deactivate_dh_domains_in_DHD_modules(domains_x_modules)
     # Remove omt modules. 
     # these "rogue" omt domains are usually for tailoring reactions of the pks and is therefore just a bonus
     # It is a weird case, but should make it more correct for the most part, although the methodology behind
@@ -614,13 +647,13 @@ def find_and_replace_load_modules(domain_or_module):
 
             prev_gene = dom_mod['info']['gene']
             if found_loader and dom_mod['info']['type'] in loader_acp_domains:
-                new_domains = [x['info'] for x in domain_or_module[loader_start:index]]
+                new_domains = [x['info'] for x in domain_or_module[loader_start:index+1]]
                 info = {'extender_unit': loader_type,
                         'loader_activity': loader_activity,
                         'start': domain_or_module[start_of_gene]['info']['start'],
                         'end': domain_or_module[index]['info']['end']}
                 new_module = {'element': 'module', 'info': info,'domains': new_domains}
-                return domain_or_module[0:start_of_gene] + [new_module] + domain_or_module[index:]
+                return domain_or_module[:start_of_gene] + [new_module] + domain_or_module[index+1:]
 
         elif dom_mod['element'] == 'module':
             # to check that we have not passed any real modules
@@ -767,7 +800,7 @@ def add_t1pks_metabolic_pathway(data, model, core_number, tailoring_reactions):
     # assue that all others are active.
 
     domains_x_modules = find_and_replace_load_modules(domains_x_modules)
-    domains_x_modules = deactivate_reducing_domains_when_kr_is_inactive(domains_x_modules)
+    domains_x_modules = deactivate_reducing_domains_when_kr_is_inactive(domains_x_modules, True)
     model = create_t1_transat_nrps_model(data['core_structure'][core_number], domains_x_modules, model,
                                          tailoring_reactions)
 
@@ -892,16 +925,6 @@ def _new_met(met_id, name = None, formula = "X"):
     return new_met
 
 
-def _is_pks_or_nrps(module):
-    """
-    Little hack to find out if it is a nrps or pks module. PKS_KS and Condensation domains are obligatory for their
-    respective type of module
-    """
-    if module['info']['extender_unit'] == "DHD":
-        return False
-    else:
-        return True
-
 
 def _get_gene_reaction_rule(module):
     genes = []
@@ -955,6 +978,9 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
 
     # Make an sink reaction for the initial start of the polyketide, this is required in the following loop
     in_rx = _make_IN_reaction(core_structure)
+
+    # Flag to determine if the polymer is cleaved off by a TE domain
+    chain_released = False
     
     # Make a flag so the conversion reactions from specific to generic AA's only are added once
     domain_counter = 1
@@ -964,11 +990,11 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
             continue
         
         module_type = _get_module_type(module)
+
         if module_type in ["PKS", "NRPS", "starter_module"]:
             # This needs to be first because we want to add extender unit as first step of a module, but for transAT
             # modules, the at domain is not always present.
-            
-            if module['info']['extender_unit'] not in non_extending_modules:
+            if (module['info']['extender_unit'] not in non_extending_modules) and not chain_released:
                 # essentially: if the module is a regular extender module
                 # Get extender unit
                 # if module_type == 'starter_module':
@@ -1124,6 +1150,11 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     raise ValueError
 
                 # Add the polyketide chain metabolites to the reation and add reaction to list
+                
+                # remove CO2 from load module
+                if domain_counter == 1:
+                    remove_one_co2(reaction)
+
                 reaction.add_metabolites({prevmet: -1, postmet: 1})
                 reaction_list.append(reaction)
                 domain_counter += 1
@@ -1187,7 +1218,6 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
             for domain in module['domains']:
                 if domain['activity']:
                     if domain['type'] in general_domain_dict:
-                        print(domain)
                         std_domain_name = general_domain_dict[domain['type']]
                         reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
                         reaction.name = std_domain_name
@@ -1200,6 +1230,12 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         reaction.add_metabolites({prevmet: -1, postmet: 1})
                         reaction_list.append(reaction)
                         domain_counter += 1
+
+                        # If we encounter a TE domain the polymer is released and it is unlikely that 
+                        # further elongation occurs
+                        if domain["type"] in chain_release_domains:
+                            chain_released = True
+
         # else:
         #     print(module)
         #     raise ValueError
@@ -1210,18 +1246,16 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
 
     {glycosyltransferase: 3, ALA: 0, glycerol: 1}
     '''
-
-    for tailoring_reaction in tailoring_reactions:
+    for tailoring_reaction, n in tailoring_reactions.items():
         if tailoring_reaction != 'methoxymalonyl':
-            if tailoring_reactions[tailoring_reaction]:
-                for repetition in range(tailoring_reactions[tailoring_reaction]):
-                    reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
-                    reaction.add_metabolites(tailoring_reactions_dict[tailoring_reaction])
-                    prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
-                    postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
-                    reaction.add_metabolites({prevmet: -1.0, postmet: 1.0})
-                    reaction_list.append(reaction)
-                    domain_counter += 1
+            for repetition in range(n):
+                reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
+                reaction.add_metabolites(tailoring_reactions_dict[tailoring_reaction])
+                prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
+                postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
+                reaction.add_metabolites({prevmet: -1.0, postmet: 1.0})
+                reaction_list.append(reaction)
+                domain_counter += 1
 
     '''
     The reaction below is here in order to have a reaction that converts e.g. T1PKS_54 to a general metabolite
@@ -1251,6 +1285,16 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     lump_model.add_reactions([lump_rx])
     return model, lump_model
 
+def remove_one_co2(reaction):
+    """
+    CO2 is only produced in PKS chain elongations (claissen condensations). Thus for the load module CO2 is not produced
+    """
+    for m, i in reaction.metabolites.items():
+        if m.id == "co2_c":
+            if i > 0:
+                reaction.add_metabolites({m:-1})
+                break
+        
 
 def add_ripp_metabolic_pathway(core_structure, model, core_number):
     reaction_name = "{0}_{1}".format(core_structure['type'], core_number)
@@ -1514,8 +1558,8 @@ if __name__ == '__main__':
     # 4) Folder that json files are output (empty folder)(an unnecessary step, but it may help look at the information that is saved)
 
     # 5) path of the genome scale metabolic model
-    model_fn = '../Models/Sco-GEM.xml'
-    ref_model = cobra.io.read_sbml_model(model_fn)
+    # model_fn = '../Models/Sco-GEM.xml'
+    # ref_model = cobra.io.read_sbml_model(model_fn)
 
     if 0:
         for filename in os.listdir(biggbk):
@@ -1528,5 +1572,5 @@ if __name__ == '__main__':
                 add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
     if 1:
 
-        bgc_path = biggbk + "/1032.gbk"
+        bgc_path = biggbk# + "/1106.gbk"
         run(bgc_path, output_gbk, json_folder)
