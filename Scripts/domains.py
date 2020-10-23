@@ -69,7 +69,8 @@ general_domain_dict = {
     "cMT": "cMT",
     "oMT": "oMT",
     "nMT": "nMT",
-    "Thioesterase": "PKS_TE"
+    "Thioesterase": "PKS_TE",
+    "TD": "TD"
 }
 
 acp_domains = ["ACP", "PP-binding", 'ACP_beta']
@@ -79,6 +80,7 @@ nrps_pks_cores = ['T1PKS', 'NRPS', 'PKS-like', 'NRPS-like']
 compatible_cores = ['transAT-PKS-like', 'transAT-PKS', 'T1PKS', 'NRPS', 'PKS-like', 'NRPS-like']
 RiPPs = ['lanthipeptide', 'thiopeptide', 'lassopeptide']
 prefer_types = ['transAT-PKS', 'transAT-PKS-like', 'NRPS', 'T1PKS', 'NRPS-like', 'PKS-like']
-dh_domains = ['PKS_DH', 'PKS_DH2']
+dh_domains = ['PKS_DH', 'PKS_DH2', "PKS_DHt",]
 print_list = ['PKS_KS', 'PKS_DH', 'PKS_DH2', 'PKS_KR', 'MT', 'PKS_ER', 'Condensation', 'Thioesterase']
 alternate_starters = ['CAL_domain', 'FkbH', 'GNAT', 'NRPS_acylating_loader']
+chain_release_domains = ["Thioesterase", "TD"]

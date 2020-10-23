@@ -14,6 +14,7 @@ Useful utility functions
 import pandas as pd
 import cobra
 from pathlib import Path
+import json
 import re
 
 name_fix_dict = {
@@ -93,9 +94,38 @@ def all_pathways_to_table(json_folder, csv_folder):
 
     for json_fn in Path(json_folder).glob("*.json"):
         pathway_to_table(json_fn, csv_folder)
+
+def fix_BiGG_json():
+    """
+    The universal bigg models downloaded from http://bigg.ucsd.edu/data_access has annotations as a list, but it has to be as dict.
+    """
+    model_fn = "../Models/BiGG_universal_model.json"
+    
+    # Read in json file
+    with open(model_fn, "r") as f:
+        data = json.load(f)
+
+    # change annotations from list to dict
+    for key,key_data in data.items():
+        if isinstance(key_data, list):
+            for element_dict in key_data:
+                try:
+                    annotations = element_dict["annotation"]
+                except KeyError:
+                    continue
+                except TypeError:
+                    continue
+                else:
+                    element_dict["annotation"] = {k:v for [k,v] in annotations}
+
+    # Store json
+    with open(model_fn, "w") as f:
+        json.dump(data, f)
         
 if __name__ == '__main__':
-    all_pathways_to_table("../Data/constructed_pathways","../Data/constructed_pathways/csv/")
+    if 1:
+        all_pathways_to_table("../Data/constructed_pathways","../Data/constructed_pathways/csv/")
     # fn = r'C:\Users\snorres\OneDrive - SINTEF\Almaaslab\masteroppgaver\BGC-to-GEM\MasterThesis-master(1)\MasterThesis-master\gbk_db_output_models\gbk_db_output_models'
     # all_pathways_to_table(fn,fn+"/csv/")
-    
+    if 0:
+        fix_BiGG_json()

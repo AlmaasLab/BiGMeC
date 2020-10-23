@@ -47,6 +47,8 @@ cofactor_reactions_dict = {  # reactions that are specific to certain domains
     'PKS_ER': {cofactor_metabolites_dict['nadph']: -1.0, cofactor_metabolites_dict['h+']: -1.0,
                cofactor_metabolites_dict['nadp']: 1.0},
     'PKS_TE': {cofactor_metabolites_dict['h2o']: -1.0},
+    'TD': {cofactor_metabolites_dict['nadph']: -1.0, cofactor_metabolites_dict['h+']: -1.0,
+               cofactor_metabolites_dict['nadp']: 1.0},
     'PKS_AT': {cofactor_metabolites_dict['coa']: 1.0, cofactor_metabolites_dict['co2']: 1.0},
     'Condensation': {cofactor_metabolites_dict['h2o']: -1.0},
     'nMT': {cofactor_metabolites_dict['sam']: -1.0, cofactor_metabolites_dict['sah']: 1.0},

@@ -1017,6 +1017,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     elif module['info']['extender_unit'] in alternate_starters:
                         if module['info']['extender_unit'] == 'CAL_domain':
                             module_type = module['info']['loader_activity']
+                            print("#!#", module['info']['loader_activity'])
                         elif module['info']['extender_unit'] == 'FkbH':
                             module_type = 'FkbH'
                         elif module['info']['extender_unit'] == 'GNAT':
@@ -1152,7 +1153,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                 # Add the polyketide chain metabolites to the reation and add reaction to list
                 
                 # remove CO2 from load module
-                if domain_counter == 1:
+                if (domain_counter == 1) and (module_type != 'GNAT'):
                     remove_one_co2(reaction)
 
                 reaction.add_metabolites({prevmet: -1, postmet: 1})
@@ -1572,5 +1573,5 @@ if __name__ == '__main__':
                 add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
     if 1:
 
-        bgc_path = biggbk# + "/1106.gbk"
+        bgc_path = biggbk + "/1049.gbk"
         run(bgc_path, output_gbk, json_folder)
