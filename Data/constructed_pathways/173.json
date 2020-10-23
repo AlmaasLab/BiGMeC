@@ -24,6 +24,26 @@
 }
 },
 {
+"id":"co2_c",
+"name":"CO2",
+"compartment":"c",
+"charge":0,
+"formula":"CO2",
+"annotation":{
+"3dmet":"B01131",
+"bigg.metabolite":"co2",
+"biocyc":"CARBON-DIOXIDE",
+"cas":"124-38-9",
+"chebi":"CHEBI:16526",
+"kegg.compound":"C00011",
+"metanetx.chemical":"MNXM13",
+"obo.chebi":"CHEBI%3A16526",
+"origin":"iMK1208",
+"pubchem.substance":"3313",
+"sbo":"SBO:0000247"
+}
+},
+{
 "id":"coa_c",
 "name":"Coenzyme A",
 "compartment":"c",
@@ -57,26 +77,6 @@
 "name":"transAT-PKS",
 "compartment":"c",
 "formula":"X"
-},
-{
-"id":"co2_c",
-"name":"CO2",
-"compartment":"c",
-"charge":0,
-"formula":"CO2",
-"annotation":{
-"3dmet":"B01131",
-"bigg.metabolite":"co2",
-"biocyc":"CARBON-DIOXIDE",
-"cas":"124-38-9",
-"chebi":"CHEBI:16526",
-"kegg.compound":"C00011",
-"metanetx.chemical":"MNXM13",
-"obo.chebi":"CHEBI%3A16526",
-"origin":"iMK1208",
-"pubchem.substance":"3313",
-"sbo":"SBO:0000247"
-}
 },
 {
 "id":"transAT-PKS_2",
@@ -350,6 +350,7 @@
 "id":"transAT-PKS_1",
 "name":"transAT-PKS_reaction_1",
 "metabolites":{
+"co2_c":1,
 "coa_c":1,
 "malcoa_c":-1,
 "transAT-PKS_0":-1,
@@ -480,7 +481,7 @@
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":"bonB and bonA"
+"gene_reaction_rule":"bonA and bonB"
 },
 {
 "id":"transAT-PKS_11",
@@ -600,7 +601,7 @@
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
-"gene_reaction_rule":"bonD and bonC"
+"gene_reaction_rule":"bonC and bonD"
 },
 {
 "id":"transAT-PKS_20",

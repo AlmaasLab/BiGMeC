@@ -835,6 +835,12 @@
 "formula":"X"
 },
 {
+"id":"NRPS_7",
+"name":"NRPS",
+"compartment":"c",
+"formula":"X"
+},
+{
 "id":"g6p_c",
 "name":"D-Glucose 6-phosphate",
 "compartment":"c",
@@ -878,7 +884,7 @@
 }
 },
 {
-"id":"NRPS_7",
+"id":"NRPS_8",
 "name":"NRPS",
 "compartment":"c",
 "formula":"X"
@@ -1189,10 +1195,24 @@
 },
 {
 "id":"NRPS_7",
+"name":"TD",
+"metabolites":{
+"NRPS_6":-1,
+"NRPS_7":1,
+"h_c":-1.0,
+"nadp_c":1.0,
+"nadph_c":-1.0
+},
+"lower_bound":0.0,
+"upper_bound":1000.0,
+"gene_reaction_rule":""
+},
+{
+"id":"NRPS_8",
 "name":"",
 "metabolites":{
-"NRPS_6":-1.0,
-"NRPS_7":1.0,
+"NRPS_7":-1.0,
+"NRPS_8":1.0,
 "g6p_c":-1,
 "h_c":1,
 "pi_c":1
@@ -1205,7 +1225,7 @@
 "id":"DM_secondary_metabolite",
 "name":"NRPS_reaction",
 "metabolites":{
-"NRPS_7":-1.0
+"NRPS_8":-1.0
 },
 "lower_bound":0.0,
 "upper_bound":1000.0,
