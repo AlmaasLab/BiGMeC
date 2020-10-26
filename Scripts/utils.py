@@ -31,6 +31,7 @@ name_fix_dict = {
             "Generic amino acid": "AA-X",
             "mmcoa__R": "Methylmalonyl-CoA"
 }
+name_fix_dict_reverse = {value:key for (key, value) in name_fix_dict.items()}
 
 def pathway_to_table(json_fn, save_folder = None, include_backbone = False):
     model = cobra.io.load_json_model(str(json_fn))
@@ -116,16 +117,147 @@ def fix_BiGG_json():
                 except TypeError:
                     continue
                 else:
-                    element_dict["annotation"] = {k:v for [k,v] in annotations}
+                    element_dict["annotation"] = {k:v for (k,v) in annotations}
 
     # Store json
     with open(model_fn, "w") as f:
         json.dump(data, f)
-        
+
+def make_pathway_from_csv():
+    model_fn = '../Models/Sco-GEM.xml'
+    ref_model = cobra.io.read_sbml_model(model_fn)
+    
+    fn = "../Data/pathway_comparison.xlsx"
+
+    df_dict = pd.read_excel(fn, sheet_name = None, skiprows = 14)
+    for key, df in df_dict.items():
+        print("\n", "# ", key)
+
+        m_sum_dict = {}
+        for string in df["Real reaction"]:
+            if isinstance(string, str) and len(string.lstrip().rstrip()):
+                # print(string)
+                m_dict = reaction_string_to_mets(string, ref_model)
+                #print(m_dict)
+                for m, value in m_dict.items():
+                    try:
+                        m_id = m.id
+                    except AttributeError:
+                        m_id = m
+                    try:
+                        current_value = m_sum_dict[m_id]
+                    except KeyError:
+                        m_sum_dict[m_id] = value
+                    else:
+                        m_sum_dict[m_id] = current_value + value
+        for key, value in m_sum_dict.items():
+            print("{0}: {1}".format(key, value))
+
+
+def reaction_string_to_mets(string, model):
+    substrate_string, product_string = string.split("->")
+    substrates = substrate_string.split(" + ")
+    products = product_string.split(" + ")
+
+    m_dict = {}
+    for string, k in zip([substrates, products], [-1, 1]):
+        for txt in string:
+            identified_met = False
+            lst = txt.strip(" ").split(" ")
+            try:
+                int(lst[0])
+            except ValueError:
+                lst = [" ".join(lst)]
+            if (len(lst) == 2) and len(lst[0]):
+                n_m = int(lst[0])
+                m_name = lst[1].strip()
+            else:
+                n_m = 1
+                m_name = lst[0].strip()
+
+            if not len(m_name):
+                continue
+            
+            try:
+                m_ID = name_fix_dict_reverse[m_name] + "_c"
+            except KeyError:
+                m_ID = None
+
+            for m in model.metabolites:
+                if m.compartment == "c":
+                    if m_ID:
+                        if m.id == m_ID:
+                            identified_met = True
+                            m_dict[m] = k*n_m
+                            break
+                    else:
+                        if m.name == m_name:
+                            identified_met = True
+                            m_dict[m] = k*n_m
+                            break
+            if not identified_met:
+                m_dict[m_name] = k
+                print("No met found for {0}, {1}".format(m_ID, m_name))
+    return m_dict
+
+def reaction_string_to_mets_name(string):
+    substrate_string, product_string = string.split("->")
+    substrates = substrate_string.split(" + ")
+    products = product_string.split(" + ")
+
+    m_dict = {}
+    for string, k in zip([substrates, products], [-1, 1]):
+        for txt in string:
+            lst = txt.strip(" ").split(" ")
+            try:
+                int(lst[0])
+            except ValueError:
+                lst = [" ".join(lst)]
+            if (len(lst) == 2) and len(lst[0]):
+                n_m = int(lst[0])
+                m_name = lst[1].strip()
+            else:
+                n_m = 1
+                m_name = lst[0].strip()
+
+            if not len(m_name):
+                continue
+            
+            try:
+                curr_value = m_dict[m_name]
+            except KeyError:
+                m_dict[m_name] = k*n_m
+            else:
+                m_dict[m_name] = curr_value + k*n_m
+    return m_dict
+
+def summarize_ahba_pathway(fn):
+    df = pd.read_csv(fn, header = 0, sep = ";")
+    m_sum_dict = {}
+    for string in df["Reaction string"]:
+        m_dict = reaction_string_to_mets_name(string)
+        for m, value in m_dict.items():
+            try:
+                current_value = m_sum_dict[m]
+            except KeyError:
+                m_sum_dict[m] = value
+            else:
+                m_sum_dict[m] = current_value + value
+    for key, value in m_sum_dict.items():
+        if value != 0:
+            print("{0}: {1}".format(key, value))
+
+
 if __name__ == '__main__':
     if 1:
         all_pathways_to_table("../Data/constructed_pathways","../Data/constructed_pathways/csv/")
-    # fn = r'C:\Users\snorres\OneDrive - SINTEF\Almaaslab\masteroppgaver\BGC-to-GEM\MasterThesis-master(1)\MasterThesis-master\gbk_db_output_models\gbk_db_output_models'
-    # all_pathways_to_table(fn,fn+"/csv/")
+    if 0:
+        fn = "../Data/validation_pathways"
+        all_pathways_to_table(fn,fn+"/csv/")
     if 0:
         fix_BiGG_json()
+    if 0:
+        make_pathway_from_csv()
+    if 1:
+        fn = "../Data/ahba_synthesis.csv"
+        summarize_ahba_pathway(fn)

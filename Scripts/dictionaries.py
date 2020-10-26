@@ -35,6 +35,7 @@ cofactor_metabolites_dict = {
     'fatty_acid_X': cobra.Metabolite('fatty_acid_X_c', formula='X', 
                                 name='generic fatty acid for acylation in NRPS initiation', compartment='c'),
     'abu': cobra.Metabolite('2abu_c', formula='X', name='2-aminobutyrate', compartment='c'),
+    'ahba': cobra.Metabolite('ahba_c', formula='C7H7NO3', name='3-Amino-5-hydroxybenzoate', compartment='c'), # https://www.genome.jp/dbget-bin/www_bget?C12107
 }
 
 
@@ -109,17 +110,38 @@ cofactor_reactions_dict = {  # reactions that are specific to certain domains
     'fkbh': {ref_model.metabolites.get_by_id('13dpg_c'): -1.0,
              ref_model.metabolites.get_by_id('pi_c'): 2.0},
 
-    'ahba': {ref_model.metabolites.get_by_id('e4p_c'): -1.0,
-             ref_model.metabolites.get_by_id('pep_c'): -1.0,
-             ref_model.metabolites.get_by_id('pi_c'): 1.0,
-             ref_model.metabolites.get_by_id('h2o_c'): 2.0},
+    # See https://www.genome.jp/kegg-bin/show_pathway?rn01051 and
+    # https://biocyc.org/META/NEW-IMAGE?type=PATHWAY&object=PWY-5979
+    'ahba-synthesis': {ref_model.metabolites.get_by_id('udpg_c'):-1,
+             ref_model.metabolites.get_by_id('nad_c'): -1,
+             ref_model.metabolites.get_by_id('nadh_c'): 1,
+             ref_model.metabolites.get_by_id('h_c'): 3,
+             ref_model.metabolites.get_by_id('gln__L_c'): -1,
+             ref_model.metabolites.get_by_id('HC00591_c'): 1,
+             ref_model.metabolites.get_by_id('udp_c'): 1,
+             ref_model.metabolites.get_by_id('atp_c'): -1,
+             ref_model.metabolites.get_by_id('adp_c'): 1,
+             ref_model.metabolites.get_by_id('r5p_c'): -1,
+             ref_model.metabolites.get_by_id('s7p_c') : 1,
+             ref_model.metabolites.get_by_id('pep_c'): -1,
+             ref_model.metabolites.get_by_id('pi_c'): 2,
+             cofactor_metabolites_dict["ahba"]: 1},
+
+    'ahba': {cofactor_metabolites_dict["ahba"]: -1,
+             ref_model.metabolites.get_by_id('atp_c'): -1,
+             ref_model.metabolites.get_by_id('amp_c'):  1,
+             ref_model.metabolites.get_by_id('ppi_c'):  1,
+             ref_model.metabolites.get_by_id('h2o_c'):  1},
 
     'acetyl': {ref_model.metabolites.get_by_id('accoa_c'): -1,
                ref_model.metabolites.get_by_id('coa_c'): 1,
                ref_model.metabolites.get_by_id('co2_c'): 1},
 
     'shikimic_acid': {ref_model.metabolites.get_by_id('skm_c'): -1,
-                      ref_model.metabolites.get_by_id('co2_c'): 1},
+                      ref_model.metabolites.get_by_id('atp_c'): -1,
+                      ref_model.metabolites.get_by_id('amp_c'):  1,
+                      ref_model.metabolites.get_by_id('ppi_c'):  1,
+                      ref_model.metabolites.get_by_id('h2o_c'):  1},
 
     'fatty_acid': {ref_model.metabolites.get_by_id('accoa_c'): -1,
                    ref_model.metabolites.get_by_id('malcoa_c'): -3,
@@ -132,6 +154,7 @@ cofactor_reactions_dict = {  # reactions that are specific to certain domains
             ref_model.metabolites.get_by_id('coa_c'): 1
             },
 
+    # https://www.sciencedirect.com/topics/immunology-and-microbiology/ascomycin
     'pip': {ref_model.metabolites.get_by_id('pyr_c'): -1,
             ref_model.metabolites.get_by_id('lys__L_c'): -1,
             ref_model.metabolites.get_by_id('h2o_c'): 1,
@@ -297,8 +320,21 @@ long_to_bigg = {'Malonyl-CoA': 'malcoa_c',
                 'alpha-hydroxy-isocaproic-acid': '99ahia_c',
                 'MeHOval': '99mehoval',
                 '2-oxo-isovaleric-acid': '992oia_c',
-                'aoda': '99aoda_c'
-                }
+                'aoda': '99aoda_c',
+                'UDP-glucose': 'udpg_c',
+                'NAD+': 'nad_c',
+                'NADH':  'nadh_c',
+                'H+': 'h_c',
+                'L-Glutamine': 'gln__L_c',
+                '2-Oxoglutaramate': 'HC00591_c',
+                'UDP': 'udp_c',
+                'ATP': 'atp_c',
+                'ADP': 'adp_c',
+                'D-Ribose 5-phosphate': 'r5p_c',
+                'Sedoheptulose 7-phosphate': 's7p_c',
+                'Phosphoenolpyruvate': 'pep_c',
+                'Orthophosphate': 'pi_c',
+                 }
 
 t1pks_extenders = {'Malonyl-CoA': 'C00083',
                    'Methylmalonyl-CoA': 'C00683',  # (S)-methylmalonyl-coa. (R) is C01213

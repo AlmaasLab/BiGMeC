@@ -875,10 +875,6 @@ def force_X_nrps_module_flux(substrate):
     :param substrate: an amino acid that is either not specifically determined (NRPS predictor couldnt find
     specific amino acid)
     :return: 20 reactions that convert each amino acid into the unknown amino acid
-    Is actually not that terrible of an assumption (albeit with respect to linear program solving which is not that
-    good in the case of secondary metabolites, but i digress)
-    consider the biosynthesis of HPG which can be the literal conversion of tyrosine to hpg, using only o2 as a
-    cofactor.
     '''
     met_id = long_to_bigg[substrate]
     metabolite = _new_met(met_id, name='Generic amino acid')
@@ -1062,7 +1058,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     elif extender_unit == 'dpg' or extender_unit == 'dhpg':
                         # duplicate entries
                         # dpg and dhpg are the same substrates
-                        dpg_reaction1 = cobra.Reaction('hpg_synthesis')
+                        dpg_reaction1 = cobra.Reaction('dhpg_synthesis')
                         dpg_reaction1.name = 'synthesis of dhpg'
                         dpg_reaction1.lower_bound = 0.  # This is the default
                         dpg_reaction1.upper_bound = 1000.
@@ -1121,6 +1117,11 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     reaction.add_metabolites(cofactor_reactions_dict['fatty_acid'])
                     
                 elif module_type == 'AHBA':
+                    ahba_synthesis_reaction = cobra.Reaction('ahba_synthesis')
+                    ahba_synthesis_reaction.name = "AHBA synthesis"
+                    ahba_synthesis_reaction.bounds = (0,1000)
+                    ahba_synthesis_reaction.add_metabolites(cofactor_reactions_dict['ahba-synthesis'])
+                    model.add_reaction(ahba_synthesis_reaction)
                     reaction.add_metabolites(cofactor_reactions_dict['ahba'])
                     
                 elif module_type == 'shikimic_acid':
@@ -1573,5 +1574,5 @@ if __name__ == '__main__':
                 add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
     if 1:
 
-        bgc_path = biggbk + "/1049.gbk"
+        bgc_path = biggbk #+ "/1049.gbk"
         run(bgc_path, output_gbk, json_folder)
