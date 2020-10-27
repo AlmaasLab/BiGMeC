@@ -249,15 +249,15 @@ def summarize_ahba_pathway(fn):
 
 
 if __name__ == '__main__':
-    if 1:
+    if 0:
         all_pathways_to_table("../Data/constructed_pathways","../Data/constructed_pathways/csv/")
     if 0:
         fn = "../Data/validation_pathways"
         all_pathways_to_table(fn,fn+"/csv/")
     if 0:
         fix_BiGG_json()
-    if 0:
-        make_pathway_from_csv()
     if 1:
+        make_pathway_from_csv()
+    if 0:
         fn = "../Data/ahba_synthesis.csv"
         summarize_ahba_pathway(fn)

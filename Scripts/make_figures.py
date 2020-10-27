@@ -42,12 +42,12 @@ prediction_scores = {
 RiPPS = ["lanthipeptide", "thiopeptide", "lassopeptide"]
 
 pathway_mibig_dict = {
-    "Anabaenopeptin": 301,
+    "Anabaenopeptin": 302,
     "Bafilomycin": 28,
     "Difficidin": 176,
     "Geldanamycin": 66,
     "Leupyrrin": 380,
-    "Oocydin": 1031,
+    "Oocydin": 1032,
     "Oxazolomycin": 1106,
     "Tolaasin": 447
 }
@@ -79,7 +79,44 @@ def figure_production_in_real_vs_constructed():
     ax.set_ylabel("Production rate [mmol/gDW/h]")
     ax.set_xlabel("")
     plt.subplots_adjust(bottom = 0.3)
-    plt.savefig("../Figures/production_rate_comparison.svg")        
+    plt.savefig("../Figures/production_rate_comparison.svg")
+
+def figure_production_in_real_vs_constructed_scatter():
+    model_fn = "../Models/Sco-GEM.xml"
+    model = cobra.io.read_sbml_model(model_fn)
+    folders = ["../Data/validation_pathways/", "../Data/constructed_pathways/"]
+    wt_growth = model.slim_optimize()
+    model.reactions.BIOMASS_SCO_tRNA.lower_bound = 0.9 * wt_growth
+    production_dict = {}
+    for name, bgc_int in pathway_mibig_dict.items():
+        print(name)
+        production_list = []
+        mets_list = []
+        for i, model_fn in enumerate([name, bgc_int]):
+            pathway_fn = folders[i] +  "{0}.json".format(model_fn)
+            pathway = cobra.io.load_json_model(pathway_fn)
+            with model:
+                model.merge(pathway)
+                model.objective = model.reactions.DM_secondary_metabolite
+                production = model.slim_optimize()
+            production_list.append(production)
+        production_dict[name] = production_list
+    df = pd.DataFrame(production_dict)
+    df.index = ["Real", "Constructed from BGC"]
+    fig, ax = plt.subplots(1, figsize = (10, 6))
+    ax.plot([0,0.1], [0,0.1], ls = "--", c = "k", alpha = 0.5)
+    for i, bgc_name in enumerate(df.columns):
+        x = df.loc["Real", bgc_name]
+        y = df.loc["Constructed from BGC", bgc_name]
+        ax.scatter(x, y, color = "C{0}".format(i), label = bgc_name, alpha = 0.8, s = 200)
+    ax.set_ylabel("BiGMeC-constructed \n production rate [mmol/gDW/h]")
+    ax.set_xlabel("Literature-constructed \n production rate [mmol/gDW/h]")
+    # sns.despine()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.subplots_adjust(right = 0.6, bottom = 0.2, left = 0.2)
+    ax.set_xlim([1e-3, df.max().max()*1.1])
+    ax.set_ylim([1e-3, df.max().max()*1.1])
+    plt.savefig("../Figures/production_rate_comparison_scatter.svg")              
 
 def figure_prediction_accuracy_bar_chart():
     fig, ax = plt.subplots(1, figsize = (10, 6))
@@ -105,7 +142,7 @@ def autolabel(rects, ax, df):
     for i, rect in enumerate(rects):
         print(rect.get_height(), rect.get_y(), rect.get_y()-rect.get_height()/2)
         ax.annotate('{0}/{1}'.format(df["Correct"][i], df["Total"][i]),
-                    xy=(rect.get_width(), rect.get_y()+rect.get_height()/2),
+                    xy=(rect.get_width(), rect.get_y()+rect.get_height()/2),    
                     xytext=(2, 0),  # 3 points vertical offset
                     textcoords="offset points",
                     ha='left', va='center')
@@ -530,7 +567,7 @@ def _get_substrate_dict(r):
     
 
 if __name__ == '__main__':
-    if 1:
+    if 0:
         figure_prediction_accuracy_bar_chart()
         figure_prediction_accuracy_full_horizontal()
         figure_prediction_accuracy_full_vertical()
@@ -554,4 +591,4 @@ if __name__ == '__main__':
         pathway_length_figure()
 
     if 1:
-        figure_production_in_real_vs_constructed()
+        figure_production_in_real_vs_constructed_scatter()

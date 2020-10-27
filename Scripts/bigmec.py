@@ -897,13 +897,13 @@ def _add_metabolites(r, met_dict):
         r.add_metabolites({m: value})
 
 
-def _make_methoxymalACP_reaction():
-    reaction = cobra.Reaction('Mxmal-ACP')
-    reaction.name = 'Methoxymalonyl-ACP synthesis'
-    reaction.lower_bound = 0.  # This is the default
-    reaction.upper_bound = 1000.
-    reaction.add_metabolites(cofactor_reactions_dict['mxmal'])
-    return reaction
+def _make_methoxymalCoA_reaction():
+    mx_rx = cobra.Reaction('mxmal_synthesis')
+    mx_rx.name = 'synthesis of methoxymalonyl-coa'
+    mx_rx.lower_bound = 0.  # This is the default
+    mx_rx.upper_bound = 1000.
+    mx_rx.add_metabolites(cofactor_reactions_dict["mxmal"])
+    return mx_rx
 
 def _make_IN_reaction(core_structure):
     in_rx = cobra.Reaction('IN_' + core_structure['type'])
@@ -970,7 +970,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
     # vi lager modellen som inneholder alle reaksjonene.
     reaction_list = []  # list of reactions that take place
     if tailoring_reactions['methoxymalonyl']:
-        reaction_list.append(_make_methoxymalACP_reaction())
+        reaction_list.append(_make_methoxymalCoA_reaction())
 
     # Make an sink reaction for the initial start of the polyketide, this is required in the following loop
     in_rx = _make_IN_reaction(core_structure)

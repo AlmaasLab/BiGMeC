@@ -9,26 +9,7 @@ these reactions are returned as a list of cobra reactions.
 
 import cobra
 from pathlib import Path
-
-
-# create metabolites that do not exist in ref_model
-# but that are produced as intermediates in the reaction
-cofactor_metabolites_dict = {
-    'mxcoa': cobra.Metabolite('mxcoa_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
-    'bafA': cobra.Metabolite('bafilomycinA1_c', formula='X', name='Bafilomycin A1', compartment='c'),
-    'bafB': cobra.Metabolite('bafilomycinB1_c', formula='X', name='Bafilomycin B1', compartment='c'),
-    'fumamp': cobra.Metabolite('fumamp_c', formula='X', name='Fumaryl-AMP', compartment='c'),
-    'mx__specific__acp_c':  cobra.Metabolite('mx__specific__acp_c', formula='X', name='methoxymalonate specific acyl carrier protein', compartment='c'),
-    'c5n': cobra.Metabolite('c5n_c', formula='X', name='2-amino-3-hydroxycyclopent-2-enone', compartment='c'),
-    'fumamp_pk': cobra.Metabolite('fumamp__pk_c', formula='X', 
-                                  name='Fumaryl-AMP bound to polyketide', compartment='c'),
-    'final_product': cobra.Metabolite('final_product_c', formula='X', name='Final product', compartment='c'),
-    '3mbm': cobra.Metabolite('3mbmcoa_c', formula='C8H14O4', name='(3-Methylbutyl)malonic acid', compartment='c'),
-    '5m2h': cobra.Metabolite('5m2hcoa__E_c', formula='X', name='	5-methyl-trans-hex-2-enoyl-ACP', compartment='c'),
-    '5m3o': cobra.Metabolite('5mhcoa_c', formula='X', name='	5-Methyl-3-oxohexanoyl-ACP', compartment='c'),
-    'i2b2': cobra.Metabolite('i2b2_c', formula='C8H12O4', name='	(2E)-2-Isobutyl-2-butenedioic acid', compartment='c'),
-    'leupyrrin_1': cobra.Metabolite('leupyrrin_1_c', formula='X', name='leupyrrin intermediate', compartment='c'),
-}
+from dictionaries import *
 
 
 def create_baf_pathway(ref_model):
@@ -36,30 +17,16 @@ def create_baf_pathway(ref_model):
         ref_model.metabolites.get_by_id('nadph_c'): -11,
         ref_model.metabolites.get_by_id('nadp_c'): 11,
         ref_model.metabolites.get_by_id('h2o_c'): 5,
-        ref_model.metabolites.get_by_id('coa_c'): 13,
+        ref_model.metabolites.get_by_id('coa_c'): 12,
         ref_model.metabolites.get_by_id('h_c'): -11,
-        ref_model.metabolites.get_by_id('co2_c'): 12,
-        cofactor_metabolites_dict['mxcoa']: -2,
+        ref_model.metabolites.get_by_id('co2_c'): 11,
+        cofactor_metabolites_dict['mxmal']: -2,
         ref_model.metabolites.get_by_id('mmcoa__R_c'): -7,
         ref_model.metabolites.get_by_id('malcoa_c'): -2,
         ref_model.metabolites.get_by_id('ibcoa_c'): -1,
         cofactor_metabolites_dict['bafA']: 1
     }
     
-    # Proposed biosynthetic pathway for FkbH-dependent (2R)-methoxymalonyl-ACP formation:
-    mx_rxn_mets = {
-        ref_model.metabolites.get_by_id('coa_c'): -1,
-        ref_model.metabolites.get_by_id('13dpg_c'): -1,
-        ref_model.metabolites.get_by_id('pi_c'): 2,
-        ref_model.metabolites.get_by_id('nadp_c'): -1,
-        ref_model.metabolites.get_by_id('nadph_c'): 1,
-        ref_model.metabolites.get_by_id('h_c'): 1,
-        ref_model.metabolites.get_by_id('amet_c'): -1,
-        ref_model.metabolites.get_by_id('ahcys_c'): 1,
-        ref_model.metabolites.get_by_id('fad_c'): -1,
-        ref_model.metabolites.get_by_id('fadh2_c'): 1,
-        cofactor_metabolites_dict['mxcoa']: 1
-    }
 
     orf_3_fumamp_rxn_mets = {
         ref_model.metabolites.get_by_id('fum_c'): -1,
@@ -74,7 +41,6 @@ def create_baf_pathway(ref_model):
         ref_model.metabolites.get_by_id('co2_c'): 1,
         ref_model.metabolites.get_by_id('coa_c'): 1,
         ref_model.metabolites.get_by_id('5aop_c'): 1,
-        ref_model.metabolites.get_by_id('h_c'): -1
     }
 
     orf_2_fumamp_pk_rxn_mets = {
@@ -85,8 +51,9 @@ def create_baf_pathway(ref_model):
     }
 
     baf_y_5aop_fumamp_pk_rxn_mets = {
-        ref_model.metabolites.get_by_id('atp_c'): - 1,
-        cofactor_metabolites_dict['fumamp_pk']: - 1,
+        ref_model.metabolites.get_by_id('atp_c'): -1,
+        cofactor_metabolites_dict['fumamp_pk']: -1,
+        ref_model.metabolites.get_by_id('5aop_c'): -1,
         ref_model.metabolites.get_by_id('adp_c'): 1,
         ref_model.metabolites.get_by_id('pi_c'): 1,
         cofactor_metabolites_dict['bafB']: 1
@@ -118,21 +85,23 @@ def create_baf_pathway(ref_model):
     reaction.upper_bound = 1000.
     reaction.add_metabolites(reaction_metabolites)
 
-    mx_rx = cobra.Reaction('mxcoa_synthesis')
+    mx_rx = cobra.Reaction('mxmal_synthesis')
     mx_rx.name = 'synthesis of methoxymalonyl-coa'
     mx_rx.lower_bound = 0.  # This is the default
     mx_rx.upper_bound = 1000.
-    mx_rx.add_metabolites(mx_rxn_mets)
+    mx_rx.add_metabolites(cofactor_reactions_dict["mxmal"])
 
     ex_rx = cobra.Reaction('DM_secondary_metabolite')
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['bafB']: -1})
+    print(sum([reaction, ex_rx, orf2_rx, orf3_rx, bafy_rx, bafz_rx]))
 
     return [reaction, ex_rx, mx_rx, orf2_rx, orf3_rx, bafy_rx, bafz_rx]
 
 
 def create_difficidin_pathway(ref_model):
+    print("Difficidin")
     pk_metabolites = {
         ref_model.metabolites.get_by_id('nadph_c'): -14,
         ref_model.metabolites.get_by_id('nadp_c'): 14,
@@ -147,6 +116,18 @@ def create_difficidin_pathway(ref_model):
         cofactor_metabolites_dict['final_product']: 1
     }
 
+    # prpncoa reaction
+    #https://www.genome.jp/dbget-bin/www_bget?R12356
+    prpncoa_reaction = cobra.Reaction("R12356")
+    mets = {ref_model.metabolites.get_by_id('o2_c'): -1,
+            ref_model.metabolites.get_by_id('h2o2_c'): 1,
+            ref_model.metabolites.get_by_id('ppcoa_c'): -1,
+            ref_model.metabolites.get_by_id('prpncoa_c'): 1,
+            }
+    prpncoa_reaction.add_metabolites(mets)
+    prpncoa_reaction.bounds = (0, 1000)
+
+
     pk_reaction = cobra.Reaction('Difficidin_synthesis')
     pk_reaction.name = 'Difficidin synthesis'
     pk_reaction.lower_bound = 0.  # This is the default
@@ -157,8 +138,8 @@ def create_difficidin_pathway(ref_model):
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
-
-    return [pk_reaction, ex_rx]
+    print(sum([pk_reaction, ex_rx]))
+    return [pk_reaction, ex_rx, prpncoa_reaction]
 
 
 def create_anabaenopeptin_pathway(ref_model):
@@ -196,6 +177,7 @@ def create_leupyrrin_pathway(ref_model):
         ref_model.metabolites.get_by_id('malcoa_c'): -1,
         ref_model.metabolites.get_by_id('ivcoa_c'): -1,
         ref_model.metabolites.get_by_id('co2_c'): 1,
+        ref_model.metabolites.get_by_id('coa_c'): 1,
         cofactor_metabolites_dict['5m3o']: 1
     }
 
@@ -218,6 +200,9 @@ def create_leupyrrin_pathway(ref_model):
 
     pks_reaction = {
         ref_model.metabolites.get_by_id('pro__L_c'): -2,
+        ref_model.metabolites.get_by_id('fadh2_c'):  1,
+        ref_model.metabolites.get_by_id('fad_c'): -1,
+        ref_model.metabolites.get_by_id('pro__L_c'): -2,
         ref_model.metabolites.get_by_id('ppi_c'): 3,
         ref_model.metabolites.get_by_id('atp_c'): -3,
         ref_model.metabolites.get_by_id('amp_c'): 3,
@@ -235,15 +220,16 @@ def create_leupyrrin_pathway(ref_model):
         cofactor_metabolites_dict['leupyrrin_1']:1
     }
 
-    otherrx_1 = {
-        ref_model.metabolites.get_by_id('4mop_c'): -1,
-        ref_model.metabolites.get_by_id('accoa_c'): -1,
-        ref_model.metabolites.get_by_id('coa_c'): 1,
-        cofactor_metabolites_dict['i2b2']: 1,
-    }
+    # Skip leupyrrin tailoring
+    # otherrx_1 = {
+    #     ref_model.metabolites.get_by_id('4mop_c'): -1,
+    #     ref_model.metabolites.get_by_id('accoa_c'): -1,
+    #     ref_model.metabolites.get_by_id('coa_c'): 1,
+    #     cofactor_metabolites_dict['i2b2']: 1,
+    # }
 
     otherrx_2 = {
-        cofactor_metabolites_dict['i2b2']: -1,
+        # cofactor_metabolites_dict['i2b2']: -1,
         cofactor_metabolites_dict['leupyrrin_1']: -1,
         cofactor_metabolites_dict['final_product']: 1
     }
@@ -268,10 +254,10 @@ def create_leupyrrin_pathway(ref_model):
     pks_reaction_rx.upper_bound = 1000.
     pks_reaction_rx.add_metabolites(pks_reaction)
 
-    otherrx_1_rx = cobra.Reaction('otherrx_1')
-    otherrx_1_rx.lower_bound = 0.  # This is the default
-    otherrx_1_rx.upper_bound = 1000.
-    otherrx_1_rx.add_metabolites(otherrx_1)
+    # otherrx_1_rx = cobra.Reaction('otherrx_1')
+    # otherrx_1_rx.lower_bound = 0.  # This is the default
+    # otherrx_1_rx.upper_bound = 1000.
+    # otherrx_1_rx.add_metabolites(otherrx_1)
 
     otherrx_2_rx = cobra.Reaction('otherrx_2')
     otherrx_2_rx.lower_bound = 0.  # This is the default
@@ -282,11 +268,24 @@ def create_leupyrrin_pathway(ref_model):
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
-
-    return [m3hhACP_rx, condensm3h_rx, carbox_rx, pks_reaction_rx, otherrx_1_rx, otherrx_2_rx, ex_rx]
+    print("Leupyrrin")
+    print(sum([pks_reaction_rx, otherrx_2_rx, ex_rx]))
+    return [m3hhACP_rx, condensm3h_rx, carbox_rx, pks_reaction_rx,  otherrx_2_rx, ex_rx] #otherrx_1_rx,
 
 
 def create_tolaasin_pathway(ref_model):
+    # Necessary to enable consumption of 3hocoa_c
+    hocoa_mets = {ref_model.metabolites.get_by_id('3oocoa_c'): -1.0,
+                  ref_model.metabolites.get_by_id('coa_c'): -1.0,
+                  ref_model.metabolites.get_by_id('accoa_c'): 1.0,
+                  ref_model.metabolites.get_by_id('hxcoa_c'): 1.0}
+
+    hocoa_rx = cobra.Reaction('hocoa_pathway')
+    hocoa_rx.lower_bound = -1000. 
+    hocoa_rx.upper_bound = 1000.
+    hocoa_rx.add_metabolites(hocoa_mets)
+
+
     # Incoporarate threonine and not 2,3-didehydrobutyrine, see https://doi.org/10.1186/s12934-016-0502-y
     pk_metabolites = {
         ref_model.metabolites.get_by_id('coa_c'): 1,
@@ -317,49 +316,35 @@ def create_tolaasin_pathway(ref_model):
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
-
-    return [pk_reaction, ex_rx]
+    print(sum([pk_reaction, ex_rx]))
+    return [pk_reaction, ex_rx, hocoa_rx]
 
 
 
 def create_geldanamycin_pathway(ref_model):
-    # Snorre start here tomorrow
     pk_metabolites = {
-        cofactor_metabolites_dict['mxcoa']: -2,
+        cofactor_metabolites_dict['mxmal']: -2,
         cofactor_metabolites_dict['ahba']: -1,
+        ref_model.metabolites.get_by_id('atp_c'): -1,
+        ref_model.metabolites.get_by_id('amp_c'):  1,
         ref_model.metabolites.get_by_id('mmcoa__R_c'): -4,
-        ref_model.metabolites.get_by_id('nadph_c'): -14,
-        ref_model.metabolites.get_by_id('nadp_c'): 14,
+        ref_model.metabolites.get_by_id('nadph_c'): -10,
+        ref_model.metabolites.get_by_id('nadp_c'): 10,
         ref_model.metabolites.get_by_id('h2o_c'): 6,
-        ref_model.metabolites.get_by_id('coa_c'): 12,
-        ref_model.metabolites.get_by_id('h_c'): -14,
-        ref_model.metabolites.get_by_id('co2_c'): 12,
-        ref_model.metabolites.get_by_id('malcoa_c'): -12,
-        ref_model.metabolites.get_by_id('amet_c'): -3,
-        ref_model.metabolites.get_by_id('ahcys_c'): 3,
-        ref_model.metabolites.get_by_id('13dpg_c'): -1,
-        ref_model.metabolites.get_by_id('pi_c'): 2,
+        ref_model.metabolites.get_by_id('coa_c'): 7,
+        ref_model.metabolites.get_by_id('h_c'): -10,
+        ref_model.metabolites.get_by_id('co2_c'): 7,
+        ref_model.metabolites.get_by_id('malcoa_c'): -1,
+        ref_model.metabolites.get_by_id('ppi_c'): 1,
         cofactor_metabolites_dict['final_product']: 1
     }
-    mx_rxn_mets = {
-    ref_model.metabolites.get_by_id('coa_c'): -1,
-    ref_model.metabolites.get_by_id('13dpg_c'): -1,
-    ref_model.metabolites.get_by_id('pi_c'): 2,
-    ref_model.metabolites.get_by_id('nadp_c'): -1,
-    ref_model.metabolites.get_by_id('nadph_c'): 1,
-    ref_model.metabolites.get_by_id('h_c'): 1,
-    ref_model.metabolites.get_by_id('amet_c'): -1,
-    ref_model.metabolites.get_by_id('ahcys_c'): 1,
-    ref_model.metabolites.get_by_id('fad_c'): -1,
-    ref_model.metabolites.get_by_id('fadh2_c'): 1,
-    cofactor_metabolites_dict['mxcoa']: 1
-    }
     
-    mx_rx = cobra.Reaction('mxcoa_synthesis')
+    
+    mx_rx = cobra.Reaction('mxmal_synthesis')
     mx_rx.name = 'synthesis of methoxymalonyl-coa'
     mx_rx.lower_bound = 0.  # This is the default
     mx_rx.upper_bound = 1000.
-    mx_rx.add_metabolites(mx_rxn_mets)
+    mx_rx.add_metabolites(cofactor_reactions_dict["mxmal"])
 
     ahba_synthesis_reaction = cobra.Reaction('ahba_synthesis')
     ahba_synthesis_reaction.name = "AHBA synthesis"
@@ -377,33 +362,34 @@ def create_geldanamycin_pathway(ref_model):
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
-
-    return [mx_rx, pk_reaction, ex_rx]
+    print(sum([pk_reaction, ex_rx]))
+    return [mx_rx, pk_reaction, ex_rx, ahba_synthesis_reaction]
 
 def create_oxazolo_pathway(ref_model):
     pk_metabolites = {
-        ref_model.metabolites.get_by_id('nadph_c'): -8,
-        ref_model.metabolites.get_by_id('ser__L_c'): -1,
+        ref_model.metabolites.get_by_id('for_c'): -1,
         ref_model.metabolites.get_by_id('gly_c'): -2,
-        ref_model.metabolites.get_by_id('nadp_c'): 8,
-        ref_model.metabolites.get_by_id('h2o_c'): 8,
-        ref_model.metabolites.get_by_id('coa_c'): 9,
-        ref_model.metabolites.get_by_id('h_c'): -8,
-        ref_model.metabolites.get_by_id('co2_c'): 10,
-        ref_model.metabolites.get_by_id('malcoa_c'): -9,
-        ref_model.metabolites.get_by_id('amet_c'): -6,
-        ref_model.metabolites.get_by_id('ahcys_c'): 6,
-        ref_model.metabolites.get_by_id('13dpg_c'): -1,
-        ref_model.metabolites.get_by_id('pi_c'): 2,
-        ref_model.metabolites.get_by_id('fad_c'): -1,
-        ref_model.metabolites.get_by_id('fadh2_c'): 1,
-        ref_model.metabolites.get_by_id('10fthf_c'): -1,
-        ref_model.metabolites.get_by_id('thf_c'): -1,
+        ref_model.metabolites.get_by_id('h2o_c'): 11,
         ref_model.metabolites.get_by_id('atp_c'): -3,
         ref_model.metabolites.get_by_id('amp_c'): 3,
         ref_model.metabolites.get_by_id('ppi_c'): 3,
+        ref_model.metabolites.get_by_id('malcoa_c'): -9,
+        ref_model.metabolites.get_by_id('co2_c'): 10,
+        ref_model.metabolites.get_by_id('coa_c'): 10,
+        ref_model.metabolites.get_by_id('nadph_c'): -9,
+        ref_model.metabolites.get_by_id('h_c'): -9,
+        ref_model.metabolites.get_by_id('nadp_c'): 9,
+        ref_model.metabolites.get_by_id('amet_c'): -5,
+        ref_model.metabolites.get_by_id('ahcys_c'): 5,
+        cofactor_metabolites_dict['mxmal']: -1,
+        ref_model.metabolites.get_by_id('ser__L_c'): -1,
         cofactor_metabolites_dict['final_product']: 1
     }
+    mx_rx = cobra.Reaction('mxmal_synthesis')
+    mx_rx.name = 'synthesis of methoxymalonyl-coa'
+    mx_rx.lower_bound = 0.  # This is the default
+    mx_rx.upper_bound = 1000.
+    mx_rx.add_metabolites(cofactor_reactions_dict["mxmal"])
 
     pk_reaction = cobra.Reaction('Oxazolo_synthesis')
     pk_reaction.name = 'Oxazolo synthesis'
@@ -416,14 +402,14 @@ def create_oxazolo_pathway(ref_model):
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
 
-    return [pk_reaction, ex_rx]
+    return [mx_rx, pk_reaction, ex_rx]
 
 def create_oocydin_pathway(ref_model):
 
     pk_metabolites = {
         ref_model.metabolites.get_by_id('nadph_c'): -7, #ok
         ref_model.metabolites.get_by_id('nadp_c'): 7,#ok
-        ref_model.metabolites.get_by_id('h2o_c'): 5,#ok
+        ref_model.metabolites.get_by_id('h2o_c'): 6,#ok
         ref_model.metabolites.get_by_id('coa_c'): 9,
         ref_model.metabolites.get_by_id('h_c'): -7,
         ref_model.metabolites.get_by_id('co2_c'): 9,
@@ -445,7 +431,7 @@ def create_oocydin_pathway(ref_model):
     ex_rx.lower_bound = 0.  # This is the default
     ex_rx.upper_bound = 1000.
     ex_rx.add_metabolites({cofactor_metabolites_dict['final_product']: - 1})
-
+    print(sum([pk_reaction, ex_rx]))
     return [pk_reaction, ex_rx]
 
 def make_json_pathways(ref_model):
@@ -474,9 +460,9 @@ def make_json_pathways(ref_model):
 
 if __name__ == '__main__':
     ref_model_fn = "../Models/Sco-GEM.xml"
-    model = cobra.io.read_sbml_model(ref_model_fn)
+    ref_model = cobra.io.read_sbml_model(ref_model_fn)
     
     if 0:
-        create_oocydin_pathway(model)
+        create_oocydin_pathway(ref_model)
     if 1:
-        make_json_pathways(model)
+        make_json_pathways(ref_model)

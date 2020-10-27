@@ -26,7 +26,7 @@ cofactor_metabolites_dict = {
     'h+': ref_model.metabolites.get_by_id('h_c'),
     'sam': ref_model.metabolites.get_by_id('amet_c'),
     'sah': ref_model.metabolites.get_by_id('ahcys_c'),
-    'mxcoa': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
+    'mxmal': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
     '4hbf': cobra.Metabolite('4hbf_c', formula='X', name='4-hydroxy-benzoyl-formate', compartment='c'),
     'hpg': cobra.Metabolite('4hpg_c', formula='X', name='4-hydroxy-phenyl-glycine', compartment='c'),
     'dpg': cobra.Metabolite('dpg_c', formula='X', name='dihydroxy-phenyl-glycine', compartment='c'),
@@ -36,6 +36,19 @@ cofactor_metabolites_dict = {
                                 name='generic fatty acid for acylation in NRPS initiation', compartment='c'),
     'abu': cobra.Metabolite('2abu_c', formula='X', name='2-aminobutyrate', compartment='c'),
     'ahba': cobra.Metabolite('ahba_c', formula='C7H7NO3', name='3-Amino-5-hydroxybenzoate', compartment='c'), # https://www.genome.jp/dbget-bin/www_bget?C12107
+    'bafA': cobra.Metabolite('bafilomycinA1_c', formula='X', name='Bafilomycin A1', compartment='c'),
+    'bafB': cobra.Metabolite('bafilomycinB1_c', formula='X', name='Bafilomycin B1', compartment='c'),
+    'fumamp': cobra.Metabolite('fumamp_c', formula='X', name='Fumaryl-AMP', compartment='c'),
+    # 'mx__specific__acp_c':  cobra.Metabolite('mx__specific__acp_c', formula='X', name='methoxymalonate specific acyl carrier protein', compartment='c'),
+    'c5n': cobra.Metabolite('c5n_c', formula='X', name='2-amino-3-hydroxycyclopent-2-enone', compartment='c'),
+    'fumamp_pk': cobra.Metabolite('fumamp__pk_c', formula='X', 
+                                  name='Fumaryl-AMP bound to polyketide', compartment='c'),
+    'final_product': cobra.Metabolite('final_product_c', formula='X', name='Final product', compartment='c'),
+    '3mbm': cobra.Metabolite('3mbmcoa_c', formula='C8H14O4', name='(3-Methylbutyl)malonic acid', compartment='c'),
+    '5m2h': cobra.Metabolite('5m2hcoa__E_c', formula='X', name='5-methyl-trans-hex-2-enoyl-ACP', compartment='c'),
+    '5m3o': cobra.Metabolite('5mhcoa_c', formula='X', name='5-Methyl-3-oxohexanoyl-ACP', compartment='c'),
+    'i2b2': cobra.Metabolite('i2b2_c', formula='C8H12O4', name='(2E)-2-Isobutyl-2-butenedioic acid', compartment='c'),
+    'leupyrrin_1': cobra.Metabolite('leupyrrin_1_c', formula='X', name='leupyrrin intermediate', compartment='c'),
 }
 
 
@@ -63,7 +76,8 @@ cofactor_reactions_dict = {  # reactions that are specific to certain domains
               ref_model.metabolites.get_by_id('ahcys_c'): 1.0,
               ref_model.metabolites.get_by_id('fad_c'): -1.0,
               ref_model.metabolites.get_by_id('fadh2_c'): 1.0,
-              cofactor_metabolites_dict['mxcoa']: 1.0},
+              cofactor_metabolites_dict['mxmal']: 1.0},
+
 
     'hpg_1': {ref_model.metabolites.get_by_id('pphn_c'): -1,
               ref_model.metabolites.get_by_id('34hpp_c'): 1,
