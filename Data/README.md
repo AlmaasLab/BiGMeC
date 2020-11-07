@@ -12,8 +12,8 @@ Folder containing .gbk-files for the complete MiBig database (version 2.0).
 Folder containing manually curated pathways for the 8 BGCs used to evaluate the accuracy of the BiGMeC pipeline.
 
 ## Other files
-__prediction_accuracy_8_experimental.xlsx:__ Comparison of the 8 BCGs used to evaluate pipeline accuracy.
-__pathway_comparison.xlsx:__ Summary of the correct number of domains for the 8 BGCs used to evaluate pipelione accuracy.
+ __prediction_accuracy_8_experimental.xlsx:__ Comparison of the 8 BCGs used to evaluate pipeline accuracy.\
+ __pathway_comparison.xlsx:__ Summary of the correct number of domains for the 8 BGCs used to evaluate pipelione accuracy.
  
 
 
