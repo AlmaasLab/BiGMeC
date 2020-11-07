@@ -23,6 +23,7 @@ import cobra
 import numpy as np
 
 import venn
+import catheat
 
 from matplotlib.colors import ListedColormap
 # cmap = ListedColormap(sns.color_palette())
@@ -55,6 +56,8 @@ pathway_mibig_dict = {
 def figure_production_in_real_vs_constructed():
     model_fn = "../Models/Sco-GEM.xml"
     model = cobra.io.read_sbml_model(model_fn)
+    print(model.medium)
+
     folders = ["../Data/validation_pathways/", "../Data/constructed_pathways/"]
     wt_growth = model.slim_optimize()
     model.reactions.BIOMASS_SCO_tRNA.lower_bound = 0.9 * wt_growth
@@ -84,8 +87,10 @@ def figure_production_in_real_vs_constructed():
 def figure_production_in_real_vs_constructed_scatter():
     model_fn = "../Models/Sco-GEM.xml"
     model = cobra.io.read_sbml_model(model_fn)
+    print(model.medium)
     folders = ["../Data/validation_pathways/", "../Data/constructed_pathways/"]
     wt_growth = model.slim_optimize()
+    print(model.summary())
     model.reactions.BIOMASS_SCO_tRNA.lower_bound = 0.9 * wt_growth
     production_dict = {}
     for name, bgc_int in pathway_mibig_dict.items():
@@ -116,7 +121,34 @@ def figure_production_in_real_vs_constructed_scatter():
     plt.subplots_adjust(right = 0.6, bottom = 0.2, left = 0.2)
     ax.set_xlim([1e-3, df.max().max()*1.1])
     ax.set_ylim([1e-3, df.max().max()*1.1])
-    plt.savefig("../Figures/production_rate_comparison_scatter.svg")              
+    plt.savefig("../Figures/production_rate_comparison_scatter.svg")
+
+def figure_knockouts_predictions_in_real_vs_constructed():
+    plt.rcParams.update({'font.size': 18})
+    folders = ["../Data/validation_pathways/knockouts", "../Data/knockouts"]
+    knockout_dict = {}
+    for name, bgc_int in pathway_mibig_dict.items():
+        real_df = pd.read_csv(folders[0]+"/brute_optknock_{0}_0.5.csv".format(name))
+        constructed_df = pd.read_csv(folders[1]+"/brute_optknock_{0}_0.5.csv".format(bgc_int))
+        reactions = list(real_df["ID"])+list(constructed_df["ID"])
+        if len(real_df["ID"])==0:
+            reactions.append("None")
+        if len(constructed_df["ID"])==0:
+            reactions.append("None")
+        r_dict = {}
+        for r in set(reactions):
+            r_dict[r] = str(int(reactions.count(r)))
+        knockout_dict[name] = r_dict
+
+    df = pd.DataFrame(knockout_dict).T
+    df["None"] = df.pop("None")
+    mask = df.isna()
+    df = df.astype(str)
+    fig, ax = plt.subplots(1, figsize = (10, 6))
+    ax = catheat.heatmap(df, square = True, linewidths=2, linecolor='w', cmap = {"nan":"#e5e5e5", "1":"C3","2":"C2"}, palette = "muted", alpha = 0.8, xticklabels=True, yticklabels=True, ax = ax)#, mask = mask)
+    #ax[0].set_facecolor('#e5e5e5')
+    plt.subplots_adjust(left = 0.3, right = 0.9, bottom = 0.25) 
+    plt.savefig("../Figures/production_rate_comparison_knockout.svg")           
 
 def figure_prediction_accuracy_bar_chart():
     fig, ax = plt.subplots(1, figsize = (10, 6))
@@ -125,7 +157,7 @@ def figure_prediction_accuracy_bar_chart():
     df["Ratio"] = 100*df["Correct"] / df["Total"]
 
     print(df)
-    b = sns.barplot(y = df.index, x = "Ratio", data = df, alpha = 1)
+    b = sns.barplot(y = df.index, x = "Ratio", data = df, alpha = 0.8)
     sns.despine()
     ax.set_xlabel("Correct predictions [%]")
     ax.set_ylabel("")
@@ -151,22 +183,22 @@ def figure_prediction_accuracy_full_vertical():
     fn = "../Data/prediction_accuracy_8_experimental.xlsx"
     df = pd.read_excel(fn, index_col = 0)
     df.drop(columns = "Note", index = "SUM", inplace = True)
-
-    fig, ax = plt.subplots(1, figsize = (8, 8))
+    df.sort_index(inplace = True, ascending = True)
+    fig, ax = plt.subplots(1, figsize = (16, 8))
     width = 0.2
     space = 0.26
     x = np.arange(8)-(width+space)/2
 
-    bars = ax.bar(x, df.loc[:, "Total domains"], width, color = "none", edgecolor = "C0", alpha = 1, label = "Total domains")
-    bars2 = ax.bar(x, df.loc[:, "Correct domains"],width,  edgecolor = "C0", alpha = 1)
+    bars = ax.bar(x, df.loc[:, "Total domains"], width, color = "none", edgecolor = "C0", alpha = 0.8, label = "Total domains")
+    bars2 = ax.bar(x, df.loc[:, "Correct domains"],width,  edgecolor = "C0", alpha = 0.8)
     for bar in bars:
         bar.set_edgecolor("C0")
         bar.set_linewidth(2)
     autolabel2_vertical(bars, bars2, ax)
 
     x = np.arange(8)
-    bars = ax.bar(x, df.loc[:, "Total KS domains"], width, color = "none", edgecolor = "C1", alpha = 1, label = "Extending domains")
-    bars2 = ax.bar(x, df.loc[:, "Correct KS domains"], width, edgecolor = "C1", alpha = 1)
+    bars = ax.bar(x, df.loc[:, "Total KS domains"], width, color = "none", edgecolor = "C1", alpha = 0.8, label = "Extending domains")
+    bars2 = ax.bar(x, df.loc[:, "Correct KS domains"], width, edgecolor = "C1", alpha = 0.8)
     for bar in bars:
         bar.set_edgecolor("C1")
         bar.set_linewidth(2)
@@ -175,15 +207,15 @@ def figure_prediction_accuracy_full_vertical():
 
 
     x = np.arange(8)+(width+space)/2
-    bars = ax.bar(x, df.loc[:, "Total other domains"], width, color = "none", edgecolor = "C2", alpha = 1, label = "Non-extending domains")
-    bars2 = ax.bar(x, df.loc[:, "Correct other domains"], width, edgecolor = "C2", alpha = 1)
+    bars = ax.bar(x, df.loc[:, "Total other domains"], width, color = "none", edgecolor = "C2", alpha = 0.8, label = "Non-extending domains")
+    bars2 = ax.bar(x, df.loc[:, "Correct other domains"], width, edgecolor = "C2", alpha = 0.8)
     for bar in bars:
         bar.set_edgecolor("C2")
         bar.set_linewidth(2)
         
     autolabel2_vertical(bars, bars2, ax)
     ax.set_xticks(np.arange(len(df.index)+1))
-    ax.set_xticklabels(list(df.index), rotation = 90)
+    ax.set_xticklabels(list(df.index), rotation = 30)
     ax.set_ylim(0, 60)
     print(df.index)
     ax.set_ylabel("Number of domains")
@@ -207,22 +239,22 @@ def figure_prediction_accuracy_full_horizontal():
     fn = "../Data/prediction_accuracy_8_experimental.xlsx"
     df = pd.read_excel(fn, index_col = 0)
     df.drop(columns = "Note", index = "SUM", inplace = True)
-
+    df.sort_index(inplace = True, ascending = False)
     fig, ax = plt.subplots(1, figsize = (10, 8))
     width = 0.2
     space = 0.26
     x = np.arange(8)+(width+space)/2
 
-    bars = ax.barh(x, df.loc[:, "Total domains"], width, color = "none", edgecolor = "C0", alpha = 1, label = "Total domains")
-    bars2 = ax.barh(x, df.loc[:, "Correct domains"],width,  edgecolor = "C0", alpha = 1)
+    bars = ax.barh(x, df.loc[:, "Total domains"], width, color = "none", edgecolor = "C0", alpha = 0.8, label = "Total domains")
+    bars2 = ax.barh(x, df.loc[:, "Correct domains"],width,  edgecolor = "C0", alpha = 0.8)
     for bar in bars:
         bar.set_edgecolor("C0")
         bar.set_linewidth(2)
     autolabel2_horizontal(bars, bars2, ax)
 
     x = np.arange(8)
-    bars = ax.barh(x, df.loc[:, "Total KS domains"], width, color = "none", edgecolor = "C1", alpha = 1, label = "Extending domains")
-    bars2 = ax.barh(x, df.loc[:, "Correct KS domains"], width, edgecolor = "C1", alpha = 1)
+    bars = ax.barh(x, df.loc[:, "Total KS domains"], width, color = "none", edgecolor = "C1", alpha = 0.8, label = "Extending domains")
+    bars2 = ax.barh(x, df.loc[:, "Correct KS domains"], width, edgecolor = "C1", alpha = 0.8)
     for bar in bars:
         bar.set_edgecolor("C1")
         bar.set_linewidth(2)
@@ -231,8 +263,8 @@ def figure_prediction_accuracy_full_horizontal():
 
 
     x = np.arange(8)-(width+space)/2
-    bars = ax.barh(x, df.loc[:, "Total other domains"], width, color = "none", edgecolor = "C2", alpha = 1, label = "Non-extending domains")
-    bars2 = ax.barh(x, df.loc[:, "Correct other domains"], width, edgecolor = "C2", alpha = 1)
+    bars = ax.barh(x, df.loc[:, "Total other domains"], width, color = "none", edgecolor = "C2", alpha = 0.8, label = "Non-extending domains")
+    bars2 = ax.barh(x, df.loc[:, "Correct other domains"], width, edgecolor = "C2", alpha = 0.8)
     for bar in bars:
         bar.set_edgecolor("C2")
         bar.set_linewidth(2)
@@ -293,6 +325,7 @@ def figure_bigmec_coverage_venn():
     filename = "../Data/constructed_pathways/summary.csv"
     df = pd.read_csv(filename, index_col = 0)
     df_success = df.loc[df["Success"]== 1, :]
+    print(df_success.shape)
 
     dict_list = []
     for i, row in df_success.iterrows():
@@ -311,17 +344,19 @@ def figure_bigmec_coverage_venn():
     cols = ["T1PKS", "transAT-PKS-like", "transAT-PKS", "NRPS-like", "NRPS", "PKS-like", "BGC"]
     other_columns = [x for x in df_venn.columns if not x in cols]
     df_venn2 = pd.DataFrame()
-    df_venn2["T1PKS"] = df_venn["T1PKS"]
-    df_venn2["TransAT-PKS"] = df_venn[["transAT-PKS-like", "transAT-PKS"]].sum(axis = 1).astype(bool)
+    df_venn2["Type 1 PKS"] = df_venn["T1PKS"]
+    df_venn2["trans-AT PKS"] = df_venn[["transAT-PKS-like", "transAT-PKS"]].sum(axis = 1).astype(bool)
     df_venn2["NRPS"] = df_venn[["NRPS-like", "NRPS"]].sum(axis = 1).astype(bool)
     df_venn2["Other"] = df_venn[other_columns].sum(axis = 1).astype(bool)
     df_venn2.index = df_venn["BGC"]
 
-    dic = {"T1PKS": set(df_venn2[df_venn2["T1PKS"]].index),
-           "TransAT-PKS": set(df_venn2[df_venn2["TransAT-PKS"]].index),
+    dic = {"Type 1 PKS": set(df_venn2[df_venn2["Type 1 PKS"]].index),
+           "trans-AT PKS": set(df_venn2[df_venn2["trans-AT PKS"]].index),
            "NRPS": set(df_venn2[df_venn2["NRPS"]].index),
            "Other": set(df_venn2[df_venn2["Other"]].index)}
-    venn.venn(dic)
+    cmap = ListedColormap(sns.color_palette("muted"), N = 4)
+    print(cmap)
+    venn.venn(dic, cmap = cmap, fontsize = 26)
     plt.savefig("../Figures/bigmec_venn.svg")
 
     print("N total successful: ", len(df_success))
@@ -378,6 +413,8 @@ def figure_bigmec_coverage_treemap():
     df = pd.read_csv(filename, index_col = 0)
     # Rename
     df_success = df.loc[df["Success"]== 1, :]
+    print("##")
+    print(df_success.shape)
     bgc_type_merge =  []
     for x in  df_success["BGC type"]:
         lst = x.split("-")
@@ -395,7 +432,7 @@ def figure_bigmec_coverage_treemap():
         labels.append("{0}\n{1}".format(i, row["BGC"]))
 
     fig, ax = plt.subplots(1, figsize = (10,10))
-    l = squarify.plot(label = cluster_types.index, sizes = cluster_types["BGC"], value = cluster_types["BGC"], color=sns.color_palette("tab10"), ax = ax)
+    l = squarify.plot(label = cluster_types.index, sizes = cluster_types["BGC"], value = cluster_types["BGC"], color=sns.color_palette("muted"), ax = ax, alpha = 0.8, fontsize = 26)
     plt.axis("off")
     plt.savefig("../Figures/bigmec_treemap.svg")
 
@@ -437,6 +474,67 @@ def figure_prediction_reactions_max():
     plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))    
     plt.subplots_adjust(left = 0.3, right = 0.7)
     plt.savefig("../Figures/prediction_reactions_max.svg")
+
+def figure_prediction_reactions_violin():
+    fn = "../Data/knockouts/all_optknock_results_0.5.csv"
+    df = pd.read_csv(fn)
+    df["Production increase [%]"] = (df["Production"]-1)*100
+    df["Growth"] = -(df["Growth"]-1)*100
+    df["Reaction knocked out"] = df["ID"]
+
+    # Sort order
+    df_count = df.loc[:, ["ID", "BGC"]].groupby("ID").count()
+    df_count.sort_values(by = "BGC", inplace = True, ascending = False)
+
+    fig, ax = plt.subplots(1, figsize = (16,8))
+    chart = sns.violinplot(y = "Production increase [%]",  x = "Reaction knocked out", data = df, 
+                    ax = ax, scale="count",   cut = 0,  inner="quartile", order = df_count.index)
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize = 18)
+    sns.despine()
+    plt.savefig("../Figures/prediction_reactions_violin.svg")
+    
+
+def figure_prediction_reactions_boxplot():
+    fn = "../Data/knockouts/all_optknock_results_0.5.csv"
+    df = pd.read_csv(fn)
+    df["Production increase [%]"] = (df["Production"]-1)*100
+    df["Growth"] = -(df["Growth"]-1)*100
+    df["Reaction knocked out"] = df["ID"]
+
+    # Sort order
+    df_count = df.loc[:, ["ID", "BGC"]].groupby("ID").count()
+    df_count.sort_values(by = "BGC", inplace = True, ascending = False)
+
+    fig, ax = plt.subplots(1, figsize = (16,8))
+    chart = sns.boxplot(y = "Production increase [%]",  x = "Reaction knocked out", data = df, 
+                        ax = ax, order = df_count.index)
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize = 18)
+    sns.despine()
+    plt.subplots_adjust(bottom = 0.3)
+    plt.savefig("../Figures/prediction_reactions_box.svg")
+    print(df_count["BGC"])
+
+
+def prediction_reactions_number():
+    fn = "../Data/knockouts/all_optknock_results_0.5.csv"
+    df = pd.read_csv(fn)
+    df_count = df.loc[:, ["ID", "BGC"]].groupby("ID").count()
+    df_count["Number of BGCs"] = df_count["BGC"]
+    df_count.reset_index(inplace = True)
+    df_count.sort_values(by = "BGC", inplace = True, ascending = False)
+    df_count["Reaction knocked out"] = df_count["ID"]
+
+    fig, ax = plt.subplots(1, figsize = (16,4))
+    sns.barplot(x = "Reaction knocked out", y = "Number of BGCs", data = df_count, ax = ax)
+    sns.despine()
+    plt.subplots_adjust(bottom = 0.3)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize = 18)
+    plt.savefig("../Figures/prediction_reactions_number.svg")
+
+
+
 
 
 def plot_taxonomic_pie():
@@ -480,17 +578,46 @@ def plot_taxonomic_treemap():
         tax = _get_strain_knowledge(fn)
         taxonomy_list.append(tax)
 
+    print("#####")
+    print(len(taxonomy_list))
     df_tax = pd.DataFrame(taxonomy_list)
     df_tax = df_tax.sort_values(0)
     g1 = df_tax.groupby(1).size()
     #g01 = df_tax.groupby([0, 1]).size().unstack(fill_value = 0)
-    g1["Others"] = g1[g1<5].sum()
+    g1["Others"] = g1[g1<6].sum()
     g1.name = ""    
     fig, ax = plt.subplots(1, figsize = (10, 10))
     #pie,_,txt = ax.pie(g1[g1>5], radius = 1,autopct='%1.2f%%',  pctdistance=.8)
-    squarify.plot(label = g1[g1>5].index, sizes = g1[g1>5], value = g1[g1>5], norm_x = 30, color = sns.color_palette("tab10"), ax = ax)
+    squarify.plot(label = g1[g1>5].index, sizes = g1[g1>5], value = g1[g1>5], norm_x = 30, 
+                  color = sns.color_palette("muted"), ax = ax, bar_kwargs={'alpha':.8}, text_kwargs={'fontsize':30})
     plt.axis("off")
     plt.savefig("../Figures/taxonomy_treemap.svg")
+    g1.to_csv("../Figures/taxonomy_treemap_g.csv")
+    df_tax.to_csv("../Figures/taxonomy_treemap_tax.csv")
+    df_act = df_tax.loc[df_tax[1]=="Actinobacteria", :]
+
+    g2 = df_act.groupby(2).size()
+    g2["Others"] = g2[g2<5].sum()
+    g2.name=""
+    fig, ax = plt.subplots(1, figsize = (10, 10))
+    #pie,_,txt = ax.pie(g1[g1>5], radius = 1,autopct='%1.2f%%',  pctdistance=.8)
+    squarify.plot(label = g2[g2>5].index, sizes = g2[g2>5], value = g2[g2>5], norm_x = 30, 
+                  color = sns.color_palette("muted"), ax = ax, bar_kwargs={'alpha':.8}, text_kwargs={'fontsize':30})
+    plt.axis("off")
+    plt.savefig("../Figures/taxonomy_treemap_act.svg")
+
+    df_strep = df_tax.loc[df_tax[3]=="Streptomycetaceae", :]
+
+    g3 = df_strep.groupby(5).size()
+    g3["Others"] = g3[g3<5].sum()
+    g3.name=""
+    fig, ax = plt.subplots(1, figsize = (10, 10))
+    #pie,_,txt = ax.pie(g1[g1>5], radius = 1,autopct='%1.2f%%',  pctdistance=.8)
+    squarify.plot(label = g3[g3>5].index, sizes = g3[g3>5], value = g3[g3>5], norm_x = 30, 
+                  color = sns.color_palette("muted"), ax = ax, bar_kwargs={'alpha':.8}, text_kwargs={'fontsize':30})
+    plt.axis("off")
+    plt.savefig("../Figures/taxonomy_treemap_strep.svg")
+
     #plt.setp(txt, size = 12)#, weight="bold")
 
 def _get_strain_knowledge(cluster_path):  # yes
@@ -564,6 +691,15 @@ def _get_substrate_dict(r):
         if i < 0:
             dct[m.id]=i
     return dct
+
+
+def print_names(lst):
+    model_fn = "../Models/Sco-GEM.xml"
+    model = cobra.io.read_sbml_model(model_fn)
+    for r_id in lst:
+        r = model.reactions.get_by_id(r_id)
+        print(r_id, ";", r.name)
+
     
 
 if __name__ == '__main__':
@@ -571,9 +707,9 @@ if __name__ == '__main__':
         figure_prediction_accuracy_bar_chart()
         figure_prediction_accuracy_full_horizontal()
         figure_prediction_accuracy_full_vertical()
-    if 0:
+    if 1:
         figure_bigmec_coverage_venn()
-        figure_bigmec_unsuccessful_coverage_venn()
+        # figure_bigmec_unsuccessful_coverage_venn()
         # figure_bigmec_coverage_pie()
         # figure_bigmec_coverage_treemap()
     if 0:
@@ -582,6 +718,14 @@ if __name__ == '__main__':
     if 0:
         figure_prediction_reactions()
         figure_prediction_reactions_max()
+        figure_prediction_reactions_violin()
+        figure_prediction_reactions_boxplot()
+        prediction_reactions_number()
+        lst = ["ASPT", "ASPTA", "GLYCL", "FUM", "MCOALY", "AGT", "GHMT2r", 
+              "PGCD", "PSERT", "PSP_L", "TKT1", "ERTHMMOR", "CITMS", "CITCIb", "CITCIa2", "ENO", "PGM"]
+        print_names(lst)
+
+
 
     if 0:
         # plot_taxonomic_pie()
@@ -590,5 +734,7 @@ if __name__ == '__main__':
     if 0:
         pathway_length_figure()
 
-    if 1:
+    if 0:
         figure_production_in_real_vs_constructed_scatter()
+    if 0:
+        figure_knockouts_predictions_in_real_vs_constructed()

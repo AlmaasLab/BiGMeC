@@ -190,5 +190,5 @@ if __name__ == '__main__':
 
     logging.basicConfig(filename='strain_design_{0}_{1}_{2}.log'.format(time.month, time.day, time.hour), filemode='w', format='%(name)s - %(levelname)s - %(message)s', level = logging.INFO)
     
-    folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.5, results_folder = results_folder)
+    #folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.5, results_folder = results_folder)
 

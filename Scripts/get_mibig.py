@@ -20,7 +20,7 @@ import test
 import csv
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
-from patlib import Path
+from pathlib import Path
 
 
 def get_web_data(url):
@@ -35,11 +35,13 @@ def write_gbk_file(gbk_entry, path):
 
 def get_all(folder):
 
-    if Path(folder)
+    folder = Path(folder)
+    folder.mkdir(exist_ok = True)
 
     for a in range(1,2070,1):
         # path er bare pathen til en tom mappe som alle GBK-filene lagres i
-        path = folder + "/BGC{0}.gbk".format(str(a).zfill(7))
+        path = str(folder / "BGC{0}.gbk".format(str(a).zfill(7)))
+        print(path)
         realUrl = 'https://mibig.secondarymetabolites.org/repository/BGC' + str(a).zfill(7) + '/generated/BGC' \
                   + str(a).zfill(7) + '.1.region001.gbk'
 
@@ -54,4 +56,5 @@ def get_all(folder):
         write_gbk_file(string, path)
 
 if __name__ == '__main__':
-    folder = 
+    folder = "../Data/MiBiG2"
+    get_all(folder)
