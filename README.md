@@ -34,7 +34,7 @@ To test the pipeline you can simply run:
 ```
 python bigmec.py
 ```
-This will run the pipeline for the MIBiG gene cluster [BGC0000001](https://mibig.secondarymetabolites.org/repository/BGC0000001/index.html#r1c1) using the corresponding antiSMASH result file [Data/mibig/1.gbk](Data/mibig/1.gkb). The result will be stored in [Data/constructed_pathways/1.json](Data/constructed_pathways/1.json).\\
+This will run the pipeline for the MIBiG gene cluster [BGC0000001](https://mibig.secondarymetabolites.org/repository/BGC0000001/index.html#r1c1) using the corresponding antiSMASH result file [Data/mibig/1.gbk](Data/mibig/1.gkb). The result will be stored in [Data/constructed_pathways/1.json](Data/constructed_pathways/1.json).\
 
 To use your own antiSMASH result and store the results in a specified folder run:
 ```
