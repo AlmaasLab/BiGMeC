@@ -5,24 +5,18 @@ Copyright 2020 Snorre Sulheim (snorre.sulheim@sintef.no)
 https://github.com/AlmaasLab/BiGMeC
 
 This is the main script of the BiGMeC pipeline and is run from the commandline on either a directory of GenBank files or a single GenBank file as produced by antiSMASH version 5.1. This is done by running the following command:
-    python bigmec.py 
+    python bigmec.py -f your_antismash_result.gbk -o bigmec_results 
+
+To see additional options run
+    python bigmec.py -h
 
 
-This script is used to bin reads, not based on their barcode but on their alignment to references.
-It was used in the Deepbinner paper to generate the truth set against which demulitplexing tools
-could be assessed.
-An example of how to prepare the input files in Bash and run this script:
-    for r in REFERENCE_DIR/*.fasta; do
-        minimap2 -x map-ont -c $r READS.fastq.gz | cut -f1-12 >> alignments.paf
-    done
-    tail -n+2 ALBACORE_DIR/sequencing_summary.txt | cut -f2,13 > read_lengths
-    python3 assign_reads_to_reference.py alignments.paf read_lengths > reference_classifications
-This file is part of Deepbinner. Deepbinner is free software: you can redistribute it and/or modify
+This file is part of BiGMeC. BiGMeC is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by the Free Software Foundation,
-either version 3 of the License, or (at your option) any later version. Deepbinner is distributed
+either version 3 of the License, or (at your option) any later version. BiGMeC is distributed
 in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-details. You should have received a copy of the GNU General Public License along with Deepbinner.
+details. You should have received a copy of the GNU General Public License along with BiGMeC.
 If not, see <http://www.gnu.org/licenses/>.
 
 Authors:
@@ -30,10 +24,6 @@ Authors:
   - Fredrik A. Fossheim
 
 Date: 17.09.2020
-License: GPL 3.0. See repository license file for more information.
-
-This is the main file used to run BiGMeC to predict metabolic pathways from identified and annotated BGCs.
-
 """
 
 from Bio import SeqIO

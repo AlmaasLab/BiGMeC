@@ -1,13 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
+Copyright 2020 Snorre Sulheim (snorre.sulheim@sintef.no)
+https://github.com/AlmaasLab/BiGMeC
+
+This file is used to predict single reaction knockouts. 
+
+
+This file is part of BiGMeC. BiGMeC is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version. BiGMeC is distributed
+in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details. You should have received a copy of the GNU General Public License along with BiGMeC.
+If not, see <http://www.gnu.org/licenses/>.
+
 Authors:
   - Snorre Sulheim, snorres.sulheim@sintef.no
+  - Fredrik A. Fossheim
 
 Date: 17.09.2020
-Lisence: CC-BY-4.0
-
-This file contains functions used to incorporate metabolic pathways and run optknock to predict optimal strain design
 """
 
 import cobra
@@ -182,7 +194,6 @@ def get_essential_reactions(model, reaction_list = None, minimum_growth = MINIMU
 if __name__ == '__main__':
     model_fn = "../Models/Sco-GEM.xml"
     folder = "../Data/validation_pathways/"
-    path = "../Data/validation_pathways/Bafilomycin.json"
     results_folder = "../Data/validation_pathways/knockouts"
 
 
@@ -190,5 +201,5 @@ if __name__ == '__main__':
 
     logging.basicConfig(filename='strain_design_{0}_{1}_{2}.log'.format(time.month, time.day, time.hour), filemode='w', format='%(name)s - %(levelname)s - %(message)s', level = logging.INFO)
     
-    #folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.5, results_folder = results_folder)
+    folder_BGC_optknock(model_fn, folder, fraction_of_optimum = 0.5, results_folder = results_folder)
 

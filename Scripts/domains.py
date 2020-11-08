@@ -1,15 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
+Copyright 2020 Snorre Sulheim (snorre.sulheim@sintef.no)
+https://github.com/AlmaasLab/BiGMeC
+
+This file holds lists of domain names that are used in the bigmec pipeline
+
+
+This file is part of BiGMeC. BiGMeC is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version. BiGMeC is distributed
+in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details. You should have received a copy of the GNU General Public License along with BiGMeC.
+If not, see <http://www.gnu.org/licenses/>.
+
 Authors:
   - Snorre Sulheim, snorres.sulheim@sintef.no
-  - Fredrik Fossheim
+  - Fredrik A. Fossheim
 
 Date: 17.09.2020
-Lisence: CC-BY-4.0
-
-This file contains information about different domains used in BiGMeC.
-
 """
 
 reducing_domains = [

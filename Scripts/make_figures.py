@@ -1,15 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
+Copyright 2020 Snorre Sulheim (snorre.sulheim@sintef.no)
+https://github.com/AlmaasLab/BiGMeC
+
+This is the file used to make figure panels for the reseach paper associated with BiGMeC.
+
+
+This file is part of BiGMeC. BiGMeC is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version. BiGMeC is distributed
+in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details. You should have received a copy of the GNU General Public License along with BiGMeC.
+If not, see <http://www.gnu.org/licenses/>.
+
 Authors:
   - Snorre Sulheim, snorres.sulheim@sintef.no
-  - Fredrik Fossheim
+  - Fredrik A. Fossheim
 
 Date: 17.09.2020
-Lisence: CC-BY-4.0
-
-This is the main file used to create figure panels for manuscript.
-
 """
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -26,6 +36,7 @@ import venn
 import catheat
 
 from matplotlib.colors import ListedColormap
+
 # cmap = ListedColormap(sns.color_palette())
 # plt.set_cmap(cmap)
 # Set the default color cycle
