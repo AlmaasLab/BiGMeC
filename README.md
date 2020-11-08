@@ -2,19 +2,19 @@
 # BiGMeC - Biosynthetic Gene cluster Metabolic pathway Constructor
 The BiGMeC pipeline makes a draft reconstruction of the metabolic pathway associated with a non-ribosomal peptide synthetase (NRPS) or polyketide synthase (PKS)biosynthetic gene cluster. The pipeline takes the .gbk file produced by [antiSMASH](https://antismash.secondarymetabolites.org) and produces a JSON-file that can be readily incoporporated into a genome-scale metabolic model using available software such as [cobrapy](cobrapy.readthedocs.io/) or [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/stable/). The pipeline leverages the genome-scale metabolic model of _S. coelicolor_ ([Sco-GEM](https://github.com/SysBioChalmers/Sco-GEM)) as a database for reactions and metabolites.
 
-# Requirements
+## Requirements
 - python 3 (>=3.5).
 - conda or virtualenv, if you want to run the pipeline in a virtual environment (recommended).
 - pip package manager. Neccessary to install required python packages. 
 
-# Installation
+## Installation
 The BiGMeC pipeline doesn't require any installation, you can simply clone the repository, install a few python packages and immediately run the program. 
-## Clone repository
+### Clone repository
 In your command line interface, change to your preferred directory and run
 ```
 git clone https://github.com/AlmaasLab/BiGMeC.git
 ```
-## Make virtual environment
+### Make virtual environment
 It is recommend to run the pipeline in a virtual environment. You can create this environment with both [virtuealenv](https://virtualenv.pypa.io/en/latest/) or [conda](https://docs.anaconda.com/anaconda/install/), but here we only show how to do it with conda.
 From the BiGMeC repository create the environment by running:
 ```
@@ -24,12 +24,12 @@ Activate the new environment:
 ```
 conda activate bigmec
 ```
-## Install required packages
+### Install required packages
 Finally, use pip to install to the required packages listed in _requirements.txt_:
 ```
 pip install -r requirements.txt
 ```
-# Usage
+## Usage
 To test the pipeline you can simply run:
 ```
 python bigmec.py
@@ -45,9 +45,9 @@ Further information is provided by running
 python bigmec.py -h
 ```
 
-# Contributors
+## Contributors
 - [Snorre Sulheim](https://www.sintef.no/en/all-employees/employee/?empId=5675) ([@sulheim](https://github.com/sulheim)), SINTEF Industry, Norway / Norwegian University of Science and Technology, Norway
 - [Fredrik Aunaas Fossheim](https://no.linkedin.com/in/fredrik-aunaas-fossheim)([@FredrikFossheim](https://github.com/FredrikFossheim)), Norwegian University of Science and Technology, Norway
 
-# Contribute
+## Contribute
 Contributions are very welcome, either by raising issues or through pull requests. 
