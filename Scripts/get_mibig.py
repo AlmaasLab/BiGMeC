@@ -38,19 +38,19 @@ def write_gbk_file(gbk_entry, path):
     f.close()
 
 def get_all(folder):
-
+    """
+    Get the antiSMASH results for all BGCs (up to BGC0002070) from MIBiG.
+    Store the results in the given folder.
+    """
     folder = Path(folder)
     folder.mkdir(exist_ok = True)
 
     for a in range(1,2070,1):
-        # path er bare pathen til en tom mappe som alle GBK-filene lagres i
         path = str(folder / "BGC{0}.gbk".format(str(a).zfill(7)))
         print(path)
         realUrl = 'https://mibig.secondarymetabolites.org/repository/BGC' + str(a).zfill(7) + '/generated/BGC' \
                   + str(a).zfill(7) + '.1.region001.gbk'
 
-        # putter selve datainnhentinga i en try, fordi det er en del av linkene som ikke finnes, og da crasher programmet
-        # når man kommer til GBK nummer 15, som ikke finnes i MiBiG
         try:
            string = str(get_web_data(realUrl))[3:-4]#this is the entire gbk-file for each cluster
         except Exception:

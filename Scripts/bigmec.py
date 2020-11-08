@@ -565,8 +565,6 @@ def add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions)
     Modules mid: All modules that contain KS, AT and ACP domain.
     the modules_min is
     """
-
-    
     # domains x modules is now a dict sorted by placement on BGC.
     # do this to find out if domains are found in this sequence: ks-at-acp
     domains, actual_domains, domains_x_modules = _get_domains(data, core_number)
@@ -702,14 +700,8 @@ def find_and_replace_load_modules(domain_or_module):
                 # if this is a core gene. needs to be nested because modules have different structure than domains
                 if prev_domain_type in loader_at_domains and dom_mod['info']['type'] in loader_acp_domains:
                     if prev_gene == dom_mod['info']['gene']:
-                        # if this is a gene that contains the [A/AT]-[ACP/PCP/PP] module outside of a regular
-                        # extending module:
-                        # try:
-                        # print(domain_or_module[index - 1])
                         extender_unit = domain_or_module[index - 1]["info"]["AT_specificity"]
-                        # except KeyError:
-                        #     extender_unit = 'starter_unit'
-
+                        
                         info = {'extender_unit': extender_unit,
                                 'activity': prev_act,
                                 'start': domain_or_module[index-1]['info']['start'],
@@ -726,9 +718,6 @@ def find_and_replace_load_modules(domain_or_module):
         elif dom_mod['element'] == 'module':
             # Only looking for loader domains before the modules
             break
-            # encountered_a_module = True  # to check that we have not passed any real modules
-            
-            # prev_gene = dom_mod['domains'][0]['gene']
 
     # If we still haven't found a load module we check if the load module is a C-A-PCP module for NRPS
     prev_domain_types = ["", "", ""]
@@ -1010,18 +999,8 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
             # This needs to be first because we want to add extender unit as first step of a module, but for transAT
             # modules, the at domain is not always present.
             if (module['info']['extender_unit'] not in non_extending_modules) and not chain_released:
-                # essentially: if the module is a regular extender module
-                # Get extender unit
-                # if module_type == 'starter_module':
-                #     extender_unit = return_key_by_value(module['info']['activity'].split(' -> ')[0])
-                # else:
                 extender_unit = return_key_by_value(module['info']['extender_unit'].split(' -> ')[0])
-
-                # This is just a way that we can separate extender units that exist in the GEM
-                # from those that do not exist in the GEM. if the TRY fails, it means that
-                # the extender unit does not exist in the GEM
-                # happens if extender unit is not malcoa, mmcoa, mxcoa or emcoa,
-                # (or minowa and at_specificity disagrees):
+                # This extender unit syntax should be rewritten
                 if extender_unit == 'pk':
 
                     # if this is the empty loader we created:
@@ -1099,7 +1078,6 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         except KeyError:
                             # There are a range of very specific metabolites that are not accounted for
                             # including the cases where antiSMASH can't predict the specific AA
-       
                             AA_to_X_reactions, extender_met = force_X_nrps_module_flux(model, extender_unit)
                             model.add_reactions(AA_to_X_reactions)
 
@@ -1159,17 +1137,10 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                 elif module_type == 'starter_module':
                     print("Module type is starter module")
                     raise ValueError
-                    # reaction.add_metabolites(
-                    #     {prevmet: -1,
-                    #      postmet: 1})
-                    # reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['NH2'])
-                    # reaction_list.append(reaction)
-                    # domain_counter += 1
+                    
                 else:
                     # raise arbitrary error because something has gone terribly wrong
                     raise ValueError
-
-                # Add the polyketide chain metabolites to the reation and add reaction to list
                 
                 # remove CO2 from load module
                 if (domain_counter == 1) and (module_type != 'GNAT'):
@@ -1179,61 +1150,6 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                 reaction_list.append(reaction)
                 domain_counter += 1
 
-
-                # except KeyError:  # the substrate is not in the model you want to insert into
-                    
-                    # warnings.warn('Predicted substrate does not exist in the model')
-                    # extender_unit = return_key_by_value(module['info']['extender_unit'].split(' -> ')[0])
-
-                    # if module_type == 'PKS':
-                    #     extender_unit = 'Malonyl-CoA'
-                        # the only cases we end up here when the module type is PKS, is when a
-                        # starter unit is predicted as the extender unit. This Cannot be true for starters that antiSMASH
-                        # predicts, so we set this extender to malonyl-CoA
-
-                    # prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
-                    # postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
-
-                    # # Make reaction
-                    # reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter)) 
-                    # reaction.name = core_structure['type'] + '_reaction_' + str(domain_counter)
-                    # reaction.lower_bound = 0.  # This is the default
-                    # reaction.upper_bound = 1000.
-                    # if module_type == 'NRPS':
-                        
-
-                        
-                    #     else:
-                    #         print(module_type)
-                    #         print(module)
-                    #         # we dont know the specificity of the A-domain, so we let any amino acid take the role
-                    #         # as this amino acid. 
-                    #         if not added_generic_AAs:
-                    #             model.add_reactions(force_X_nrps_module_flux(extender_unit))
-                    #             added_generic_AAs = True
-                    #         new_met = cobra.Metabolite(long_to_bigg[extender_unit], formula='X', name=extender_unit,compartment='c')
-                    #         reaction.add_metabolites({
-                    #             new_met: -1,
-                    #             BDGLOBAL.get_met('atp_c'): -1,
-                    #             BDGLOBAL.get_met('amp_c'): 1,
-                    #             BDGLOBAL.get_met('ppi_c'): 1,
-                    #             prevmet: -1,
-                    #             postmet: 1})
-                    #     reaction_list.append(reaction)
-                    #     warnings.warn('Predicted substrate does not exist in the model')
-                    #     domain_counter += 1
-                    # if module_type == 'PKS':
-                    #     reaction.add_metabolites(
-                    #         {cobra.Metabolite(long_to_bigg[extender_unit], formula='X', name=extender_unit,
-                    #                           compartment='c'): -1,
-                    #          BDGLOBAL.get_met('coa_c'): 1,
-                    #          BDGLOBAL.get_met('co2_c'): 1,
-                    #          prevmet: -1,
-                    #          postmet: 1})
-                    #     reaction_list.append(reaction)
-                    #     domain_counter += 1
-                    # else:
-                    #     raise IndexError
             
             for domain in module['domains']:
                 if domain['activity']:
@@ -1256,16 +1172,9 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         if domain["type"] in chain_release_domains:
                             chain_released = True
 
-        # else:
-        #     print(module)
-        #     raise ValueError
-
-    '''
-    this part below is to add tailoring reactions:
-    tailoring reactions is a dict of type:
-
-    {glycosyltransferase: 3, ALA: 0, glycerol: 1}
-    '''
+    # this part below is to add tailoring reactions:
+    # tailoring reactions is a dict of type:
+    # {glycosyltransferase: 3, ALA: 0, glycerol: 1}
     for tailoring_reaction, n in tailoring_reactions.items():
         if tailoring_reaction != 'methoxymalonyl':
             for repetition in range(n):
@@ -1591,39 +1500,3 @@ if __name__ == '__main__':
     # Run the BiGMeC pipeline
     run(args.path, args.out, args.model, args.temp)
 
-
-
-    # biggbk = "../Data/mibig"
-    
-    # # 1) Folder containing all gbk files you want to translate into metabolic pathways
-    # #    They are saved as models, and can be merged with the GEM later.
-    # #    In this repository, the models that are found in "gbk_db_output_models.zip" are the pathways that 
-    # #    Have been constructed. In that case, this folder contained all antiSMASH output files found in 
-    # #    antismash_output_mibig_gbk_files1.zip
-    # #    antismash_output_mibig_gbk_files2.zip
-    # #    and
-    # #    antismash_output_mibig_gbk_files3.zip
-    # output_gbk = "../Data/constructed_pathways/"
-    # # 2) Folder that regular models are output (empty folder)
-    # output_gbk_lump = "../Data/constructed_GEMs"
-    # # 3) Folder that lump models are output (empty folder)
-    # json_folder = '../Data/temp'
-    # # 4) Folder that json files are output (empty folder)(an unnecessary step, but it may help look at the information that is saved)
-
-    # # 5) path of the genome scale metabolic model
-    # # model_fn = '../Models/Sco-GEM.xml'
-    # # ref_model = cobra.io.read_sbml_model(model_fn)
-
-    # if 0:
-    #     for filename in os.listdir(biggbk):
-    #         if filename.endswith('.gbk'):
-    #             json_path = json_folder + filename.split('.')[0] + '.json'
-    #             parse_antismash_gbk(biggbk + filename)
-    #             with open(json_path, 'r') as json_file:
-    #                 data_json = json.load(json_file)
-    #             json_file.close()
-    #             add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
-    # if 1:
-
-    #     bgc_path = biggbk #+ "/1049.gbk"
-    #     run(bgc_path, output_gbk, json_folder)
