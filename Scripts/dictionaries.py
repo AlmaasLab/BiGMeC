@@ -12,236 +12,264 @@ This file contains dictionaries that are used to look up metabolite and reaction
 
 """
 import cobra
+from pathlib import Path
 # model_fn = '../Models/BiGG_universal_model.json'
-model_fn = '../Models/Sco-GEM.xml'
-#ref_model = cobra.io.load_json_model(model_fn)
-ref_model = cobra.io.read_sbml_model(model_fn)
-
-cofactor_metabolites_dict = {
-    'nadph': ref_model.metabolites.get_by_id('nadph_c'),
-    'nadp': ref_model.metabolites.get_by_id('nadp_c'),
-    'h2o': ref_model.metabolites.get_by_id('h2o_c'),
-    'coa': ref_model.metabolites.get_by_id('coa_c'),
-    'co2': ref_model.metabolites.get_by_id('co2_c'),
-    'h+': ref_model.metabolites.get_by_id('h_c'),
-    'sam': ref_model.metabolites.get_by_id('amet_c'),
-    'sah': ref_model.metabolites.get_by_id('ahcys_c'),
-    'mxmal': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
-    '4hbf': cobra.Metabolite('4hbf_c', formula='X', name='4-hydroxy-benzoyl-formate', compartment='c'),
-    'hpg': cobra.Metabolite('4hpg_c', formula='X', name='4-hydroxy-phenyl-glycine', compartment='c'),
-    'dpg': cobra.Metabolite('dpg_c', formula='X', name='dihydroxy-phenyl-glycine', compartment='c'),
-    'bht': cobra.Metabolite('bht_c', formula='X', name='beta-hydroxy-tyrosine', compartment='c'),
-    'pip': cobra.Metabolite('Lpipecol_c', formula='X', name='pipecolic acid', compartment='c'),
-    'fatty_acid_X': cobra.Metabolite('fatty_acid_X_c', formula='X', 
-                                name='generic fatty acid for acylation in NRPS initiation', compartment='c'),
-    'abu': cobra.Metabolite('2abu_c', formula='X', name='2-aminobutyrate', compartment='c'),
-    'ahba': cobra.Metabolite('ahba_c', formula='C7H7NO3', name='3-Amino-5-hydroxybenzoate', compartment='c'), # https://www.genome.jp/dbget-bin/www_bget?C12107
-    'bafA': cobra.Metabolite('bafilomycinA1_c', formula='X', name='Bafilomycin A1', compartment='c'),
-    'bafB': cobra.Metabolite('bafilomycinB1_c', formula='X', name='Bafilomycin B1', compartment='c'),
-    'fumamp': cobra.Metabolite('fumamp_c', formula='X', name='Fumaryl-AMP', compartment='c'),
-    # 'mx__specific__acp_c':  cobra.Metabolite('mx__specific__acp_c', formula='X', name='methoxymalonate specific acyl carrier protein', compartment='c'),
-    'c5n': cobra.Metabolite('c5n_c', formula='X', name='2-amino-3-hydroxycyclopent-2-enone', compartment='c'),
-    'fumamp_pk': cobra.Metabolite('fumamp__pk_c', formula='X', 
-                                  name='Fumaryl-AMP bound to polyketide', compartment='c'),
-    'final_product': cobra.Metabolite('final_product_c', formula='X', name='Final product', compartment='c'),
-    '3mbm': cobra.Metabolite('3mbmcoa_c', formula='C8H14O4', name='(3-Methylbutyl)malonic acid', compartment='c'),
-    '5m2h': cobra.Metabolite('5m2hcoa__E_c', formula='X', name='5-methyl-trans-hex-2-enoyl-ACP', compartment='c'),
-    '5m3o': cobra.Metabolite('5mhcoa_c', formula='X', name='5-Methyl-3-oxohexanoyl-ACP', compartment='c'),
-    'i2b2': cobra.Metabolite('i2b2_c', formula='C8H12O4', name='(2E)-2-Isobutyl-2-butenedioic acid', compartment='c'),
-    'leupyrrin_1': cobra.Metabolite('leupyrrin_1_c', formula='X', name='leupyrrin intermediate', compartment='c'),
-}
+# model_fn = '../Models/Sco-GEM.xml'
+# self.model = cobra.io.read_sbml_model(model_fn)
 
 
-cofactor_reactions_dict = {  # reactions that are specific to certain domains
-    'PKS_KR': {cofactor_metabolites_dict['nadph']: -1.0, cofactor_metabolites_dict['h+']: -1.0,
-               cofactor_metabolites_dict['nadp']: 1.0},
-    'cMT': {cofactor_metabolites_dict['sam']: -1.0, cofactor_metabolites_dict['sah']: 1.0},
-    'oMT': {cofactor_metabolites_dict['sam']: -1.0, cofactor_metabolites_dict['sah']: 1.0},
-    'PKS_DH': {cofactor_metabolites_dict['h2o']: 1.0},
-    'PKS_ER': {cofactor_metabolites_dict['nadph']: -1.0, cofactor_metabolites_dict['h+']: -1.0,
-               cofactor_metabolites_dict['nadp']: 1.0},
-    'PKS_TE': {cofactor_metabolites_dict['h2o']: -1.0},
-    'TD': {cofactor_metabolites_dict['nadph']: -1.0, cofactor_metabolites_dict['h+']: -1.0,
-               cofactor_metabolites_dict['nadp']: 1.0},
-    'PKS_AT': {cofactor_metabolites_dict['coa']: 1.0, cofactor_metabolites_dict['co2']: 1.0},
-    'Condensation': {cofactor_metabolites_dict['h2o']: -1.0},
-    'nMT': {cofactor_metabolites_dict['sam']: -1.0, cofactor_metabolites_dict['sah']: 1.0},
-    'mxmal': {ref_model.metabolites.get_by_id('coa_c'): -1.0,
-              ref_model.metabolites.get_by_id('13dpg_c'): -1.0,
-              ref_model.metabolites.get_by_id('pi_c'): 2.0,
-              ref_model.metabolites.get_by_id('nadp_c'): -1.0,
-              ref_model.metabolites.get_by_id('nadph_c'): 1.0,
-              ref_model.metabolites.get_by_id('h_c'): 1.0,
-              ref_model.metabolites.get_by_id('amet_c'): -1.0,
-              ref_model.metabolites.get_by_id('ahcys_c'): 1.0,
-              ref_model.metabolites.get_by_id('fad_c'): -1.0,
-              ref_model.metabolites.get_by_id('fadh2_c'): 1.0,
-              cofactor_metabolites_dict['mxmal']: 1.0},
+class BigmecDict(object):
+    def __init__(self, model_fn):
+        self._load_model(model_fn)
+        self._make_dictionaries()
+
+    def _load_model(self, model_fn):
+        self.model_fn = model_fn
+        if Path(model_fn).suffix == ".xml":
+            self.model = cobra.io.read_sbml_model(model_fn)
+        elif Path(model_fn).suffix == ".json":
+            self.model = cobra.io.load_json_model(model_fn)
+        else:
+            print("File type not recognized for reference model. Has to be json or sbml format.")
+            raise IOError
+
+    def get_met(self, m_id):
+        return self.model.metabolites.get_by_id(m_id)
+        
+    def _raise_model_warning(model_fn):
+        path = Path(model_fn)
+        if model_fn.stem != "Sco-GEM.xml":
+            warnings.warn("BiGMeC is not tested with tour selected reference model. \
+                           This may cause unexpected errors. ")
+
+    def _make_dictionaries(self):
+        self.cofactor_metabolites_dict = {
+            'nadph': self.model.metabolites.get_by_id('nadph_c'),
+            'nadp': self.model.metabolites.get_by_id('nadp_c'),
+            'h2o': self.model.metabolites.get_by_id('h2o_c'),
+            'coa': self.model.metabolites.get_by_id('coa_c'),
+            'co2': self.model.metabolites.get_by_id('co2_c'),
+            'h+': self.model.metabolites.get_by_id('h_c'),
+            'sam': self.model.metabolites.get_by_id('amet_c'),
+            'sah': self.model.metabolites.get_by_id('ahcys_c'),
+            'mxmal': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
+            '4hbf': cobra.Metabolite('4hbf_c', formula='X', name='4-hydroxy-benzoyl-formate', compartment='c'),
+            'hpg': cobra.Metabolite('4hpg_c', formula='X', name='4-hydroxy-phenyl-glycine', compartment='c'),
+            'dpg': cobra.Metabolite('dpg_c', formula='X', name='dihydroxy-phenyl-glycine', compartment='c'),
+            'bht': cobra.Metabolite('bht_c', formula='X', name='beta-hydroxy-tyrosine', compartment='c'),
+            'pip': cobra.Metabolite('Lpipecol_c', formula='X', name='pipecolic acid', compartment='c'),
+            'fatty_acid_X': cobra.Metabolite('fatty_acid_X_c', formula='X', 
+                                        name='generic fatty acid for acylation in NRPS initiation', compartment='c'),
+            'abu': cobra.Metabolite('2abu_c', formula='X', name='2-aminobutyrate', compartment='c'),
+            'ahba': cobra.Metabolite('ahba_c', formula='C7H7NO3', name='3-Amino-5-hydroxybenzoate', compartment='c'), # https://www.genome.jp/dbget-bin/www_bget?C12107
+            'bafA': cobra.Metabolite('bafilomycinA1_c', formula='X', name='Bafilomycin A1', compartment='c'),
+            'bafB': cobra.Metabolite('bafilomycinB1_c', formula='X', name='Bafilomycin B1', compartment='c'),
+            'fumamp': cobra.Metabolite('fumamp_c', formula='X', name='Fumaryl-AMP', compartment='c'),
+            # 'mx__specific__acp_c':  cobra.Metabolite('mx__specific__acp_c', formula='X', name='methoxymalonate specific acyl carrier protein', compartment='c'),
+            'c5n': cobra.Metabolite('c5n_c', formula='X', name='2-amino-3-hydroxycyclopent-2-enone', compartment='c'),
+            'fumamp_pk': cobra.Metabolite('fumamp__pk_c', formula='X', 
+                                          name='Fumaryl-AMP bound to polyketide', compartment='c'),
+            'final_product': cobra.Metabolite('final_product_c', formula='X', name='Final product', compartment='c'),
+            '3mbm': cobra.Metabolite('3mbmcoa_c', formula='C8H14O4', name='(3-Methylbutyl)malonic acid', 
+                    compartment='c'),
+            '5m2h': cobra.Metabolite('5m2hcoa__E_c', formula='X', name='5-methyl-trans-hex-2-enoyl-ACP', 
+                    compartment='c'),
+            '5m3o': cobra.Metabolite('5mhcoa_c', formula='X', name='5-Methyl-3-oxohexanoyl-ACP', compartment='c'),
+            'i2b2': cobra.Metabolite('i2b2_c', formula='C8H12O4', name='(2E)-2-Isobutyl-2-butenedioic acid',
+                                     compartment='c'),
+            'leupyrrin_1': cobra.Metabolite('leupyrrin_1_c', formula='X', name='leupyrrin intermediate', 
+                    compartment='c')}
 
 
-    'hpg_1': {ref_model.metabolites.get_by_id('pphn_c'): -1,
-              ref_model.metabolites.get_by_id('34hpp_c'): 1,
-              ref_model.metabolites.get_by_id('co2_c'): 1,
-              ref_model.metabolites.get_by_id('h2o_c'): 1},
+        self.cofactor_reactions_dict = {  # reactions that are specific to certain domains
+            'PKS_KR': {self.cofactor_metabolites_dict['nadph']: -1.0, self.cofactor_metabolites_dict['h+']: -1.0,
+                       self.cofactor_metabolites_dict['nadp']: 1.0},
+            'cMT': {self.cofactor_metabolites_dict['sam']: -1.0, self.cofactor_metabolites_dict['sah']: 1.0},
+            'oMT': {self.cofactor_metabolites_dict['sam']: -1.0, self.cofactor_metabolites_dict['sah']: 1.0},
+            'PKS_DH': {self.cofactor_metabolites_dict['h2o']: 1.0},
+            'PKS_ER': {self.cofactor_metabolites_dict['nadph']: -1.0, self.cofactor_metabolites_dict['h+']: -1.0,
+                       self.cofactor_metabolites_dict['nadp']: 1.0},
+            'PKS_TE': {self.cofactor_metabolites_dict['h2o']: -1.0},
+            'TD': {self.cofactor_metabolites_dict['nadph']: -1.0, self.cofactor_metabolites_dict['h+']: -1.0,
+                       self.cofactor_metabolites_dict['nadp']: 1.0},
+            'PKS_AT': {self.cofactor_metabolites_dict['coa']: 1.0, self.cofactor_metabolites_dict['co2']: 1.0},
+            'Condensation': {self.cofactor_metabolites_dict['h2o']: -1.0},
+            'nMT': {self.cofactor_metabolites_dict['sam']: -1.0, self.cofactor_metabolites_dict['sah']: 1.0},
+            'mxmal': {self.model.metabolites.get_by_id('coa_c'): -1.0,
+                      self.model.metabolites.get_by_id('13dpg_c'): -1.0,
+                      self.model.metabolites.get_by_id('pi_c'): 2.0,
+                      self.model.metabolites.get_by_id('nadp_c'): -1.0,
+                      self.model.metabolites.get_by_id('nadph_c'): 1.0,
+                      self.model.metabolites.get_by_id('h_c'): 1.0,
+                      self.model.metabolites.get_by_id('amet_c'): -1.0,
+                      self.model.metabolites.get_by_id('ahcys_c'): 1.0,
+                      self.model.metabolites.get_by_id('fad_c'): -1.0,
+                      self.model.metabolites.get_by_id('fadh2_c'): 1.0,
+                      self.cofactor_metabolites_dict['mxmal']: 1.0},
 
-    'hpg_2': {ref_model.metabolites.get_by_id('34hpp_c'): -1,
-              ref_model.metabolites.get_by_id('o2_c'): -1,
-              ref_model.metabolites.get_by_id('h2o_c'): 1,
-              ref_model.metabolites.get_by_id('4hmda_c'): 1},
 
-    'hpg_3': {ref_model.metabolites.get_by_id('4hmda_c'): -1,
-              ref_model.metabolites.get_by_id('fmn_c'): -1,
-              ref_model.metabolites.get_by_id('fmnh2_c'): 1,
-              ref_model.metabolites.get_by_id('nadh_c'): -1,
-              ref_model.metabolites.get_by_id('nad_c'): 1,
-              cofactor_metabolites_dict['4hbf']: 1},
+            'hpg_1': {self.model.metabolites.get_by_id('pphn_c'): -1,
+                      self.model.metabolites.get_by_id('34hpp_c'): 1,
+                      self.model.metabolites.get_by_id('co2_c'): 1,
+                      self.model.metabolites.get_by_id('h2o_c'): 1},
 
-    'hpg_4': {cofactor_metabolites_dict['4hbf']: -1,
-              ref_model.metabolites.get_by_id('tyr__L_c'): -1,
-              ref_model.metabolites.get_by_id('34hpp_c'): 1,
-              cofactor_metabolites_dict['hpg']: 1},
+            'hpg_2': {self.model.metabolites.get_by_id('34hpp_c'): -1,
+                      self.model.metabolites.get_by_id('o2_c'): -1,
+                      self.model.metabolites.get_by_id('h2o_c'): 1,
+                      self.model.metabolites.get_by_id('4hmda_c'): 1},
 
-    'bht': {ref_model.metabolites.get_by_id('tyr__L_c'): -1,
-            ref_model.metabolites.get_by_id('o2_c'): -1,
-            ref_model.metabolites.get_by_id('nadph_c'): -1,
-            ref_model.metabolites.get_by_id('h_c'): -1,
-            ref_model.metabolites.get_by_id('nadp_c'): 1,
-            cofactor_metabolites_dict['hpg']: 1},
+            'hpg_3': {self.model.metabolites.get_by_id('4hmda_c'): -1,
+                      self.model.metabolites.get_by_id('fmn_c'): -1,
+                      self.model.metabolites.get_by_id('fmnh2_c'): 1,
+                      self.model.metabolites.get_by_id('nadh_c'): -1,
+                      self.model.metabolites.get_by_id('nad_c'): 1,
+                      self.cofactor_metabolites_dict['4hbf']: 1},
 
-    'dpg': {ref_model.metabolites.get_by_id('accoa_c'): -1,
-            ref_model.metabolites.get_by_id('malcoa_c'): -3,
-            ref_model.metabolites.get_by_id('coa_c'): 4,
-            ref_model.metabolites.get_by_id('co2_c'): 3,
-            ref_model.metabolites.get_by_id('h2o_c'): 1,
-            ref_model.metabolites.get_by_id('tyr__L_c'): -1,
-            ref_model.metabolites.get_by_id('34hpp_c'): 1,
-            cofactor_metabolites_dict['dpg']: 1},
+            'hpg_4': {self.cofactor_metabolites_dict['4hbf']: -1,
+                      self.model.metabolites.get_by_id('tyr__L_c'): -1,
+                      self.model.metabolites.get_by_id('34hpp_c'): 1,
+                      self.cofactor_metabolites_dict['hpg']: 1},
 
-    'gnat': {ref_model.metabolites.get_by_id('malcoa_c'): -1,
-             ref_model.metabolites.get_by_id('co2_c'): 1,
-             ref_model.metabolites.get_by_id('coa_c'): 1},
+            'bht': {self.model.metabolites.get_by_id('tyr__L_c'): -1,
+                    self.model.metabolites.get_by_id('o2_c'): -1,
+                    self.model.metabolites.get_by_id('nadph_c'): -1,
+                    self.model.metabolites.get_by_id('h_c'): -1,
+                    self.model.metabolites.get_by_id('nadp_c'): 1,
+                    self.cofactor_metabolites_dict['hpg']: 1},
 
-    'fkbh': {ref_model.metabolites.get_by_id('13dpg_c'): -1.0,
-             ref_model.metabolites.get_by_id('pi_c'): 2.0},
+            'dpg': {self.model.metabolites.get_by_id('accoa_c'): -1,
+                    self.model.metabolites.get_by_id('malcoa_c'): -3,
+                    self.model.metabolites.get_by_id('coa_c'): 4,
+                    self.model.metabolites.get_by_id('co2_c'): 3,
+                    self.model.metabolites.get_by_id('h2o_c'): 1,
+                    self.model.metabolites.get_by_id('tyr__L_c'): -1,
+                    self.model.metabolites.get_by_id('34hpp_c'): 1,
+                    self.cofactor_metabolites_dict['dpg']: 1},
 
-    # See https://www.genome.jp/kegg-bin/show_pathway?rn01051 and
-    # https://biocyc.org/META/NEW-IMAGE?type=PATHWAY&object=PWY-5979
-    'ahba-synthesis': {ref_model.metabolites.get_by_id('udpg_c'):-1,
-             ref_model.metabolites.get_by_id('nad_c'): -1,
-             ref_model.metabolites.get_by_id('nadh_c'): 1,
-             ref_model.metabolites.get_by_id('h_c'): 3,
-             ref_model.metabolites.get_by_id('gln__L_c'): -1,
-             ref_model.metabolites.get_by_id('HC00591_c'): 1,
-             ref_model.metabolites.get_by_id('udp_c'): 1,
-             ref_model.metabolites.get_by_id('atp_c'): -1,
-             ref_model.metabolites.get_by_id('adp_c'): 1,
-             ref_model.metabolites.get_by_id('r5p_c'): -1,
-             ref_model.metabolites.get_by_id('s7p_c') : 1,
-             ref_model.metabolites.get_by_id('pep_c'): -1,
-             ref_model.metabolites.get_by_id('pi_c'): 2,
-             cofactor_metabolites_dict["ahba"]: 1},
+            'gnat': {self.model.metabolites.get_by_id('malcoa_c'): -1,
+                     self.model.metabolites.get_by_id('co2_c'): 1,
+                     self.model.metabolites.get_by_id('coa_c'): 1},
 
-    'ahba': {cofactor_metabolites_dict["ahba"]: -1,
-             ref_model.metabolites.get_by_id('atp_c'): -1,
-             ref_model.metabolites.get_by_id('amp_c'):  1,
-             ref_model.metabolites.get_by_id('ppi_c'):  1,
-             ref_model.metabolites.get_by_id('h2o_c'):  1},
+            'fkbh': {self.model.metabolites.get_by_id('13dpg_c'): -1.0,
+                     self.model.metabolites.get_by_id('pi_c'): 2.0},
 
-    'acetyl': {ref_model.metabolites.get_by_id('accoa_c'): -1,
-               ref_model.metabolites.get_by_id('coa_c'): 1,
-               ref_model.metabolites.get_by_id('co2_c'): 1},
+            # See https://www.genome.jp/kegg-bin/show_pathway?rn01051 and
+            # https://biocyc.org/META/NEW-IMAGE?type=PATHWAY&object=PWY-5979
+            'ahba-synthesis': {self.model.metabolites.get_by_id('udpg_c'):-1,
+                     self.model.metabolites.get_by_id('nad_c'): -1,
+                     self.model.metabolites.get_by_id('nadh_c'): 1,
+                     self.model.metabolites.get_by_id('h_c'): 3,
+                     self.model.metabolites.get_by_id('gln__L_c'): -1,
+                     self.model.metabolites.get_by_id('HC00591_c'): 1,
+                     self.model.metabolites.get_by_id('udp_c'): 1,
+                     self.model.metabolites.get_by_id('atp_c'): -1,
+                     self.model.metabolites.get_by_id('adp_c'): 1,
+                     self.model.metabolites.get_by_id('r5p_c'): -1,
+                     self.model.metabolites.get_by_id('s7p_c') : 1,
+                     self.model.metabolites.get_by_id('pep_c'): -1,
+                     self.model.metabolites.get_by_id('pi_c'): 2,
+                     self.cofactor_metabolites_dict["ahba"]: 1},
 
-    'shikimic_acid': {ref_model.metabolites.get_by_id('skm_c'): -1,
-                      ref_model.metabolites.get_by_id('atp_c'): -1,
-                      ref_model.metabolites.get_by_id('amp_c'):  1,
-                      ref_model.metabolites.get_by_id('ppi_c'):  1,
-                      ref_model.metabolites.get_by_id('h2o_c'):  1},
+            'ahba': {self.cofactor_metabolites_dict["ahba"]: -1,
+                     self.model.metabolites.get_by_id('atp_c'): -1,
+                     self.model.metabolites.get_by_id('amp_c'):  1,
+                     self.model.metabolites.get_by_id('ppi_c'):  1,
+                     self.model.metabolites.get_by_id('h2o_c'):  1},
 
-    'fatty_acid': {ref_model.metabolites.get_by_id('accoa_c'): -1,
-                   ref_model.metabolites.get_by_id('malcoa_c'): -3,
-                   ref_model.metabolites.get_by_id('co2_c'): 4,
-                   ref_model.metabolites.get_by_id('coa_c'): 4},
+            'acetyl': {self.model.metabolites.get_by_id('accoa_c'): -1,
+                       self.model.metabolites.get_by_id('coa_c'): 1,
+                       self.model.metabolites.get_by_id('co2_c'): 1},
 
-    'NH2': {ref_model.metabolites.get_by_id('malcoa_c'): -1,
-            ref_model.metabolites.get_by_id('co2_c'): 2,
-            ref_model.metabolites.get_by_id('gly_c'): -1,
-            ref_model.metabolites.get_by_id('coa_c'): 1
-            },
+            'shikimic_acid': {self.model.metabolites.get_by_id('skm_c'): -1,
+                              self.model.metabolites.get_by_id('atp_c'): -1,
+                              self.model.metabolites.get_by_id('amp_c'):  1,
+                              self.model.metabolites.get_by_id('ppi_c'):  1,
+                              self.model.metabolites.get_by_id('h2o_c'):  1},
 
-    # https://www.sciencedirect.com/topics/immunology-and-microbiology/ascomycin
-    'pip': {ref_model.metabolites.get_by_id('pyr_c'): -1,
-            ref_model.metabolites.get_by_id('lys__L_c'): -1,
-            ref_model.metabolites.get_by_id('h2o_c'): 1,
-            ref_model.metabolites.get_by_id('nadph_c'): -1,
-            ref_model.metabolites.get_by_id('nadp_c'): 1,
-            ref_model.metabolites.get_by_id('h_c'): -1,
-            cofactor_metabolites_dict['pip']: 1},
+            'fatty_acid': {self.model.metabolites.get_by_id('accoa_c'): -1,
+                           self.model.metabolites.get_by_id('malcoa_c'): -3,
+                           self.model.metabolites.get_by_id('co2_c'): 4,
+                           self.model.metabolites.get_by_id('coa_c'): 4},
 
-    'NRPS_acylating_loader': {cofactor_metabolites_dict["fatty_acid_X"]: -1,
-                              ref_model.metabolites.get_by_id("coa_c"): 1},
-    # R10992 in KEGG, could also be R10991
-    'abu': {ref_model.metabolites.get_by_id('2obut_c'): -1,
-            ref_model.metabolites.get_by_id('ala__L_c'): -1,
-            ref_model.metabolites.get_by_id('pyr_c'): 1,
-            cofactor_metabolites_dict["abu"]: 1},
-}
+            'NH2': {self.model.metabolites.get_by_id('malcoa_c'): -1,
+                    self.model.metabolites.get_by_id('co2_c'): 2,
+                    self.model.metabolites.get_by_id('gly_c'): -1,
+                    self.model.metabolites.get_by_id('coa_c'): 1
+                    },
 
-# beta_hydroxy_acids = {
-#     '3hpp':  ref_model.metabolites.get_by_id("3hpp_c"),
-#     'bhb': ref_model.metabolites.get_by_id("bhb_c"),
-# }
-fatty_acyl_CoAs = {
-    "3hpcoa": ref_model.metabolites.get_by_id("3hpcoa_c"),
-    # "ptpcoa": ref_model.metabolites.get_by_id("ptpcoa_c"),
-    "hxcoa":  ref_model.metabolites.get_by_id("hxcoa_c"),
-    # "hepcoa":  ref_model.metabolites.get_by_id("hepcoa_c"),
-    "occoa":  ref_model.metabolites.get_by_id("occoa_c"),
-    "dcacoa": ref_model.metabolites.get_by_id("dcacoa_c")
-}
+            # https://www.sciencedirect.com/topics/immunology-and-microbiology/ascomycin
+            'pip': {self.model.metabolites.get_by_id('pyr_c'): -1,
+                    self.model.metabolites.get_by_id('lys__L_c'): -1,
+                    self.model.metabolites.get_by_id('h2o_c'): 1,
+                    self.model.metabolites.get_by_id('nadph_c'): -1,
+                    self.model.metabolites.get_by_id('nadp_c'): 1,
+                    self.model.metabolites.get_by_id('h_c'): -1,
+                    self.cofactor_metabolites_dict['pip']: 1},
 
-condensation_initiation_cofactors = {
-    ref_model.metabolites.get_by_id('h2o_c'): 1 
-}
+            'NRPS_acylating_loader': {self.cofactor_metabolites_dict["fatty_acid_X"]: -1,
+                                      self.model.metabolites.get_by_id("coa_c"): 1},
+            # R10992 in KEGG, could also be R10991
+            'abu': {self.model.metabolites.get_by_id('2obut_c'): -1,
+                    self.model.metabolites.get_by_id('ala__L_c'): -1,
+                    self.model.metabolites.get_by_id('pyr_c'): 1,
+                    self.cofactor_metabolites_dict["abu"]: 1},
+        }
 
-tailoring_metabolites_dict = {
-    'glucose_6_phosphate': ref_model.metabolites.get_by_id('g6p_c'),
-    '13biphosphoglycerate': ref_model.metabolites.get_by_id('13dpg_c'),
-    'succinyl_coa': ref_model.metabolites.get_by_id('succoa_c'),
-    'glycine': ref_model.metabolites.get_by_id('gly_c'),
-    'coa': ref_model.metabolites.get_by_id('coa_c'),
-    'co2': ref_model.metabolites.get_by_id('co2_c'),
-    'atp': ref_model.metabolites.get_by_id('atp_c'),
-    'amp': ref_model.metabolites.get_by_id('amp_c'),
-    'ppi': ref_model.metabolites.get_by_id('ppi_c'),
-    'pi': ref_model.metabolites.get_by_id('pi_c'),
-    'nadh': ref_model.metabolites.get_by_id('nadph_c'),
-    'nad': ref_model.metabolites.get_by_id('nadp_c'),
-    'h+': ref_model.metabolites.get_by_id('h_c'),
-    'h2o': ref_model.metabolites.get_by_id('h2o_c')
-}
+        # beta_hydroxy_acids = {
+        #     '3hpp':  self.model.metabolites.get_by_id("3hpp_c"),
+        #     'bhb': self.model.metabolites.get_by_id("bhb_c"),
+        # }
+        self.fatty_acyl_CoAs = {
+            "3hpcoa": self.model.metabolites.get_by_id("3hpcoa_c"),
+            # "ptpcoa": self.model.metabolites.get_by_id("ptpcoa_c"),
+            "hxcoa":  self.model.metabolites.get_by_id("hxcoa_c"),
+            # "hepcoa":  self.model.metabolites.get_by_id("hepcoa_c"),
+            "occoa":  self.model.metabolites.get_by_id("occoa_c"),
+            "dcacoa": self.model.metabolites.get_by_id("dcacoa_c")
+        }
 
-tailoring_reactions_dict = {  # remember to add the secondary metabolite to these reactions
-    'glycosyltransferase': {tailoring_metabolites_dict['glucose_6_phosphate']: -1,
-                            tailoring_metabolites_dict['h+']: 1,
-                            tailoring_metabolites_dict['pi']: 1
-                            },
-    'glycerol': {tailoring_metabolites_dict['13biphosphoglycerate']: -1.0,
-                 tailoring_metabolites_dict['pi']: 2.0,
-                 tailoring_metabolites_dict['h+']: -1.0,
-                 tailoring_metabolites_dict['nad']: 1.0,
-                 tailoring_metabolites_dict['nadh']: -1.0,
-                 },
-    'ALA': {tailoring_metabolites_dict['succinyl_coa']: -1.0,
-            tailoring_metabolites_dict['glycine']: -1.0,
-            tailoring_metabolites_dict['atp']: -1.0,
-            tailoring_metabolites_dict['ppi']: 1.0,
-            tailoring_metabolites_dict['co2']: 1.0,
-            tailoring_metabolites_dict['coa']: 1.0,
-            tailoring_metabolites_dict['amp']: 1.0,
-            tailoring_metabolites_dict['h2o']: 1.0
-            }
+        # self.condensation_initiation_cofactors = {
+        #     self.model.metabolites.get_by_id('h2o_c'): 1 
+        # }
 
-}
+        self.tailoring_metabolites_dict = {
+            'glucose_6_phosphate': self.model.metabolites.get_by_id('g6p_c'),
+            '13biphosphoglycerate': self.model.metabolites.get_by_id('13dpg_c'),
+            'succinyl_coa': self.model.metabolites.get_by_id('succoa_c'),
+            'glycine': self.model.metabolites.get_by_id('gly_c'),
+            'coa': self.model.metabolites.get_by_id('coa_c'),
+            'co2': self.model.metabolites.get_by_id('co2_c'),
+            'atp': self.model.metabolites.get_by_id('atp_c'),
+            'amp': self.model.metabolites.get_by_id('amp_c'),
+            'ppi': self.model.metabolites.get_by_id('ppi_c'),
+            'pi': self.model.metabolites.get_by_id('pi_c'),
+            'nadh': self.model.metabolites.get_by_id('nadph_c'),
+            'nad': self.model.metabolites.get_by_id('nadp_c'),
+            'h+': self.model.metabolites.get_by_id('h_c'),
+            'h2o': self.model.metabolites.get_by_id('h2o_c')
+        }
+
+        self.tailoring_reactions_dict = {  # remember to add the secondary metabolite to these reactions
+            'glycosyltransferase': {self.tailoring_metabolites_dict['glucose_6_phosphate']: -1,
+                                    self.tailoring_metabolites_dict['h+']: 1,
+                                    self.tailoring_metabolites_dict['pi']: 1
+                                    },
+            'glycerol': {self.tailoring_metabolites_dict['13biphosphoglycerate']: -1.0,
+                         self.tailoring_metabolites_dict['pi']: 2.0,
+                         self.tailoring_metabolites_dict['h+']: -1.0,
+                         self.tailoring_metabolites_dict['nad']: 1.0,
+                         self.tailoring_metabolites_dict['nadh']: -1.0,
+                         },
+            'ALA': {self.tailoring_metabolites_dict['succinyl_coa']: -1.0,
+                    self.tailoring_metabolites_dict['glycine']: -1.0,
+                    self.tailoring_metabolites_dict['atp']: -1.0,
+                    self.tailoring_metabolites_dict['ppi']: 1.0,
+                    self.tailoring_metabolites_dict['co2']: 1.0,
+                    self.tailoring_metabolites_dict['coa']: 1.0,
+                    self.tailoring_metabolites_dict['amp']: 1.0,
+                    self.tailoring_metabolites_dict['h2o']: 1.0
+                    }
+                }
 
 long_to_short = {'Malonyl-CoA': 'mal', 'Methylmalonyl-CoA': 'mmal', 'Methoxymalonyl-CoA': 'mxmal',
                  'Ethylmalonyl-CoA': 'emal', 'Isobutyryl-CoA': 'isobut', '2-Methylbutyryl-CoA': '2metbut',

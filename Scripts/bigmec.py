@@ -1,12 +1,36 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
+Copyright 2020 Snorre Sulheim (snorre.sulheim@sintef.no)
+https://github.com/AlmaasLab/BiGMeC
+
+This is the main script of the BiGMeC pipeline and is run from the commandline on either a directory of GenBank files or a single GenBank file as produced by antiSMASH version 5.1. This is done by running the following command:
+    python bigmec.py 
+
+
+This script is used to bin reads, not based on their barcode but on their alignment to references.
+It was used in the Deepbinner paper to generate the truth set against which demulitplexing tools
+could be assessed.
+An example of how to prepare the input files in Bash and run this script:
+    for r in REFERENCE_DIR/*.fasta; do
+        minimap2 -x map-ont -c $r READS.fastq.gz | cut -f1-12 >> alignments.paf
+    done
+    tail -n+2 ALBACORE_DIR/sequencing_summary.txt | cut -f2,13 > read_lengths
+    python3 assign_reads_to_reference.py alignments.paf read_lengths > reference_classifications
+This file is part of Deepbinner. Deepbinner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version. Deepbinner is distributed
+in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details. You should have received a copy of the GNU General Public License along with Deepbinner.
+If not, see <http://www.gnu.org/licenses/>.
+
 Authors:
   - Snorre Sulheim, snorres.sulheim@sintef.no
-  - Fredrik Fossheim
+  - Fredrik A. Fossheim
 
 Date: 17.09.2020
-Lisence: CC-BY-4.0
+License: GPL 3.0. See repository license file for more information.
 
 This is the main file used to run BiGMeC to predict metabolic pathways from identified and annotated BGCs.
 
@@ -25,6 +49,7 @@ from itertools import groupby
 import warnings
 from pathlib import Path
 import numpy as np
+import argparse
 
 from domains import *
 from dictionaries import *
@@ -870,9 +895,9 @@ def add_nrps_metabolic_pathway(data, model, core_number, tailoring_reactions):
     return model
 
 
-def force_X_nrps_module_flux(substrate):
+def force_X_nrps_module_flux(model, substrate):
     '''
-    :param substrate: an amino acid that is either not specifically determined (NRPS predictor couldnt find
+    :param substrate: an amino acid that is not specifically determined (NRPS predictor couldnt find
     specific amino acid)
     :return: 20 reactions that convert each amino acid into the unknown amino acid
     '''
@@ -880,12 +905,22 @@ def force_X_nrps_module_flux(substrate):
     metabolite = _new_met(met_id, name='Generic amino acid')
     reaction_list_aa = []
     for amino_acid in acid_to_bigg:
-        reaction = cobra.Reaction(amino_acid + '_to_' + substrate)
-        reaction.name = 'Convert to generic metabolite'
-        reaction.lower_bound = 0  # This is the default
-        reaction.upper_bound = 1000
-        reaction.add_metabolites({ref_model.metabolites.get_by_id(acid_to_bigg[amino_acid]): -1, metabolite: 1})
-        reaction_list_aa.append(reaction)
+        reaction_ID = amino_acid + '_to_' + substrate
+
+        # We only want to add the reaction if it is not already in the model
+        try:
+            reaction = model.reactions.get_by_id(reaction_ID)
+        except KeyError:
+            # Not in model, make new reaction"
+            reaction = cobra.Reaction(reaction_ID)
+            reaction.name = 'Convert to generic metabolite'
+            reaction.lower_bound = 0  # This is the default
+            reaction.upper_bound = 1000
+            reaction.add_metabolites({BDGLOBAL.get_met(acid_to_bigg[amino_acid]): -1, metabolite: 1})
+            reaction_list_aa.append(reaction)
+        else:
+            # This reaction is already in the model, so no need to do anythings
+            pass
     return reaction_list_aa, metabolite
 
 def _add_metabolites(r, met_dict):
@@ -902,7 +937,7 @@ def _make_methoxymalCoA_reaction():
     mx_rx.name = 'synthesis of methoxymalonyl-coa'
     mx_rx.lower_bound = 0.  # This is the default
     mx_rx.upper_bound = 1000.
-    mx_rx.add_metabolites(cofactor_reactions_dict["mxmal"])
+    mx_rx.add_metabolites(BDGLOBAL.cofactor_reactions_dict["mxmal"])
     return mx_rx
 
 def _make_IN_reaction(core_structure):
@@ -1013,7 +1048,6 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     elif module['info']['extender_unit'] in alternate_starters:
                         if module['info']['extender_unit'] == 'CAL_domain':
                             module_type = module['info']['loader_activity']
-                            print("#!#", module['info']['loader_activity'])
                         elif module['info']['extender_unit'] == 'FkbH':
                             module_type = 'FkbH'
                         elif module['info']['extender_unit'] == 'GNAT':
@@ -1054,7 +1088,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     if extender_unit == "hpg":
                         hpg_synthesis_reactions = make_hpg_reactions()
                         model.add_reactions(hpg_synthesis_reactions)
-                        extender_met = cofactor_metabolites_dict["hpg"]
+                        extender_met = BDGLOBAL.cofactor_metabolites_dict["hpg"]
                     elif extender_unit == 'dpg' or extender_unit == 'dhpg':
                         # duplicate entries
                         # dpg and dhpg are the same substrates
@@ -1062,78 +1096,78 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         dpg_reaction1.name = 'synthesis of dhpg'
                         dpg_reaction1.lower_bound = 0.  # This is the default
                         dpg_reaction1.upper_bound = 1000.
-                        dpg_reaction1.add_metabolites(cofactor_reactions_dict['dpg'])
+                        dpg_reaction1.add_metabolites(BDGLOBAL.cofactor_reactions_dict['dpg'])
                         model.add_reactions([dpg_reaction1])
-                        extender_met = cofactor_metabolites_dict["dpg"]
+                        extender_met = BDGLOBAL.cofactor_metabolites_dict["dpg"]
                         
                     elif extender_unit in ['pip', 'bht', 'abu']:
                         synthesis_reaction = cobra.Reaction('{0}_synthesis'.format(extender_unit))
                         synthesis_reaction.name = 'synthesis of {0}'.format(std_aa_dic[extender_unit])
                         synthesis_reaction.lower_bound = 0.  # This is the default
                         synthesis_reaction.upper_bound = 1000.
-                        synthesis_reaction.add_metabolites(cofactor_reactions_dict[extender_unit])
+                        synthesis_reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict[extender_unit])
                         model.add_reactions([synthesis_reaction])
-                        extender_met = cofactor_metabolites_dict[extender_unit]
+                        extender_met = BDGLOBAL.cofactor_metabolites_dict[extender_unit]
 
                     else:
                         try:
-                            extender_met = ref_model.metabolites.get_by_id(long_to_bigg[extender_unit])
+                            extender_met = BDGLOBAL.get_met(long_to_bigg[extender_unit])
                         except KeyError:
                             # There are a range of very specific metabolites that are not accounted for
                             # including the cases where antiSMASH can't predict the specific AA
        
-                            AA_to_X_reactions, extender_met = force_X_nrps_module_flux(extender_unit)
+                            AA_to_X_reactions, extender_met = force_X_nrps_module_flux(model, extender_unit)
                             model.add_reactions(AA_to_X_reactions)
 
                     
                     reaction.add_metabolites(
                         {extender_met:-1,
-                         ref_model.metabolites.get_by_id('atp_c'): -1,
-                         ref_model.metabolites.get_by_id('amp_c'): 1,
-                         ref_model.metabolites.get_by_id('ppi_c'): 1,
-                         ref_model.metabolites.get_by_id('h2o_c'): 1})
+                         BDGLOBAL.get_met('atp_c'): -1,
+                         BDGLOBAL.get_met('amp_c'): 1,
+                         BDGLOBAL.get_met('ppi_c'): 1,
+                         BDGLOBAL.get_met('h2o_c'): 1})
                     
                 elif module_type == 'PKS':
                     if extender_unit == 'Methoxymalonyl-CoA' or extender_unit == 'Ethylmalonyl-CoA':
                         extender_met = _new_met(long_to_bigg[extender_unit], name = extender_unit)
                     else:
                         try:
-                            extender_met = ref_model.metabolites.get_by_id(long_to_bigg[extender_unit])
+                            extender_met = BDGLOBAL.get_met(long_to_bigg[extender_unit])
                         except KeyError:
                             print(extender_unit, " is not in model, assume malonyl-CoA")
                             # If we don't now what the extender unit is we assume malonyl-CoA
-                            extender_met = ref_model.metabolites.get_by_id(long_to_bigg["Malonyl-CoA"])
+                            extender_met = BDGLOBAL.get_met(long_to_bigg["Malonyl-CoA"])
 
-                    reaction.add_metabolites({extender_met: -1, ref_model.metabolites.get_by_id('coa_c'): 1,
-                                              ref_model.metabolites.get_by_id('co2_c'): 1})
+                    reaction.add_metabolites({extender_met: -1, BDGLOBAL.get_met('coa_c'): 1,
+                                              BDGLOBAL.get_met('co2_c'): 1})
                     
                 elif module_type == 'FkbH':
-                    reaction.add_metabolites(cofactor_reactions_dict['fkbh'])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['fkbh'])
                     
                 elif module_type == 'GNAT':
-                    reaction.add_metabolites(cofactor_reactions_dict['gnat'])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['gnat'])
                     
                 elif module_type == 'fatty_acid':
-                    reaction.add_metabolites(cofactor_reactions_dict['fatty_acid'])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['fatty_acid'])
                     
                 elif module_type == 'AHBA':
                     ahba_synthesis_reaction = cobra.Reaction('ahba_synthesis')
                     ahba_synthesis_reaction.name = "AHBA synthesis"
                     ahba_synthesis_reaction.bounds = (0,1000)
-                    ahba_synthesis_reaction.add_metabolites(cofactor_reactions_dict['ahba-synthesis'])
+                    ahba_synthesis_reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['ahba-synthesis'])
                     model.add_reaction(ahba_synthesis_reaction)
-                    reaction.add_metabolites(cofactor_reactions_dict['ahba'])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['ahba'])
                     
                 elif module_type == 'shikimic_acid':
-                    reaction.add_metabolites(cofactor_reactions_dict['shikimic_acid'])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['shikimic_acid'])
                     
                 elif module_type == 'Acetyl-CoA':
-                    reaction.add_metabolites(cofactor_reactions_dict['acetyl'])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['acetyl'])
                     
                 elif module_type == 'NH2':
-                    reaction.add_metabolites(cofactor_reactions_dict['NH2'])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['NH2'])
                 elif module_type == "NRPS_acylating_loader":
-                    reaction.add_metabolites(cofactor_reactions_dict["NRPS_acylating_loader"])
+                    reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict["NRPS_acylating_loader"])
                     # Add reactions making a generic fatty acid
                     fatty_acid_generic_reactions = make_generic_fatty_acid_conversion()
                     model.add_reactions(fatty_acid_generic_reactions)
@@ -1144,7 +1178,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     # reaction.add_metabolites(
                     #     {prevmet: -1,
                     #      postmet: 1})
-                    # reaction.add_metabolites(cofactor_reactions_dict['NH2'])
+                    # reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['NH2'])
                     # reaction_list.append(reaction)
                     # domain_counter += 1
                 else:
@@ -1196,9 +1230,9 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     #         new_met = cobra.Metabolite(long_to_bigg[extender_unit], formula='X', name=extender_unit,compartment='c')
                     #         reaction.add_metabolites({
                     #             new_met: -1,
-                    #             ref_model.metabolites.get_by_id('atp_c'): -1,
-                    #             ref_model.metabolites.get_by_id('amp_c'): 1,
-                    #             ref_model.metabolites.get_by_id('ppi_c'): 1,
+                    #             BDGLOBAL.get_met('atp_c'): -1,
+                    #             BDGLOBAL.get_met('amp_c'): 1,
+                    #             BDGLOBAL.get_met('ppi_c'): 1,
                     #             prevmet: -1,
                     #             postmet: 1})
                     #     reaction_list.append(reaction)
@@ -1208,8 +1242,8 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     #     reaction.add_metabolites(
                     #         {cobra.Metabolite(long_to_bigg[extender_unit], formula='X', name=extender_unit,
                     #                           compartment='c'): -1,
-                    #          ref_model.metabolites.get_by_id('coa_c'): 1,
-                    #          ref_model.metabolites.get_by_id('co2_c'): 1,
+                    #          BDGLOBAL.get_met('coa_c'): 1,
+                    #          BDGLOBAL.get_met('co2_c'): 1,
                     #          prevmet: -1,
                     #          postmet: 1})
                     #     reaction_list.append(reaction)
@@ -1225,7 +1259,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         reaction.name = std_domain_name
                         reaction.lower_bound = 0.  # This is the default
                         reaction.upper_bound = 1000.
-                        reaction.add_metabolites(cofactor_reactions_dict[std_domain_name])
+                        reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict[std_domain_name])
 
                         prevmet = _new_met(core_structure['type']+'_'+ str(domain_counter - 1), core_structure['type'])
                         postmet = _new_met(core_structure['type']+'_'+ str(domain_counter), core_structure['type'])
@@ -1252,7 +1286,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
         if tailoring_reaction != 'methoxymalonyl':
             for repetition in range(n):
                 reaction = cobra.Reaction(core_structure['type'] + '_' + str(domain_counter))
-                reaction.add_metabolites(tailoring_reactions_dict[tailoring_reaction])
+                reaction.add_metabolites(BDGLOBAL.tailoring_reactions_dict[tailoring_reaction])
                 prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
                 postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
                 reaction.add_metabolites({prevmet: -1.0, postmet: 1.0})
@@ -1318,7 +1352,7 @@ def add_ripp_metabolic_pathway(core_structure, model, core_number):
 
         try:
             met_bigg = long_to_bigg[one_letter_aa[metabolite]]
-            metabolite_added = ref_model.metabolites.get_by_id(met_bigg)
+            metabolite_added = BDGLOBAL.get_met(met_bigg)
             reaction_metabolites[metabolite_added] = aa_metabolites[metabolite]
         except KeyError:
             continue
@@ -1354,11 +1388,11 @@ def add_ripp_metabolic_pathway(core_structure, model, core_number):
 
 def make_generic_fatty_acid_conversion():
     reactions = []
-    for name, met in fatty_acyl_CoAs.items():
+    for name, met in BDGLOBAL.fatty_acyl_CoAs.items():
         reaction = cobra.Reaction("{0}_to_generic".format(name))
         reaction.lower_bound = 0
         reaction.upper_bound = 1000
-        mets = {met:-1, cofactor_metabolites_dict["fatty_acid_X"]:1}
+        mets = {met:-1, BDGLOBAL.cofactor_metabolites_dict["fatty_acid_X"]:1}
         reaction.add_metabolites(mets)
         reactions.append(reaction)
     return reactions
@@ -1372,25 +1406,25 @@ def make_hpg_reactions():
     hpg_reaction1.name = 'synthesis of hpg'
     hpg_reaction1.lower_bound = 0.  # This is the default
     hpg_reaction1.upper_bound = 1000.
-    hpg_reaction1.add_metabolites(cofactor_reactions_dict['hpg_1'])
+    hpg_reaction1.add_metabolites(BDGLOBAL.cofactor_reactions_dict['hpg_1'])
 
     hpg_reaction2 = cobra.Reaction('hpg_synthesis_2')
     hpg_reaction2.name = 'synthesis of hpg'
     hpg_reaction2.lower_bound = 0.  # This is the default
     hpg_reaction2.upper_bound = 1000.
-    hpg_reaction2.add_metabolites(cofactor_reactions_dict['hpg_2'])
+    hpg_reaction2.add_metabolites(BDGLOBAL.cofactor_reactions_dict['hpg_2'])
 
     hpg_reaction3 = cobra.Reaction('hpg_synthesis_3')
     hpg_reaction3.name = 'synthesis of hpg'
     hpg_reaction3.lower_bound = 0.  # This is the default
     hpg_reaction3.upper_bound = 1000.
-    hpg_reaction3.add_metabolites(cofactor_reactions_dict['hpg_3'])
+    hpg_reaction3.add_metabolites(BDGLOBAL.cofactor_reactions_dict['hpg_3'])
 
     hpg_reaction4 = cobra.Reaction('hpg_synthesis_4')
     hpg_reaction4.name = 'synthesis of hpg'
     hpg_reaction4.lower_bound = 0.  # This is the default
     hpg_reaction4.upper_bound = 1000.
-    hpg_reaction4.add_metabolites(cofactor_reactions_dict['hpg_4'])
+    hpg_reaction4.add_metabolites(BDGLOBAL.cofactor_reactions_dict['hpg_4'])
 
     return [hpg_reaction1, hpg_reaction2, hpg_reaction3, hpg_reaction4]
 
@@ -1474,11 +1508,10 @@ def add_cores_to_model(name, data, model_output_path):
 
     smcog_dict = find_tailoring_reactions_from_smcogs(data)
 
-    tailoring_reactions_dict = add_tailoring_smcogs(smcog_dict)
+    tailoring_reactions = add_tailoring_smcogs(smcog_dict)
 
     bgc_types = []
     for core_number in data['core_structure']:
-        print("Core number: ", core_number)
         bgc_type = data['core_structure'][core_number]['type']
         bgc_types.append(bgc_type)
         
@@ -1488,13 +1521,13 @@ def add_cores_to_model(name, data, model_output_path):
             #model = add_ripp_metabolic_pathway(data['core_structure'][core_number], model, core_number)
 
         elif bgc_type in ['transAT-PKS', 'transAT-PKS-like']:
-            model, lump_model = add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
+            model, lump_model = add_transat_metabolic_pathway(data, model, core_number, tailoring_reactions)
 
         elif bgc_type == 'T1PKS':
-            model, lump_model = add_t1pks_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
+            model, lump_model = add_t1pks_metabolic_pathway(data, model, core_number, tailoring_reactions)
 
         elif bgc_type in ['NRPS', 'NRPS-like']:
-            model, lump_model = add_nrps_metabolic_pathway(data, model, core_number, tailoring_reactions_dict)
+            model, lump_model = add_nrps_metabolic_pathway(data, model, core_number, tailoring_reactions)
         else:
             print("Can't handle ", bgc_type)
     '''
@@ -1502,18 +1535,21 @@ def add_cores_to_model(name, data, model_output_path):
     '''
     if not len(model.reactions):
         print("Couldn't construct the pathway for ", name)
-        print(smcog_dict)
-        print(data['core_structure'])
         return False, "-".join(bgc_types)
     else:
         model.description =  "-".join(bgc_types)
         cobra.io.save_json_model(model, model_output_path)
         return True, "-".join(bgc_types)
 
-def run(bgc_path, output_folder, json_folder = None):
+def run(bgc_path, output_folder, ref_model_fn, json_folder = None):
     """
     The main function used to run BiGMeC on wither a single .gbk file or a folder
     """
+    # Make global dictionary from reference model
+    global BDGLOBAL
+    BDGLOBAL = BigmecDict(ref_model_fn)
+
+    # Rung BiGMeC
     bgc_path = Path(bgc_path)
     report_list = []
     if bgc_path.is_dir():
@@ -1529,50 +1565,81 @@ def run(bgc_path, output_folder, json_folder = None):
     df = pd.DataFrame(report_list, columns = ["BGC", "Success", "BGC type"])
     df.to_csv(output_folder + "/summary.csv")
 
-def _run(bgc_path, output_folder, json_folder):
-    # This is the core of this function
-    json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
-    data = parse_antismash_gbk(bgc_path, json_path)
-    
-    # Adds extracted data to model
+def _run(bgc_path, output_folder, json_folder = None):
+    if json_folder:
+        json_path = str(Path(json_folder) / (bgc_path.stem + '.json'))
+        save_json = True
+    else:
+        json_path = None
+        save_json = False
+
+    # Parse antiSMASH GenBank file
+    data = parse_antismash_gbk(bgc_path, json_path, save_json)
+
+    # Creates metabolic pathway from parsed data
     output_model_fn = Path(output_folder) / (bgc_path.stem + ".json")
     name = "BGC-{0}".format(bgc_path.stem)
     successfull, _ = add_cores_to_model(name, data, str(output_model_fn))
     bgc_type_str = "/".join(data["Cluster types"])
     return bgc_path.stem, int(successfull), bgc_type_str
 
+
+
 if __name__ == '__main__':
-    biggbk = "../Data/mibig"
+
+    parser = argparse.ArgumentParser(description='Make a draft reconstruction of an NRPS or \
+                                     PKS metabolic pathway from the antiSMASH results')
+    parser.add_argument('-f', '--path', type = str, help = "Path to GenBank file(s). Can be either a file or a folder",
+                        default = '../Data/mibig/1.gbk')
+    parser.add_argument('-o', '--out', type = str, help = "Directory where results are stored",
+                        default = '../Data/constructed_pathways/')
+    parser.add_argument('-t', '--temp', type = str, help = "Folder to store intermediate files displaying the\
+                         domains and modules. For debugging.", default = None)
+    parser.add_argument('-m', '--model', type = str, help = "Reference model for adding reactions and metabolites", 
+                        default = "../Models/Sco-GEM.xml")
+    args = parser.parse_args()
+
+    # Make folders if necessary
+    Path(args.out).mkdir(exist_ok = True)
+    if isinstance(args.temp, str):
+        Path(args.temp).mkdir(exist_ok = True)
+
+    # Run the BiGMeC pipeline
+    run(args.path, args.out, args.model, args.temp)
+
+
+
+    # biggbk = "../Data/mibig"
     
-    # 1) Folder containing all gbk files you want to translate into metabolic pathways
-    #    They are saved as models, and can be merged with the GEM later.
-    #    In this repository, the models that are found in "gbk_db_output_models.zip" are the pathways that 
-    #    Have been constructed. In that case, this folder contained all antiSMASH output files found in 
-    #    antismash_output_mibig_gbk_files1.zip
-    #    antismash_output_mibig_gbk_files2.zip
-    #    and
-    #    antismash_output_mibig_gbk_files3.zip
-    output_gbk = "../Data/constructed_pathways/"
-    # 2) Folder that regular models are output (empty folder)
-    output_gbk_lump = "../Data/constructed_GEMs"
-    # 3) Folder that lump models are output (empty folder)
-    json_folder = '../Data/temp'
-    # 4) Folder that json files are output (empty folder)(an unnecessary step, but it may help look at the information that is saved)
+    # # 1) Folder containing all gbk files you want to translate into metabolic pathways
+    # #    They are saved as models, and can be merged with the GEM later.
+    # #    In this repository, the models that are found in "gbk_db_output_models.zip" are the pathways that 
+    # #    Have been constructed. In that case, this folder contained all antiSMASH output files found in 
+    # #    antismash_output_mibig_gbk_files1.zip
+    # #    antismash_output_mibig_gbk_files2.zip
+    # #    and
+    # #    antismash_output_mibig_gbk_files3.zip
+    # output_gbk = "../Data/constructed_pathways/"
+    # # 2) Folder that regular models are output (empty folder)
+    # output_gbk_lump = "../Data/constructed_GEMs"
+    # # 3) Folder that lump models are output (empty folder)
+    # json_folder = '../Data/temp'
+    # # 4) Folder that json files are output (empty folder)(an unnecessary step, but it may help look at the information that is saved)
 
-    # 5) path of the genome scale metabolic model
-    # model_fn = '../Models/Sco-GEM.xml'
-    # ref_model = cobra.io.read_sbml_model(model_fn)
+    # # 5) path of the genome scale metabolic model
+    # # model_fn = '../Models/Sco-GEM.xml'
+    # # ref_model = cobra.io.read_sbml_model(model_fn)
 
-    if 0:
-        for filename in os.listdir(biggbk):
-            if filename.endswith('.gbk'):
-                json_path = json_folder + filename.split('.')[0] + '.json'
-                parse_antismash_gbk(biggbk + filename)
-                with open(json_path, 'r') as json_file:
-                    data_json = json.load(json_file)
-                json_file.close()
-                add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
-    if 1:
+    # if 0:
+    #     for filename in os.listdir(biggbk):
+    #         if filename.endswith('.gbk'):
+    #             json_path = json_folder + filename.split('.')[0] + '.json'
+    #             parse_antismash_gbk(biggbk + filename)
+    #             with open(json_path, 'r') as json_file:
+    #                 data_json = json.load(json_file)
+    #             json_file.close()
+    #             add_cores_to_model(data_json, output_gbk + filename[:-4] + ".json")
+    # if 1:
 
-        bgc_path = biggbk #+ "/1049.gbk"
-        run(bgc_path, output_gbk, json_folder)
+    #     bgc_path = biggbk #+ "/1049.gbk"
+    #     run(bgc_path, output_gbk, json_folder)
