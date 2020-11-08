@@ -46,15 +46,13 @@ from dictionaries import *
 
 
 def get_gb_list_from_antismash_output(cluster_path):  # yes
+    # domains, pfam_entries, smCOG, EC_number, rxn_in, rxn_out, core_gene, amino_acid_sequence, predicted_EC, length
+    # triple pound signs means that information is stored within a custom class object.
     gb_list = []
     for gb_record in SeqIO.parse(open(cluster_path, "r"), "genbank"):
         gb_list.append(gb_record)
     return gb_list
 
-    # Yes this is kinda stupid because i could have just structured this as a dict from the
-    # beginning. However, maybe it makes the information extraction process more clear?? :):):)
-    # domains, pfam_entries, smCOG, EC_number, rxn_in, rxn_out, core_gene, amino_acid_sequence, predicted_EC, length
-    # triple pound signs means that information is stored within a custom class object.
 
 
 def merge_cores(core_list, high, low):
@@ -99,7 +97,7 @@ def merge_core_list(core_list):
 
 def find_cores_in_cluster(gb_list):
     '''
-    In some files, the CDS shows up before the proto core, so tou actually have to find proto_core on beforehand
+    In some files, the CDS shows up before the proto core, so you actually have to find proto_core on beforehand
     (this is in order to be able to know which genes are part of the PKS synthesis)
     This is the reason that we iterate through the gb_list one time before the big next iteration
     :param gb_list:
@@ -173,11 +171,7 @@ def structure_gbk_information(merged_core, gb_list):
                         cds_is_core = True
                 except AttributeError:
                     warnings.warn('Core has no location. Unsure of consequences')
-                    # Instantiate CDS-object, consisting of:
-                    # list of domains, gene_ontologies, smCOG, EC numbers (possible with many because of many GOs, rxn_in,
-                    # rxn_out, core_gene):
-
-
+        
                 try:
                     CDS.append({'smcog': smcog, 'core_gene': cds_is_core, 
                                 'domains': [], 'strand': feat.location.strand})
