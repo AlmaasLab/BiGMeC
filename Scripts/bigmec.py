@@ -907,7 +907,7 @@ def _add_metabolites(r, met_dict):
 
 def _make_methoxymalCoA_reaction():
     mx_rx = cobra.Reaction('mxmal_synthesis')
-    mx_rx.name = 'synthesis of methoxymalonyl-coa'
+    mx_rx.name = 'synthesis of methoxymalonyl-ACP'
     mx_rx.lower_bound = 0.  # This is the default
     mx_rx.upper_bound = 1000.
     mx_rx.add_metabolites(BDGLOBAL.cofactor_reactions_dict["mxmal"])
@@ -1028,15 +1028,15 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                         if domains['type'] == 'PKS_AT':
                             if tailoring_reactions['methoxymalonyl'] and domains['minowa'] == 'mxmal' or domains[
                                 'AT_specificity'] == 'mxmal':
-                                extender_unit = 'Methoxymalonyl-CoA'
+                                extender_unit = 'Methoxymalonyl-ACP'
                             else:
                                 # we have to choose between minowa and AT_specificity, so we chose minowa:
                                 # this also has the consequence that if minowa is emal: the next step may convert
-                                # the extender into methoxymalonyl-CoA
+                                # the extender into methoxymalonyl-ACP
                                 extender_unit = return_key_by_value(domains['minowa'])
 
                 if tailoring_reactions['methoxymalonyl'] and extender_unit == 'Ethylmalonyl-CoA':
-                    extender_unit = 'Methoxymalonyl-CoA'
+                    extender_unit = 'Methoxymalonyl-ACP'
 
                 prevmet = _new_met(core_structure['type'] + '_' + str(domain_counter - 1), core_structure['type'])
                 postmet = _new_met(core_structure['type'] + '_' + str(domain_counter), core_structure['type'])
@@ -1090,8 +1090,15 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                          BDGLOBAL.get_met('h2o_c'): 1})
                     
                 elif module_type == 'PKS':
-                    if extender_unit == 'Methoxymalonyl-CoA' or extender_unit == 'Ethylmalonyl-CoA':
+                    if extender_unit == 'Methoxymalonyl-ACP':
+                        extender_met = BDGLOBAL.cofactor_metabolites_dict['mxmal']
+                        reaction.add_metabolites({extender_met: -1, BDGLOBAL.cofactor_metabolites_dict['mxacp']: 1,
+                                                    BDGLOBAL.get_met('co2_c'): 1})
+
+                    elif extender_unit == 'Ethylmalonyl-CoA':
                         extender_met = _new_met(long_to_bigg[extender_unit], name = extender_unit)
+                        reaction.add_metabolites({extender_met: -1, BDGLOBAL.get_met('coa_c'): 1,
+                                              BDGLOBAL.get_met('co2_c'): 1})
                     else:
                         try:
                             extender_met = BDGLOBAL.get_met(long_to_bigg[extender_unit])
@@ -1100,7 +1107,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                             # If we don't now what the extender unit is we assume malonyl-CoA
                             extender_met = BDGLOBAL.get_met(long_to_bigg["Malonyl-CoA"])
 
-                    reaction.add_metabolites({extender_met: -1, BDGLOBAL.get_met('coa_c'): 1,
+                        reaction.add_metabolites({extender_met: -1, BDGLOBAL.get_met('coa_c'): 1,
                                               BDGLOBAL.get_met('co2_c'): 1})
                     
                 elif module_type == 'FkbH':
@@ -1326,17 +1333,17 @@ def find_tailoring_reactions_from_smcogs(data):
 
     :param data: the data collected from the gbk file aquired from antiSMASH - here we are interested in the smCOGs
     of genes. genes inside the core genes are excluded, meaning that no false positives from fkbh loaders could lead to
-    incorrect assumptions of a methoxymalonyl-coa pathway existing.
+    incorrect assumptions of a methoxymalonyl-ACP pathway existing.
     :return: dict containing information on if the specific smCOG gene is found in the cluster.
     This is processed by function "add_tailoring_smcogs" (tailoring reactions) and process_extender_unit_smcogs
-    (essentially just to find methoxymalonyl-coa synthesis genes)
+    (essentially just to find methoxymalonyl-ACP synthesis genes)
     '''
 
     tailoring_genes_based_on_smCOG_definition_dict = {}
 
-    # FkbH_like protein with smcog number 1256 - for methoxymalonyl-coa
+    # FkbH_like protein with smcog number 1256 - for methoxymalonyl-ACP
     tailoring_genes_based_on_smCOG_definition_dict[1256] = False  
-    # 3-Hydroxybutyryl-CoA dehydrogenase like protein with smcog number 1095 - for methoxymalonyl-coa
+    # 3-Hydroxybutyryl-CoA dehydrogenase like protein with smcog number 1095 - for methoxymalonyl-ACP
     tailoring_genes_based_on_smCOG_definition_dict[1095] = False  
     # glycosyltransferase with smcog 1062 - For glycosyl groups
     tailoring_genes_based_on_smCOG_definition_dict[1062] = False  

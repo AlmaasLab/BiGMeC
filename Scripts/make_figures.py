@@ -31,6 +31,7 @@ import matplotlib.ticker as mtick
 from pathlib import Path
 import cobra
 import numpy as np
+from scipy.stats import pearsonr
 
 import venn
 import catheat
@@ -115,6 +116,7 @@ def figure_production_in_real_vs_constructed_scatter():
                 model.merge(pathway)
                 model.objective = model.reactions.DM_secondary_metabolite
                 production = model.slim_optimize()
+                print(folders[i], production)
             production_list.append(production)
         production_dict[name] = production_list
     df = pd.DataFrame(production_dict)
@@ -133,6 +135,13 @@ def figure_production_in_real_vs_constructed_scatter():
     ax.set_xlim([1e-3, df.max().max()*1.1])
     ax.set_ylim([1e-3, df.max().max()*1.1])
     plt.savefig("../Figures/production_rate_comparison_scatter.svg")
+
+    # Calculate correlation
+    x = df.loc["Real", :].values
+    y = df.loc["Constructed from BGC", :].values
+    (corr, p_value) = pearsonr(x, y)
+    print("Correlation: ", corr)
+    print("P-value: ", p_value)
 
 def figure_knockouts_predictions_in_real_vs_constructed():
     plt.rcParams.update({'font.size': 18})
@@ -511,14 +520,14 @@ def figure_prediction_reactions_boxplot():
     df = pd.read_csv(fn)
     df["Production increase [%]"] = (df["Production"]-1)*100
     df["Growth"] = -(df["Growth"]-1)*100
-    df["Reaction knocked out"] = df["ID"]
+    df["Reaction inactivated (by gene knock out)"] = df["ID"]
 
     # Sort order
     df_count = df.loc[:, ["ID", "BGC"]].groupby("ID").count()
     df_count.sort_values(by = "BGC", inplace = True, ascending = False)
 
     fig, ax = plt.subplots(1, figsize = (16,8))
-    chart = sns.boxplot(y = "Production increase [%]",  x = "Reaction knocked out", data = df, 
+    chart = sns.boxplot(y = "Production increase [%]",  x = "Reaction inactivated (by gene knock out)", data = df, 
                         ax = ax, order = df_count.index)
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize = 18)
@@ -535,10 +544,10 @@ def prediction_reactions_number():
     df_count["Number of BGCs"] = df_count["BGC"]
     df_count.reset_index(inplace = True)
     df_count.sort_values(by = "BGC", inplace = True, ascending = False)
-    df_count["Reaction knocked out"] = df_count["ID"]
+    df_count["Reaction inactivated (by gene knock out)"] = df_count["ID"]
 
     fig, ax = plt.subplots(1, figsize = (16,4))
-    sns.barplot(x = "Reaction knocked out", y = "Number of BGCs", data = df_count, ax = ax)
+    sns.barplot(x = "Reaction inactivated (by gene knock out)", y = "Number of BGCs", data = df_count, ax = ax)
     sns.despine()
     plt.subplots_adjust(bottom = 0.3)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize = 18)
@@ -600,7 +609,7 @@ def plot_taxonomic_treemap():
     fig, ax = plt.subplots(1, figsize = (10, 10))
     #pie,_,txt = ax.pie(g1[g1>5], radius = 1,autopct='%1.2f%%',  pctdistance=.8)
     squarify.plot(label = g1[g1>5].index, sizes = g1[g1>5], value = g1[g1>5], norm_x = 30, 
-                  color = sns.color_palette("muted"), ax = ax, bar_kwargs={'alpha':.8}, text_kwargs={'fontsize':30})
+                  color = sns.color_palette("muted"), ax = ax, bar_kwargs={'alpha':.8}, text_kwargs={'fontsize':40})
     plt.axis("off")
     plt.savefig("../Figures/taxonomy_treemap.svg")
     g1.to_csv("../Figures/taxonomy_treemap_g.csv")
@@ -711,6 +720,15 @@ def print_names(lst):
         r = model.reactions.get_by_id(r_id)
         print(r_id, ";", r.name)
 
+
+def predict_glycosylation_correlation():
+    BGC_count = [5, 3, 4, 1, 2, 2, 1, 1, 2, 2, 2, 5, 2, 3, 2, 2, 1, 1, 1, 1, 1, 2, 1, 5, 2, 1, 1, 2, 2, 1, 1, 1, 3, 0, 5, 3, 2, 2, 6, 3]
+    pathway_count = [8, 2, 4, 1, 1, 2, 1, 1, 2, 3, 2, 5, 3, 3, 1, 1, 1, 1, 1, 1, 2, 0, 1, 4, 2, 1, 1, 2, 3, 3, 3, 2, 1, 1, 4, 4, 4, 4, 7, 4]
+    (corr, p_value) = pearsonr(pathway_count, BGC_count)
+    
+
+    print("Correlation: ", corr)
+    print("P-value: ", p_value)
     
 
 if __name__ == '__main__':
@@ -718,7 +736,7 @@ if __name__ == '__main__':
         figure_prediction_accuracy_bar_chart()
         figure_prediction_accuracy_full_horizontal()
         figure_prediction_accuracy_full_vertical()
-    if 1:
+    if 0:
         figure_bigmec_coverage_venn()
         # figure_bigmec_unsuccessful_coverage_venn()
         # figure_bigmec_coverage_pie()
@@ -745,7 +763,9 @@ if __name__ == '__main__':
     if 0:
         pathway_length_figure()
 
-    if 0:
+    if 1:
         figure_production_in_real_vs_constructed_scatter()
-    if 0:
+    if 1:
         figure_knockouts_predictions_in_real_vs_constructed()
+    if 0:
+        predict_glycosylation_correlation()

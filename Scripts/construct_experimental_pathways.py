@@ -32,10 +32,11 @@ def create_baf_pathway(ref_model):
         ref_model.metabolites.get_by_id('nadph_c'): -11,
         ref_model.metabolites.get_by_id('nadp_c'): 11,
         ref_model.metabolites.get_by_id('h2o_c'): 5,
-        ref_model.metabolites.get_by_id('coa_c'): 12,
+        ref_model.metabolites.get_by_id('coa_c'): 10,
         ref_model.metabolites.get_by_id('h_c'): -11,
         ref_model.metabolites.get_by_id('co2_c'): 11,
         BDGLOBAL.cofactor_metabolites_dict['mxmal']: -2,
+        BDGLOBAL.cofactor_metabolites_dict['mxacp']: 2,
         ref_model.metabolites.get_by_id('mmcoa__R_c'): -7,
         ref_model.metabolites.get_by_id('malcoa_c'): -2,
         ref_model.metabolites.get_by_id('ibcoa_c'): -1,
@@ -101,7 +102,7 @@ def create_baf_pathway(ref_model):
     reaction.add_metabolites(reaction_metabolites)
 
     mx_rx = cobra.Reaction('mxmal_synthesis')
-    mx_rx.name = 'synthesis of methoxymalonyl-coa'
+    mx_rx.name = 'synthesis of methoxymalonyl-ACP'
     mx_rx.lower_bound = 0.  # This is the default
     mx_rx.upper_bound = 1000.
     mx_rx.add_metabolites(BDGLOBAL.cofactor_reactions_dict["mxmal"])
@@ -339,6 +340,7 @@ def create_tolaasin_pathway(ref_model):
 def create_geldanamycin_pathway(ref_model):
     pk_metabolites = {
         BDGLOBAL.cofactor_metabolites_dict['mxmal']: -2,
+        BDGLOBAL.cofactor_metabolites_dict['mxacp']: 2,
         BDGLOBAL.cofactor_metabolites_dict['ahba']: -1,
         ref_model.metabolites.get_by_id('atp_c'): -1,
         ref_model.metabolites.get_by_id('amp_c'):  1,
@@ -346,7 +348,7 @@ def create_geldanamycin_pathway(ref_model):
         ref_model.metabolites.get_by_id('nadph_c'): -10,
         ref_model.metabolites.get_by_id('nadp_c'): 10,
         ref_model.metabolites.get_by_id('h2o_c'): 6,
-        ref_model.metabolites.get_by_id('coa_c'): 7,
+        ref_model.metabolites.get_by_id('coa_c'): 5,
         ref_model.metabolites.get_by_id('h_c'): -10,
         ref_model.metabolites.get_by_id('co2_c'): 7,
         ref_model.metabolites.get_by_id('malcoa_c'): -1,
@@ -356,7 +358,7 @@ def create_geldanamycin_pathway(ref_model):
     
     
     mx_rx = cobra.Reaction('mxmal_synthesis')
-    mx_rx.name = 'synthesis of methoxymalonyl-coa'
+    mx_rx.name = 'synthesis of methoxymalonyl-ACP'
     mx_rx.lower_bound = 0.  # This is the default
     mx_rx.upper_bound = 1000.
     mx_rx.add_metabolites(BDGLOBAL.cofactor_reactions_dict["mxmal"])
@@ -390,18 +392,19 @@ def create_oxazolo_pathway(ref_model):
         ref_model.metabolites.get_by_id('ppi_c'): 3,
         ref_model.metabolites.get_by_id('malcoa_c'): -9,
         ref_model.metabolites.get_by_id('co2_c'): 10,
-        ref_model.metabolites.get_by_id('coa_c'): 10,
+        ref_model.metabolites.get_by_id('coa_c'): 9,
         ref_model.metabolites.get_by_id('nadph_c'): -9,
         ref_model.metabolites.get_by_id('h_c'): -9,
         ref_model.metabolites.get_by_id('nadp_c'): 9,
         ref_model.metabolites.get_by_id('amet_c'): -5,
         ref_model.metabolites.get_by_id('ahcys_c'): 5,
         BDGLOBAL.cofactor_metabolites_dict['mxmal']: -1,
+        BDGLOBAL.cofactor_metabolites_dict['mxacp']: 1,
         ref_model.metabolites.get_by_id('ser__L_c'): -1,
         BDGLOBAL.cofactor_metabolites_dict['final_product']: 1
     }
     mx_rx = cobra.Reaction('mxmal_synthesis')
-    mx_rx.name = 'synthesis of methoxymalonyl-coa'
+    mx_rx.name = 'synthesis of methoxymalonyl-ACP'
     mx_rx.lower_bound = 0.  # This is the default
     mx_rx.upper_bound = 1000.
     mx_rx.add_metabolites(BDGLOBAL.cofactor_reactions_dict["mxmal"])
