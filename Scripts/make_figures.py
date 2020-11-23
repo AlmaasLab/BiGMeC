@@ -719,6 +719,15 @@ def print_names(lst):
         r = model.reactions.get_by_id(r_id)
         print(r_id, ";", r.name)
 
+
+def predict_glycosylation_correlation():
+    BGC_count = [5, 3, 4, 1, 2, 2, 1, 1, 2, 2, 2, 5, 2, 3, 2, 2, 1, 1, 1, 1, 1, 2, 1, 5, 2, 1, 1, 2, 2, 1, 1, 1, 3, 0, 5, 3, 2, 2, 6, 3]
+    pathway_count = [8, 2, 4, 1, 1, 2, 1, 1, 2, 3, 2, 5, 3, 3, 1, 1, 1, 1, 1, 1, 2, 0, 1, 4, 2, 1, 1, 2, 3, 3, 3, 2, 1, 1, 4, 4, 4, 4, 7, 4]
+    (corr, p_value) = pearsonr(pathway_count, BGC_count)
+    
+
+    print("Correlation: ", corr)
+    print("P-value: ", p_value)
     
 
 if __name__ == '__main__':
@@ -753,7 +762,9 @@ if __name__ == '__main__':
     if 0:
         pathway_length_figure()
 
-    if 1:
+    if 0:
         figure_production_in_real_vs_constructed_scatter()
     if 0:
         figure_knockouts_predictions_in_real_vs_constructed()
+    if 1:
+        predict_glycosylation_correlation()
