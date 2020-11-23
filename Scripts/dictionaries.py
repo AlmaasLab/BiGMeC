@@ -61,7 +61,7 @@ class BigmecDict(object):
             'h+': self.model.metabolites.get_by_id('h_c'),
             'sam': self.model.metabolites.get_by_id('amet_c'),
             'sah': self.model.metabolites.get_by_id('ahcys_c'),
-            'mxmal': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-CoA', compartment='c'),
+            'mxmal': cobra.Metabolite('mxmal_c', formula='C14H20N6O5S', name='Methoxymalonyl-ACP', compartment='c'),
             '4hbf': cobra.Metabolite('4hbf_c', formula='X', name='4-hydroxy-benzoyl-formate', compartment='c'),
             'hpg': cobra.Metabolite('4hpg_c', formula='X', name='4-hydroxy-phenyl-glycine', compartment='c'),
             'dpg': cobra.Metabolite('dpg_c', formula='X', name='dihydroxy-phenyl-glycine', compartment='c'),
@@ -74,7 +74,7 @@ class BigmecDict(object):
             'bafA': cobra.Metabolite('bafilomycinA1_c', formula='X', name='Bafilomycin A1', compartment='c'),
             'bafB': cobra.Metabolite('bafilomycinB1_c', formula='X', name='Bafilomycin B1', compartment='c'),
             'fumamp': cobra.Metabolite('fumamp_c', formula='X', name='Fumaryl-AMP', compartment='c'),
-            # 'mx__specific__acp_c':  cobra.Metabolite('mx__specific__acp_c', formula='X', name='methoxymalonate specific acyl carrier protein', compartment='c'),
+            'mxacp':  cobra.Metabolite('mxacp_c', formula='X', name='methoxymalonate specific acyl carrier protein', compartment='c'),
             'c5n': cobra.Metabolite('c5n_c', formula='X', name='2-amino-3-hydroxycyclopent-2-enone', compartment='c'),
             'fumamp_pk': cobra.Metabolite('fumamp__pk_c', formula='X', 
                                           name='Fumaryl-AMP bound to polyketide', compartment='c'),
@@ -104,11 +104,12 @@ class BigmecDict(object):
             'PKS_AT': {self.cofactor_metabolites_dict['coa']: 1.0, self.cofactor_metabolites_dict['co2']: 1.0},
             'Condensation': {self.cofactor_metabolites_dict['h2o']: -1.0},
             'nMT': {self.cofactor_metabolites_dict['sam']: -1.0, self.cofactor_metabolites_dict['sah']: 1.0},
-            'mxmal': {self.model.metabolites.get_by_id('coa_c'): -1.0,
+            'mxmal': {
+                      self.cofactor_metabolites_dict['mxacp']: -1.0,
                       self.model.metabolites.get_by_id('13dpg_c'): -1.0,
                       self.model.metabolites.get_by_id('pi_c'): 2.0,
-                      self.model.metabolites.get_by_id('nadp_c'): -1.0,
-                      self.model.metabolites.get_by_id('nadph_c'): 1.0,
+                      self.model.metabolites.get_by_id('nad_c'): -1.0,
+                      self.model.metabolites.get_by_id('nadh_c'): 1.0,
                       self.model.metabolites.get_by_id('h_c'): 1.0,
                       self.model.metabolites.get_by_id('amet_c'): -1.0,
                       self.model.metabolites.get_by_id('ahcys_c'): 1.0,
@@ -280,7 +281,7 @@ class BigmecDict(object):
                     }
                 }
 
-long_to_short = {'Malonyl-CoA': 'mal', 'Methylmalonyl-CoA': 'mmal', 'Methoxymalonyl-CoA': 'mxmal',
+long_to_short = {'Malonyl-CoA': 'mal', 'Methylmalonyl-CoA': 'mmal', 'Methoxymalonyl-ACP': 'mxmal',
                  'Ethylmalonyl-CoA': 'emal', 'Isobutyryl-CoA': 'isobut', '2-Methylbutyryl-CoA': '2metbut',
                  'trans-1,2-CPDA': 'trans-1,2-CPDA', 'Acetyl-CoA': 'Acetyl-CoA', 'Benzoyl-CoA': 'benz',
                  'Propionyl-CoA': 'prop', '3-Methylbutyryl-CoA': '3metbut',
@@ -289,7 +290,7 @@ long_to_short = {'Malonyl-CoA': 'mal', 'Methylmalonyl-CoA': 'mmal', 'Methoxymalo
 
 long_to_bigg = {'Malonyl-CoA': 'malcoa_c',
                 'Methylmalonyl-CoA': 'mmcoa__R_c',
-                'Methoxymalonyl-CoA': 'mxmal_c',
+                'Methoxymalonyl-ACP': 'mxmal_c',
                 'Ethylmalonyl-CoA': 'emcoa__S_c',
                 'Isobutyryl-CoA': 'ibcoa_c',
                 '2-Methylbutyryl-CoA': '2metbut',
@@ -389,7 +390,7 @@ long_to_bigg = {'Malonyl-CoA': 'malcoa_c',
 
 t1pks_extenders = {'Malonyl-CoA': 'C00083',
                    'Methylmalonyl-CoA': 'C00683',  # (S)-methylmalonyl-coa. (R) is C01213
-                   'Methoxymalonyl-CoA': 'NOKEGG',
+                   'Methoxymalonyl-ACP': 'NOKEGG',
                    'Ethylmalonyl-CoA': 'C18026',  # (S)-ethylmalonyl-coa. (R) is C20238
                    'Isobutyryl-CoA': 'C00630',
                    '2-Methylbutyryl-CoA': 'C01033',

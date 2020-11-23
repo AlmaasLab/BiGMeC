@@ -116,6 +116,7 @@ def figure_production_in_real_vs_constructed_scatter():
                 model.merge(pathway)
                 model.objective = model.reactions.DM_secondary_metabolite
                 production = model.slim_optimize()
+                print(folders[i], production)
             production_list.append(production)
         production_dict[name] = production_list
     df = pd.DataFrame(production_dict)
@@ -762,9 +763,9 @@ if __name__ == '__main__':
     if 0:
         pathway_length_figure()
 
-    if 0:
-        figure_production_in_real_vs_constructed_scatter()
-    if 0:
-        figure_knockouts_predictions_in_real_vs_constructed()
     if 1:
+        figure_production_in_real_vs_constructed_scatter()
+    if 1:
+        figure_knockouts_predictions_in_real_vs_constructed()
+    if 0:
         predict_glycosylation_correlation()
