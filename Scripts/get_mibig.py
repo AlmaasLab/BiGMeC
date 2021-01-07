@@ -24,6 +24,7 @@ Date: 17.09.2020
 
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+from urllib.error import HTTPError
 from pathlib import Path
 
 
@@ -46,18 +47,23 @@ def get_all(folder):
     folder.mkdir(exist_ok = True)
 
     for a in range(1,2070,1):
-        path = str(folder / "BGC{0}.gbk".format(str(a).zfill(7)))
+        bgc_id = "BGC{0}.gbk".format(str(a).zfill(7))
+        path = str(folder / bgc_id)
         print(path)
         realUrl = 'https://mibig.secondarymetabolites.org/repository/BGC' + str(a).zfill(7) + '/generated/BGC' \
                   + str(a).zfill(7) + '.1.region001.gbk'
 
         try:
            string = str(get_web_data(realUrl))[3:-4]#this is the entire gbk-file for each cluster
-        except Exception:
-            print(a)
+        except HTTPError as e:
+            print(e, "\n", "Url for {0} not found".format(bgc_id))
             continue
+
         # Write GBK file to specified folder path
-        write_gbk_file(string, path)
+        try:
+            write_gbk_file(string, path)
+        except UnicodeEncodeError as e:
+            print(e, "\n", "Could not parse and write genbank file for {0}".format(bgc_id))
 
 if __name__ == '__main__':
     folder = "../Data/MiBiG2"
