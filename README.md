@@ -1,5 +1,8 @@
 ![Illustration of BiGMeC pipeline](readme_header.png)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/AlmaasLab/BiGMeC?style=plastic)
+![GitHub release date](https://img.shields.io/github/release-date/AlmaasLab/BiGMeC?style=plastic)
+[![DOI](https://zenodo.org/badge/273448678.svg)](https://zenodo.org/badge/latestdoi/273448678)
+
 # BiGMeC - Biosynthetic Gene cluster Metabolic pathway Constructor
 The BiGMeC pipeline makes a draft reconstruction of the metabolic pathway associated with a non-ribosomal peptide synthetase (NRPS) or polyketide synthase (PKS)biosynthetic gene cluster. The pipeline takes the .gbk file produced by [antiSMASH](https://antismash.secondarymetabolites.org) and produces a JSON-file that can be readily incoporporated into a genome-scale metabolic model using available software such as [cobrapy](cobrapy.readthedocs.io/) or [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/stable/). The pipeline leverages the genome-scale metabolic model of _S. coelicolor_ ([Sco-GEM](https://github.com/SysBioChalmers/Sco-GEM)) as a database for reactions and metabolites.
 
