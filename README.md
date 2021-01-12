@@ -4,7 +4,7 @@
 [![DOI](https://zenodo.org/badge/273448678.svg)](https://zenodo.org/badge/latestdoi/273448678)
 
 # BiGMeC - Biosynthetic Gene cluster Metabolic pathway Constructor
-The BiGMeC pipeline makes a draft reconstruction of the metabolic pathway associated with a non-ribosomal peptide synthetase (NRPS) or polyketide synthase (PKS)biosynthetic gene cluster. The pipeline takes the .gbk file produced by [antiSMASH](https://antismash.secondarymetabolites.org) and produces a JSON-file that can be readily incoporporated into a genome-scale metabolic model using available software such as [cobrapy](cobrapy.readthedocs.io/) or [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/stable/). The pipeline leverages the genome-scale metabolic model of _S. coelicolor_ ([Sco-GEM](https://github.com/SysBioChalmers/Sco-GEM)) as a database for reactions and metabolites.
+The BiGMeC pipeline makes a draft reconstruction of the metabolic pathway associated with a non-ribosomal peptide synthetase (NRPS) or polyketide synthase (PKS) biosynthetic gene cluster. The pipeline takes an individual region Genbank (.gbk) file produced by [antiSMASH](https://antismash.secondarymetabolites.org) and produces a JSON-file that can be readily incoporporated into a genome-scale metabolic model using available software such as [cobrapy](cobrapy.readthedocs.io/) or [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/stable/). The pipeline leverages the genome-scale metabolic model of _S. coelicolor_ ([Sco-GEM](https://github.com/SysBioChalmers/Sco-GEM)) as a database for reactions and metabolites.
 
 ## Requirements
 - python 3 (>=3.5).
@@ -44,6 +44,7 @@ To use your own antiSMASH result and store the results in a specified folder run
 ```
 python bigmec.py -f antismash_data_filename_or_folder -o output_folder
 ```
+Note that antiSMASH provides both a complete and region-specific GenBank-files, and it is the region-specific files that should be used as input for the BiGMeC pipeline.
 Further information is provided by running 
 ```
 python bigmec.py -h
