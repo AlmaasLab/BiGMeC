@@ -44,6 +44,8 @@ import argparse
 from domains import *
 from dictionaries import *
 
+DEFAULT_NEW_MODEL_FN = "_with_BiGMeC_pathways.xml"
+CORE_CLUSTER_TYPES = ['transAT-PKS', 'transAT-PKS-like', 'T1PKS', 'NRPS', 'NRPS-like']
 
 def get_gb_list_from_antismash_output(cluster_path):  # yes
     # domains, pfam_entries, smCOG, EC_number, rxn_in, rxn_out, core_gene, amino_acid_sequence, predicted_EC, length
@@ -1449,7 +1451,9 @@ def run(bgc_path, output_folder, ref_model_fn, json_folder = None):
     global BDGLOBAL
     BDGLOBAL = BigmecDict(ref_model_fn)
 
-    # Rung BiGMeC
+    print("Running BiGMeC...")
+
+    # Run BiGMeC
     bgc_path = Path(bgc_path)
     report_list = []
     if bgc_path.is_dir():
@@ -1464,6 +1468,7 @@ def run(bgc_path, output_folder, ref_model_fn, json_folder = None):
 
     df = pd.DataFrame(report_list, columns = ["BGC", "Success", "BGC type"])
     df.to_csv(output_folder + "/summary.csv")
+    return df
 
 def _run(bgc_path, output_folder, json_folder = None):
     if json_folder:
@@ -1484,6 +1489,85 @@ def _run(bgc_path, output_folder, json_folder = None):
     return bgc_path.stem, int(successfull), bgc_type_str
 
 
+def _add_bgc_id_to_pathway_content(pathway, bgc_id):
+    for r in pathway.reactions:
+            r.id = "{0}_{1}".format(r.id, bgc_id)
+
+    for m in pathway.metabolites:
+        if m.id.split("_")[0] in CORE_CLUSTER_TYPES:
+            m.id = "{0}_{1}".format(m.id, bgc_id)
+
+    pathway.repair()
+
+def _test_production(model, bgc_id):
+    target_reaction_id = "DM_secondary_metabolite_{0}".format(bgc_id)
+    model.objective = model.reactions.get_by_id(target_reaction_id)
+
+    # Open all exchanges
+    with model:
+        for r in model.exchanges:
+            r.lower_bound = -1000
+        s = model.slim_optimize()
+        if s > 1e-8:
+            print("Target compound can be successfully produced with all exchanges open")
+        else:
+            print("Model cannot produce target compound")
+
+
+
+
+def add_pathway_to_model(model_fn, output_folder, summary_df, new_model_fn = None):
+    """
+    This enables direct integration of the reconstructed pathway into a new model
+    """
+    model_name = Path(model_fn).stem
+    print("Adding new pathway(s) to {0}".format(model_name))
+    print("Loading {0}..".format(model_name))
+
+    # Load new model
+    model = cobra.io.read_sbml_model(model_fn)
+    print("Done!")
+
+    # Make output folder a Path object
+    output_folder = Path(output_folder)
+
+    k = 0
+    for i, row in summary_df.iterrows():
+        if not row["Success"]:
+            print("Can't add {0} to model as it was not successfully constructed".format(row['BGC']))
+            continue
+
+        fn = output_folder / (row["BGC"] + '.json')
+        pathway = cobra.io.load_json_model(str(fn))
+
+        # Modify all reaction names in pathway to make them BGC-specific
+        bgc_id = row['BGC']
+        if not "bgc" in str(bgc_id).lower():
+            bgc_id = "BGC{0}".format(bgc_id)
+        _add_bgc_id_to_pathway_content(pathway, bgc_id)
+
+        model.merge(pathway)
+        print("Added {0}".format(bgc_id))
+
+        _test_production(model, bgc_id)
+        k += 1
+
+    if k == 0:
+        print("No pathways could be added")
+    else:
+        # Save model
+        if not new_model_fn:
+            new_model_fn = model_name + DEFAULT_NEW_MODEL_FN
+
+        path = Path(output_folder) / new_model_fn
+        cobra.io.write_sbml_model(model, str(path))
+        print("Saved model with new pathway(s) to {0}".format(str(path)))
+        
+
+
+
+
+
 
 if __name__ == '__main__':
 
@@ -1495,8 +1579,10 @@ if __name__ == '__main__':
                         default = '../Data/constructed_pathways/')
     parser.add_argument('-t', '--temp', type = str, help = "Folder to store intermediate files displaying the\
                          domains and modules. For debugging.", default = None)
-    parser.add_argument('-m', '--model', type = str, help = "Reference model for adding reactions and metabolites", 
-                        default = "../Models/Sco-GEM.xml")
+    parser.add_argument('-r', '--reference_model', type = str, help = "Reference model for adding reactions\
+                         and metabolites", default = "../Models/Sco-GEM.xml")
+    parser.add_argument('--add-to-model', type = str, help = "COBRA model in SBML format that the pathway should\
+                         be added to. The model should use the BiGG namespace.", default = None)
     args = parser.parse_args()
 
     # Make folders if necessary
@@ -1505,5 +1591,8 @@ if __name__ == '__main__':
         Path(args.temp).mkdir(exist_ok = True)
 
     # Run the BiGMeC pipeline
-    run(args.path, args.out, args.model, args.temp)
+    summary_df = run(args.path, args.out, args.reference_model, args.temp)
+
+    if args.add_to_model:
+        add_pathway_to_model(args.add_to_model, args.out, summary_df)
 
