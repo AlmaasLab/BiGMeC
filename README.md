@@ -6,6 +6,8 @@
 # BiGMeC - Biosynthetic Gene cluster Metabolic pathway Constructor
 The BiGMeC pipeline makes a draft reconstruction of the metabolic pathway associated with a non-ribosomal peptide synthetase (NRPS) or polyketide synthase (PKS) biosynthetic gene cluster. The pipeline takes an individual region Genbank (.gbk) file produced by [antiSMASH](https://antismash.secondarymetabolites.org) and produces a JSON-file that can be readily incoporporated into a genome-scale metabolic model using available software such as [cobrapy](cobrapy.readthedocs.io/) or [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/stable/). The pipeline leverages the genome-scale metabolic model (GEM) of _S. coelicolor_ ([Sco-GEM](https://github.com/SysBioChalmers/Sco-GEM)) as a database for reactions and metabolites.
 
+Read more about BiGMeC in [the research paper published in BMC Bioinformatics, February 2021](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-021-03985-0)
+
 ## Requirements
 - python 3 (>=3.5).
 - conda or virtualenv, if you want to run the pipeline in a virtual environment (recommended).
@@ -66,3 +68,9 @@ The current version of BiGMeC uses the _S. coelicolor_ model [Sco-GEM](https://g
 
 ## Contribute
 Contributions are very welcome, either by raising issues or through pull requests. 
+
+## Cite us
+If you use the BiGMeC software, please cite us:
+
+Sulheim, S., Fossheim, F.A., Wentzel, A. et al. Automatic reconstruction of metabolic pathways from identified biosynthetic gene clusters. BMC Bioinformatics 22, 81 (2021). https://doi.org/10.1186/s12859-021-03985-0
+
