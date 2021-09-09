@@ -72,5 +72,5 @@ Contributions are very welcome, either by raising issues or through pull request
 ## Cite us
 If you use the BiGMeC software, please cite us:
 
-Sulheim, S., Fossheim, F.A., Wentzel, A. et al. Automatic reconstruction of metabolic pathways from identified biosynthetic gene clusters. BMC Bioinformatics 22, 81 (2021). https://doi.org/10.1186/s12859-021-03985-0
+Sulheim, S., Fossheim, F.A., Wentzel, A. & Almaas, E. Automatic reconstruction of metabolic pathways from identified biosynthetic gene clusters. BMC Bioinformatics 22, 81 (2021). https://doi.org/10.1186/s12859-021-03985-0
 
