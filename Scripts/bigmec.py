@@ -41,8 +41,8 @@ from pathlib import Path
 import numpy as np
 import argparse
 
-from domains import *
-from dictionaries import *
+from domains.domains import *
+from domains.dictionaries import *
 
 DEFAULT_NEW_MODEL_FN = "_with_BiGMeC_pathways.xml"
 CORE_CLUSTER_TYPES = ['transAT-PKS', 'transAT-PKS-like', 'T1PKS', 'NRPS', 'NRPS-like']
@@ -1126,7 +1126,7 @@ def create_t1_transat_nrps_model(core_structure, domains_x_modules, model, tailo
                     ahba_synthesis_reaction.name = "AHBA synthesis"
                     ahba_synthesis_reaction.bounds = (0,1000)
                     ahba_synthesis_reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['ahba-synthesis'])
-                    model.add_reaction(ahba_synthesis_reaction)
+                    model.add_reactions([ahba_synthesis_reaction])
                     reaction.add_metabolites(BDGLOBAL.cofactor_reactions_dict['ahba'])
                     
                 elif module_type == 'shikimic_acid':
@@ -1580,7 +1580,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--temp', type = str, help = "Folder to store intermediate files displaying the\
                          domains and modules. For debugging.", default = None)
     parser.add_argument('-r', '--reference_model', type = str, help = "Reference model for adding reactions\
-                         and metabolites", default = "../Models/Sco-GEM.xml")
+                         and metabolites", default = "../Models/BiGG_universal_model.json")
     parser.add_argument('--add-to-model', type = str, help = "COBRA model in SBML format that the pathway should\
                          be added to. The model should use the BiGG namespace.", default = None)
     args = parser.parse_args()

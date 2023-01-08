@@ -19,6 +19,7 @@ Authors:
   - Fredrik A. Fossheim
 
 Date: 17.09.2020
+Updated: 08.01.2023
 """
 import cobra
 from pathlib import Path
@@ -38,6 +39,9 @@ class BigmecDict(object):
             self.model = cobra.io.read_sbml_model(model_fn)
         elif Path(model_fn).suffix == ".json":
             self.model = cobra.io.load_json_model(model_fn)
+            if Path(model_fn).stem == "BiGG_universal_model":
+                for m in self.model.metabolites:
+                    m.compartment = "c"
         else:
             print("File type not recognized for reference model. Has to be json or sbml format.")
             raise IOError
@@ -87,7 +91,8 @@ class BigmecDict(object):
             'i2b2': cobra.Metabolite('i2b2_c', formula='C8H12O4', name='(2E)-2-Isobutyl-2-butenedioic acid',
                                      compartment='c'),
             'leupyrrin_1': cobra.Metabolite('leupyrrin_1_c', formula='X', name='leupyrrin intermediate', 
-                    compartment='c')}
+                    compartment='c'),
+            '4hmda': cobra.Metabolite('4hmda_c', name="(S)-4-Hydroxymandelate", compartment="c", charge="-1", formula="C8H7O4")}
 
 
         self.cofactor_reactions_dict = {  # reactions that are specific to certain domains
@@ -126,9 +131,9 @@ class BigmecDict(object):
             'hpg_2': {self.model.metabolites.get_by_id('34hpp_c'): -1,
                       self.model.metabolites.get_by_id('o2_c'): -1,
                       self.model.metabolites.get_by_id('h2o_c'): 1,
-                      self.model.metabolites.get_by_id('4hmda_c'): 1},
+                      self.cofactor_metabolites_dict['4hmda']: 1},
 
-            'hpg_3': {self.model.metabolites.get_by_id('4hmda_c'): -1,
+            'hpg_3': {self.cofactor_metabolites_dict['4hmda']: -1,
                       self.model.metabolites.get_by_id('fmn_c'): -1,
                       self.model.metabolites.get_by_id('fmnh2_c'): 1,
                       self.model.metabolites.get_by_id('nadh_c'): -1,
