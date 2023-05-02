@@ -1,0 +1,588 @@
+LOCUS       BGC0002586             11905 bp    DNA     linear   BCT 06-APR-2020
+DEFINITION  Lactiplantibacillus plantarum strain A-1 plasmid pA1_ASM1, complete
+            sequence.
+ACCESSION   BGC0002586
+VERSION     BGC0002586
+KEYWORDS    .
+SOURCE      Lactiplantibacillus plantarum
+  ORGANISM  Lactiplantibacillus plantarum
+            Bacteria; Firmicutes; Bacilli; Lactobacillales; Lactobacillaceae;
+            Lactiplantibacillus.
+COMMENT     ##antiSMASH-Data-START##
+            Version      :: 6.2.0-924c3663(changed)
+            Run date     :: 2022-11-08 10:48:45
+            ##antiSMASH-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..11905
+                     /db_xref="taxon:1590"
+                     /mol_type="genomic DNA"
+                     /organism="Lactiplantibacillus plantarum"
+                     /plasmid="pA1_ASM1"
+                     /strain="A-1"
+     protocluster    1..11905
+                     /aStool="rule-based-clusters"
+                     /category="RiPP"
+                     /contig_edge="True"
+                     /core_location="[5761:5956]"
+                     /cutoff="20000"
+                     /detection_rule="(glycocin or sublancin)"
+                     /neighbourhood="10000"
+                     /product="glycocin"
+                     /protocluster_number="1"
+                     /tool="antismash"
+     proto_core      5762..5956
+                     /aStool="rule-based-clusters"
+                     /tool="antismash"
+                     /cutoff="20000"
+                     /detection_rule="(glycocin or sublancin)"
+                     /neighbourhood="10000"
+                     /product="glycocin"
+                     /protocluster_number="1"
+     cand_cluster    1..11905
+                     /candidate_cluster_number="1"
+                     /contig_edge="True"
+                     /detection_rules="(glycocin or sublancin)"
+                     /kind="single"
+                     /product="glycocin"
+                     /protoclusters="1"
+                     /tool="antismash"
+     subregion       1..11905
+                     /aStool="externally annotated by: MIBiG"
+                     /contig_edge="True"
+                     /label="BGC0002586"
+                     /subregion_number="1"
+                     /tool="antismash"
+     region          1..11905
+                     /candidate_cluster_numbers="1"
+                     /contig_edge="True"
+                     /product="glycocin"
+                     /region_number="1"
+                     /rules="(glycocin or sublancin)"
+                     /subregion_numbers="1"
+                     /tool="antismash"
+     gene            complement(212..568)
+                     /gene="asmH"
+     CDS             complement(212..568)
+                     /codon_start=1
+                     /gene="asmH"
+                     /note="hypothetical protein; putative ASM1 immunity
+                     protein"
+                     /product="AsmH"
+                     /protein_id="AOF43519.1"
+                     /transl_table=11
+                     /translation="MITKICVIPAVVTGIQESSISGNVIIDSAITAHFTHRLKKALHEI
+                     SDTLKIFSLSEFEPDLTPDSNTLYVFSENVYHNLPASFLKNAKYVKFRNSQIFSSSLED
+                     LAHAINIKLLQYRS"
+     repeat_region   order(342..353,355..366)
+                     /rpt_type=inverted
+     gene            618..1904
+                     /gene="asmA"
+     CDS             618..1904
+                     /codon_start=1
+                     /gene="asmA"
+                     /gene_functions="biosynthetic-additional
+                     (rule-based-clusters) Glycos_transf_2"
+                     /gene_kind="biosynthetic-additional"
+                     /note="UDP-GlcNAc glycosyltransferase family 2"
+                     /product="AsmA"
+                     /protein_id="AOF43520.1"
+                     /sec_met_domain="Glycos_transf_2 (E-value: 8e-25, bitscore:
+                     77.4, seeds: 256, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MKNKTTHTDTYLNNHLKSITDSFDFACVQNISPAKNDIALSYIVI
+                     CKNSQSTIERCLNSIYKNMTARDELIVLDTGSTDRTVQLIEKTVPKVRILVTNWTNDFA
+                     RARNIALKSASKDWVFFVDSDEWLDSEDGTSLEAIIKKAQTKKLNFVINPTFSDSTGQI
+                     YQTVGRIFPTNASFHYYAKIHEEIRKNDKKLGYDVKHFVSADVIIYHDGYNKEVMQKKN
+                     KIKRNISLLQEMVHEEPQNARWTYLLARDGFAVFSPAQVEQLIKKTLELVSADNRQKKY
+                     SLVAQKLLGRILFKEGKTANALLSFQNVLKMTNGTDSDALYYITVIKINNLLLETNSIE
+                     KELLNYLSSHDQTIDVNSDISGNYFHIAQIILECDLISANYEHLLPLISEIPKEFSNNI
+                     KNKIKAASKIYSKLQGDSKDANNKTNRSK"
+     misc_feature    738..1271
+                     /gene="asmA"
+                     /inference="profile:Pfam:PF00535"
+                     /note="Region: glycosyl transferase family 2"
+     misc_feature    order(984..986,990..992)
+                     /gene="asmA"
+                     /note="metal-binding site"
+     misc_feature    1873..2283
+                     /gene="asmB"
+                     /inference="profile:Pfam:PF03412"
+                     /note="Region: peptidase C39 family"
+     gene            1873..3981
+                     /gene="asmB"
+     CDS             1873..3981
+                     /codon_start=1
+                     /gene="asmB"
+                     /gene_functions="biosynthetic-additional
+                     (rule-based-clusters) Peptidase_C39"
+                     /gene_functions="transport (smcogs) SMCOG1288:ABC
+                     transporter related protein (Score: 158.2; E-value:
+                     5.4e-48)"
+                     /gene_kind="transport"
+                     /note="C39-ABC exporter of bacteriocin ASM1"
+                     /product="AsmB"
+                     /protein_id="AOF43521.1"
+                     /sec_met_domain="Peptidase_C39 (E-value: 1.4e-19, bitscore:
+                     60.0, seeds: 36, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MRIIKQIDQNDCGPAAVATMLGMLSKNRISDWQIKQIICPTRYGT
+                     NFISIISGLKSVRIKSTVQQCVKDIAVFDEIEFPVLTQIMQHGYLHFVVITKCTRSKVY
+                     WADPGIGKIESNYKSNFLTFWNPIILTIPKSQSYEFLKAKIKALKRPTLWLSFKKHWLA
+                     LLIYWILSIIVFAITLFLATMYAAYFNRIVPNKFISAIPTMTSVYLTIQAAALLLEVIN
+                     AILIAFTGNAISNELYKDIFTAFPHKKRSVIESFKDGEIITRFNAIYQIAGRQLVLLGD
+                     LPIDIITMSITLFLLGRINPFLTILLLIPMILMSLLFYLSSDTIKKRSTNLFKSQEIFS
+                     QDIIEQITNFSTIKTFHAGTYITSKITKSMEKYIIANRNFSLYDRLQQIARNGVSQFFS
+                     IILFSVGAFLVIKGNIVLGTLLSFYALTGNVLNPFIKIITMQVNLSQGKVATERYLDLL
+                     ISSEDNTNMINQLTADSIELNKVTFSYDSITPIINNLTGVFSKFPTAIIGNSGGGKSTI
+                     AKLIAGFYPVDGLSIGGISYTKLGAKTISSTITYVEQSPQIFSDTIMNNITLGRKNITE
+                     KSVYEIANKIGFSTFLKQLPDGLNTRLGSSGYTLSGGQKQLLNIIRSMIVPSKFIIFDE
+                     ITNGLDINTKNKVENYLLSQNEVHCIFITHDLTLAMKCIDIFTVKNGKILNVTRTKHTV
+                     KSLERTLL"
+     misc_feature    2362..3174
+                     /gene="asmB"
+                     /inference="profile:Pfam:PF00664"
+                     /note="Region: ABC transporter transmembrane region"
+     misc_feature    3370..3918
+                     /gene="asmB"
+                     /inference="profile:Pfam:PF00005"
+                     /note="Region: ATP-binding domain of ABC transporter"
+     gene            3978..4397
+                     /gene="asmC"
+     CDS             3978..4397
+                     /codon_start=1
+                     /gene="asmC"
+                     /note="putative thioredoxin domain protein"
+                     /product="AsmC"
+                     /protein_id="AOF43522.1"
+                     /transl_table=11
+                     /translation="MKKITIAIIAIIAVALIGAYSWKKLTSVQAPLYQTVKAKKLQSDI
+                     KNKKNEIVYFYQKGCEGCEHSTPILNRFIRNKHVTIQAIDINADPSKDFILGTLGISST
+                     PTVLFIRKGKITQRINQIFGYEDLTTKYNKFRGDF"
+     misc_feature    3984..4046
+                     /gene="asmC"
+                     /note="transmembrane region"
+     misc_difference 4059
+                     /citation=[1]
+                     /gene="asmC"
+                     /note="conflict, replace t13 in GenBank accession AB474371
+                     with G4059"
+     misc_feature    4074..4379
+                     /gene="asmC"
+                     /inference="profile:Pfam:PF00085"
+                     /note="Region: thioredoxin domain"
+     misc_feature    order(4155..4157,4164..4166)
+                     /gene="asmC"
+                     /note="thioredoxin CXXC motif; active site"
+     gene            4398..4931
+                     /gene="asmD"
+     CDS             4398..4931
+                     /codon_start=1
+                     /gene="asmD"
+                     /note="putative thioredoxin domain protein"
+                     /product="AsmD"
+                     /protein_id="AOF43523.1"
+                     /transl_table=11
+                     /translation="MKTLIKNKTSLILLSLLIFSVVVGIFSLALTKHNSILHEQTLQSE
+                     IRSGSTTNTLIYKDLNSITVPSFKKMVAEKNNFIVYIGRPTCSDCNLFDPILINELKKE
+                     HMTTQVTFLNVAWERQKKWATWVQFKKNYGFEQTPALIHYRNGKVFSIIQWEQNNGISR
+                     EALHLWLTNQKKTI"
+     misc_feature    4428..4493
+                     /gene="asmD"
+                     /note="transmembrane region"
+     misc_feature    4572..4916
+                     /gene="asmD"
+                     /inference="profile:Pfam:PF00085"
+                     /note="Region: thioredoxin domain"
+     misc_feature    order(4656..4658,4665..4667)
+                     /gene="asmD"
+                     /note="thioredoxin CXXC motif, active site"
+     misc_difference 4840..4841
+                     /citation=[1]
+                     /gene="asmD"
+                     /note="conflict; GenBank accession AB474371 contains an
+                     extra base (a795) inserted between A4840 and G4841"
+     misc_difference 4883..4884
+                     /citation=[1]
+                     /gene="asmD"
+                     /note="conflict; GenBank accession AB474371 contains an
+                     extra base (t839) inserted between T4883 and C4884"
+     gene            4901..5680
+                     /gene="asmE"
+     CDS             4901..5680
+                     /codon_start=1
+                     /gene="asmE"
+                     /note="putative LytTR response regulator"
+                     /product="AsmE"
+                     /protein_id="AOF43524.1"
+                     /transl_table=11
+                     /translation="MAYQSEKNNLIPQTRIFVISNQPGRQDFNKSLLQEMGNLSDIIKF
+                     VHPIQLAHSTHEKYTDVNCSLSIIILNVDEEDNLLKKLEAIVEQLPLSIKYFIYVGPSK
+                     KTLENLIRCHYMPYDALITKDFDYKTFTILAADIYNILKKSSLSLKDSDIITISVQRQK
+                     YFLKLDDILFIITDSHPHRLIFHLKNTEYQTRMTLKQVYHQCKKLTVCHEGALVNLQNV
+                     TKFNKHKRILYFENGDICEVSKRYIKSISEKIPMKTV"
+     misc_difference 4967
+                     /citation=[1]
+                     /gene="asmE"
+                     /note="conflict, g923 in GenBank accession AB474371 with
+                     C4967"
+     repeat_region   order(5149..5160,5164..5175)
+                     /gene="asmE"
+                     /rpt_type=inverted
+     misc_feature    5381..5665
+                     /gene="asmE"
+                     /inference="profile:Pfam:PF04397"
+                     /note="Region: LytTR DNA-binding domain"
+     sig_peptide     5762..5824
+                     /gene="asmF"
+                     /gene_synonym="bactA1 (GenBank locus AB474371)"
+                     /note="double glycine leader peptide"
+     gene            5762..5956
+                     /gene="asmF"
+                     /gene_synonym="bactA1 (GenBank locus AB474371)"
+     CDS             5762..5956
+                     /codon_start=1
+                     /gene="asmF"
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     glycocin: glycocin"
+                     /gene_kind="biosynthetic"
+                     /gene_synonym="bactA1 (GenBank locus AB474371)"
+                     /note="precursor of diglycosylated bacteriocin ASM1"
+                     /product="AsmF"
+                     /protein_id="AOF43525.1"
+                     /sec_met_domain="glycocin (E-value: 4.7e-51, bitscore:
+                     160.5, seeds: 2, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MSKLVKTLTVDEISKIQTNGGKPAWCWYTLAMCGAGYDSGTCDYM
+                     YSHCFGVKHSSGGGGSYHC"
+     misc_feature    order(5837..5839,5906..5908)
+                     /gene="asmF"
+                     /gene_synonym="bactA1 (GenBank locus AB474371)"
+                     /note="Cys5-Cys28 in mature (secreted) ASM1; disulfide
+                     bond"
+     misc_feature    order(5858..5860,5885..5887)
+                     /gene="asmF"
+                     /gene_synonym="bactA1 (GenBank locus AB474371)"
+                     /note="Cys12-Cys21 in mature (secreted) ASM1; disulfide
+                     bond"
+     misc_feature    5876..5878
+                     /gene="asmF"
+                     /gene_synonym="bactA1 (GenBank locus AB474371)"
+                     /note="GlcNAc moiety beta-O-linked to Ser18 in mature
+                     (secreted) ASM1; glycosylation site"
+     misc_feature    5951..5953
+                     /experiment="NMR structure (PDB ID: 2MVI)"
+                     /gene="asmF"
+                     /gene_synonym="bactA1 (GenBank locus AB474371)"
+                     /note="GlcNAc moiety S-linked to Cys43 in mature (secreted)
+                     ASM1; glycosylation site"
+     repeat_region   order(5979..5999,6001..6021)
+                     /note="putative transcription terminator (asmF gene)"
+                     /rpt_type=inverted
+     repeat_region   6127..6144
+                     /rpt_type=inverted
+                     /rpt_type=tandem
+     repeat_region   6433..6492
+                     /note="One of two 60-bp imperfect direct repeats (the other
+                     is 11435-11494) that separate the bacteriocinogenic region
+                     and the replication/mobilisation region of pA1_ASM1"
+                     /rpt_type=direct
+                     /rpt_type=dispersed
+     CDS             6487..6852
+                     /codon_start=1
+                     /inference="EXISTENCE: similar to AA
+                     sequence:INSD:EPD25299.1"
+                     /note="orf1"
+                     /product="hypothetical protein"
+                     /protein_id="AOF43526.1"
+                     /transl_table=11
+                     /translation="MQDTPETAEFAKRAEEASQRARKMKTELRKKRRADKLKLQQQLGA
+                     ELMKETNIVSAQQLKQYLQDNLNYEAEAENQQDYQQALIELNTFANQLTWDEERGYWRV
+                     ANLRTLTDWLAGFRTNN"
+     gene            7309..7626
+                     /gene="mob"
+     CDS             7309..7626
+                     /codon_start=1
+                     /gene="mob"
+                     /inference="EXISTENCE: similar to AA
+                     sequence:INSD:EPD25296.1"
+                     /product="putative mobilization protein"
+                     /protein_id="AOF43527.1"
+                     /transl_table=11
+                     /translation="MTAQKKRTQINVRLDELELEKVKYSADVLGLSVGQYVKQVVTKSP
+                     LIEPKFSPDFQKTAIRQLVGIANNLNQLTRLAHINGTTSTQQAIDQLRKEVDLLWQQLA
+                     K"
+     gene            7605..8936
+                     /gene="mobA"
+     CDS             7605..8936
+                     /codon_start=1
+                     /gene="mobA"
+                     /inference="profile:Pfam:PF03432"
+                     /product="relaxase superfamily protein"
+                     /protein_id="AOF43528.1"
+                     /transl_table=11
+                     /translation="MATIGKITTASSGSAAIDYAYGRNKMPAATKDWLKQQGVDPATVE
+                     QLQNRAVVMSGLNVDPEYAKTQMKATRMAFSTRGKQTTRVIQSFPTIDLDPADPHDWQT
+                     ANQLGLELAKQAFPDYQVAVYTQLDGKGHKLHNHIIVNMPNIRTGEKYHEHQSWQRLSR
+                     INDEISQEHNLSIIDRNTRAPERRTMAEWQLNAKNEYVWKDDLRRRIDKAILESSKNSY
+                     KDFSEHLTQSGIIIHDRGKNFSYEFLDADKKHRRARGKTLGADYEKETILNELERQNRQ
+                     PATELPRLIEPNRQIEQRKRAVESREPISESRKRTTAKSGQSVDSLTIAIGRTRQTART
+                     VANNLNKQNSRKQRFRERITSFTKRFREIGHQINQFIQRLDCYNRTVNNFQQRLKADQQ
+                     AKQQAFQSFQQRFEADQKVQKQHELEQQQLNKSFPIEEDHGIER"
+     gene            8926..9360
+                     /gene="mobB"
+     CDS             8926..9360
+                     /codon_start=1
+                     /gene="mobB"
+                     /inference="EXISTENCE: similar to AA
+                     sequence:INSD:KRK08994.1"
+                     /note="truncated lacks 80 AA C-terminal region of
+                     homologues"
+                     /product="putative mobilization protein"
+                     /protein_id="AOF43529.1"
+                     /transl_table=11
+                     /translation="MNVNDREIITQIMDAYRNGTLDWANVPAFQAIIRQEIRKALTDSH
+                     FQAQQQTQLKNDHTWYHLEIERAIEKTAEQVNTEQIKQTVEKDIAEQQHKLSLQLLNNM
+                     NMQAKLEKQQKLWIPVLLTVLPTMAFLLISFCAIWFIFIR"
+     CDS             9371..9811
+                     /codon_start=1
+                     /note="orf2"
+                     /product="hypothetical protein"
+                     /protein_id="AOF43530.1"
+                     /transl_table=11
+                     /translation="MPKYFKTYHLSRYLLLVVTLWCVLGVYGSFTVGRIHAHQVRVQRQ
+                     EKRLKAKRQAIKQRKQVEMKRQVSKLQAQVNELQNQATSLNQRNKHIILPSDADEKLKS
+                     KIVNQVNHLNPTIAELDTKFTGVPALQKSYRQLQHLTEGYGF"
+     misc_feature    10102..10131
+                     /note="associated with origin of replication; Region:
+                     AT-rich 1"
+     misc_feature    10170..10193
+                     /note="associated with origin of replication; Region:
+                     AT-rich 2"
+     repeat_region   10241..10323
+                     /note="22-bp direct tandem repeats (iterons) characteristic
+                     of class A theta replicons"
+                     /rpt_type=direct
+                     /rpt_type=tandem
+     gene            10418..11197
+                     /gene="repB"
+     CDS             10418..11197
+                     /codon_start=1
+                     /gene="repB"
+                     /inference="profile:Pfam:PF01051"
+                     /inference="similar to AA sequence (same
+                     species):INSD:ABG23030.1"
+                     /product="Rep3 superfamily initiator replication protein"
+                     /protein_id="AOF43531.1"
+                     /transl_table=11
+                     /translation="MQGKISKKADVAFSSLLSRQDYLVVQGNDLAKAFGNLSAFEHQVL
+                     DYCFSFVTQNSKAEDEYSVEAIDLIHHLGLNSSGHNYERIAKAFKALNEKTALYFHTES
+                     DGVPGILMTQLFSHIKFFKNGHVTFQFSQDAAPYVFDLRSNYYSFKLSELSRVKSKYSL
+                     IMLKLIEANRMGNQNPITIKGTLEDWQGWFLGADRRWPAGRFMQKAIDVAIDELYQKMG
+                     LVFTVTTLKHKRSVVGYVIDVTKPEENRKIKKVIRGD"
+     repeat_region   11435..11494
+                     /note="One of two 60-bp imperfect direct repeats (the other
+                     is 6433-6492) that separate the bacteriocinogenic region
+                     and the replication/mobilisation region of pA1_ASM1"
+                     /rpt_type=direct
+                     /rpt_type=dispersed
+ORIGIN
+        1 gcagatatat cagctaatat tgaacaagct tatcatgatg ggattttatc tggaaaatca
+       61 acgcaacgat tacaagatgg gatggttgtt agttcctatc taattgcgta aaaaaagaac
+      121 ggttattatg tcaaaagctt atgcgaacag ctaaaactgc cgataagccg gccctacctg
+      181 ctgaattgaa agtacaagct gtacactata tttaagatct atattgtaat aattttatat
+      241 taattgcgtg ggctaaatct tcgaggcttg acgaaaagat ctgactatta cgaaatttca
+      301 catattttgc gttttttaaa aaagaagccg gtaaattatg atatacgttt tctgagaaaa
+      361 cgtataatgt gttggaatct ggggttaaat ccggttcaaa ttctgacaaa gaaaaaatct
+      421 ttagagtatc tgaaatttca tgtaacgcct ttttcaatct atgggtaaaa tgagctgtga
+      481 ttgctgaatc tattatcaca ttaccagata tgctactttc ttgaattcct gtcacaactg
+      541 ctggtataac acaaatcttt gtaatcattt gttgcctctt ttcttaaata taaaatacca
+      601 cggaagtagg tcttgaaatg aagaataaaa caactcatac cgacacttat ttaaataatc
+      661 atttaaaatc tattacagat tcatttgatt ttgcatgtgt acaaaatata tctcctgcaa
+      721 aaaatgacat tgctttatct tacattgtaa tctgtaagaa ttctcagtca actattgaaa
+      781 gatgtttaaa ttcaatttac aaaaacatga ctgctagaga tgaattaata gttttagaca
+      841 ctggctcgac cgatagaaca gttcagttga ttgagaaaac tgttccaaaa gttaggatat
+      901 tagtaacaaa ctggacaaat gacttcgcaa gagccagaaa tatagcatta aaatcagctt
+      961 caaaagactg ggtttttttt gttgatagcg acgaatggct cgatagcgaa gatgggacta
+     1021 gcctagaagc aattataaaa aaagctcaaa caaaaaaact taatttcgtt attaatccaa
+     1081 cattttccga tagtacggga caaatatatc aaactgttgg tcgtattttc ccgacaaatg
+     1141 cgtcctttca ttattatgcg aaaattcatg aagagattcg aaagaacgat aaaaaactag
+     1201 ggtatgatgt taagcatttc gtaagtgccg acgtgattat ctatcatgat ggctataaca
+     1261 aagaagtaat gcagaagaaa aataaaatca agagaaacat tagtttatta caagaaatgg
+     1321 ttcacgaaga accccaaaat gccaggtgga cgtatttatt agcacgcgat ggtttcgctg
+     1381 tattctctcc tgctcaagtt gagcagctaa taaaaaaaac attagagtta gttagcgcag
+     1441 ataaccgtca gaaaaaatat tcattggttg ctcaaaaact acttgggcgt attctattta
+     1501 aagagggtaa aacagctaat gctctgctat cttttcaaaa tgttttaaaa atgaccaatg
+     1561 gaacggatag tgatgcacta tattacatca cagttattaa aatcaacaat ctattgttgg
+     1621 aaacaaactc tattgaaaaa gaactattga actatttaag ttcacacgat caaacaattg
+     1681 atgtcaatag tgatatatcg ggaaactact ttcatattgc ccagattatt ttggaatgcg
+     1741 acttaatcag cgccaactat gaacatcttt taccactaat ctcagaaatc ccaaaagaat
+     1801 tctcaaataa tataaaaaat aaaatcaaag cagcatcaaa aatatattca aaattacaag
+     1861 gtgacagcaa agatgcgaat aataaaacaa atagatcaaa atgactgcgg accagcagca
+     1921 gttgcgacaa tgctgggtat gttaagcaag aatagaatat ctgattggca aataaaacaa
+     1981 attatatgtc caacacgtta tggaaccaac tttattagca taatatctgg attaaagtcc
+     2041 gttagaatta aatcaacagt acaacaatgc gtcaaagata ttgcagtttt tgatgaaatt
+     2101 gaatttcctg tattaaccca aattatgcaa catggttact tacattttgt agtcatcaca
+     2161 aaatgtactc gttccaaagt atattgggca gaccctggga tcggcaaaat tgagagtaat
+     2221 tacaagtcta acttcctaac cttctggaat cccatcattt taacaatacc taaatcacag
+     2281 agctatgaat ttcttaaagc caaaattaaa gcattgaaga gaccgactct gtggcttagt
+     2341 ttcaaaaaac attggctagc tttattgatc tactggatac tttcaataat tgtatttgct
+     2401 ataacacttt ttctagcaac tatgtatgct gcttatttca accgtatagt acctaataag
+     2461 tttatttctg caattcctac catgacctct gtgtatttaa ccattcaggc cgccgctctt
+     2521 ttactcgaag ttattaatgc aatactaatt gctttcacag gtaacgcaat tagtaatgag
+     2581 ttatataaag atatctttac cgcttttcca cacaaaaagc gttcggtcat agagtctttc
+     2641 aaagatggag aaattattac aagatttaat gccatatatc aaattgctgg tagacaattg
+     2701 gtacttttgg gtgatcttcc aattgatatt atcaccatga gtataaccct ttttcttctt
+     2761 ggtcgtatca atccattttt aacaattttg cttcttattc caatgatatt aatgtcgtta
+     2821 ttattttatt taagctcgga cactatcaaa aaaaggagca caaatttatt taaatctcag
+     2881 gaaattttca gtcaagacat tattgaacaa ataactaatt tttctactat aaaaaccttt
+     2941 catgctggaa cctatatcac ttctaaaata acaaaaagta tggagaaata tattatagcc
+     3001 aatcgtaact tcagcttgta cgatagatta caacaaatag ctcgaaatgg cgtttcacag
+     3061 ttttttagca ttatattgtt ttcagttgga gcttttttag tcataaaagg gaatatcgtt
+     3121 cttggaacat tgctcagttt ttacgcactg acaggtaacg ttctaaatcc cttcataaaa
+     3181 ataataacta tgcaagtaaa cctttctcaa gggaaagtgg ctacagaacg ttacttagat
+     3241 ttattgattt cttcagaaga caatacgaac atgataaatc agctaactgc agattccatc
+     3301 gaactaaata aagtcacatt ttcatacgat agtattacac caataatcaa taatctcact
+     3361 ggtgtttttt ctaagtttcc aacagccata attggcaata gtggaggtgg taaatcaacc
+     3421 attgctaaac taatagcagg attttaccca gtagatggtc tgtcaatagg cggaatttcc
+     3481 tatacaaaac tcggtgcaaa gacaataagc agtacaatta cctatgttga acaatcgcca
+     3541 caaatatttt cggacacaat catgaataat ataacccttg gcagaaagaa tatcaccgaa
+     3601 aagtcagttt atgaaatagc taacaaaatt ggatttagca cgtttttaaa gcaattgcca
+     3661 gatgggctaa atacacgatt aggatcttct ggatatacat tatctggggg acaaaaacaa
+     3721 ttattaaaca tcataagatc aatgatagtt ccaagtaaat ttattatttt cgacgaaatc
+     3781 accaatgggt tggacattaa tacaaagaac aaagttgaaa actacttact atcacaaaat
+     3841 gaagtccatt gtatatttat aactcacgat ttaacacttg ctatgaaatg tattgacatc
+     3901 tttacagtaa agaatggaaa aattctaaat gtaacacgta ctaaacacac tgttaaatca
+     3961 ttagagagga cattgttatg aaaaaaataa ctattgctat cattgctatt atcgctgttg
+     4021 cactaatagg agcttattct tggaaaaagc ttacatcagt ccaggctcct ttataccaaa
+     4081 cagtaaaagc aaaaaaacta caatctgata tcaaaaataa gaaaaatgaa attgtttact
+     4141 tttatcaaaa aggttgtgaa ggctgtgagc atagtactcc gattctaaat cgttttattc
+     4201 gaaataaaca tgtaactatc caagcaatcg atataaacgc agatccaagt aaagatttca
+     4261 tcttgggaac attgggaata tcatcaacac caaccgtatt atttatccgc aaaggaaaaa
+     4321 taactcaacg tataaatcaa atctttggat atgaagattt aacaactaaa tacaataaat
+     4381 tccgaggtga tttttaaatg aaaacattaa taaaaaataa gacatcttta attttgttat
+     4441 cacttctcat tttttcagtg gtcgtgggaa tcttttcatt agctctgaca aaacataact
+     4501 ctattttaca tgaacaaaca ctccaatctg aaatcagatc gggttcaaca acaaacactc
+     4561 taatttataa ggatttaaat tcaataacag tcccatcatt taaaaaaatg gttgccgaga
+     4621 aaaataattt tattgtatat attggtcgcc ctacttgttc ggattgtaat ttattcgatc
+     4681 ctattttaat taacgagtta aaaaaagaac atatgaccac tcaagttaca tttctcaatg
+     4741 tcgcctggga acggcaaaaa aagtgggcaa catgggttca attcaaaaag aactatggat
+     4801 ttgaacaaac acctgcttta attcactacc ggaatgggaa ggtattcagt attatccaat
+     4861 gggaacagaa taacggaata agtcgggagg cattacactt atggcttacc aatcagaaaa
+     4921 aaacaatcta attccacaaa ctaggatatt cgttatatca aaccagccag gtcgacaaga
+     4981 ttttaataaa tcactgctac aagaaatggg aaatttgtct gatattatca aattcgttca
+     5041 ccctatacag ttggcgcact caacccatga aaaatatact gatgttaatt gctcactttc
+     5101 aattattatt ttgaatgtag atgaagaaga taatctatta aaaaaattag aggcaattgt
+     5161 cgaacaattg cctctttcaa taaagtattt tatttacgtc ggaccaagta aaaaaactct
+     5221 tgaaaatcta attagatgtc attatatgcc ttatgatgca ttaataacta aagattttga
+     5281 ctataaaact ttcactatac tggctgctga tatttataat attcttaaaa aaagctcatt
+     5341 gtccttaaaa gattcagata ttataacaat ttcggttcaa agacaaaaat actttttaaa
+     5401 attagacgat attttgttta taataactga cagtcaccca catcgactaa tctttcattt
+     5461 gaaaaacact gagtatcaaa caagaatgac tctaaagcag gtgtaccatc aatgcaaaaa
+     5521 attaaccgtt tgtcatgaag gagcattagt gaatttacaa aatgtcacta agttcaacaa
+     5581 gcacaaaaga attttatatt ttgaaaatgg tgatatttgt gaagtttcaa aacgatatat
+     5641 caaatcaatt agtgagaaaa tcccgatgaa gacggtttag ttcccgatga agataagaac
+     5701 tccaaatata agtgttttcg aattataatt gcactagtaa aaaatttagg aggttacgac
+     5761 catgagtaaa ctagttaaaa cattaactgt cgatgaaatc tctaagattc aaaccaatgg
+     5821 tggaaaacct gcatggtgtt ggtacacatt ggcaatgtgc ggtgctggtt atgattcagg
+     5881 cacttgtgat tatatgtatt cacactgctt tggtgtaaaa cactctagcg gtggtggcgg
+     5941 tagctaccat tgttagcctt aaaagaatat ttcgttataa gttggcttta tatttaactc
+     6001 agtttaatat aaagccaact ttttaatact cttaaaattg ttgattaacg ttaggcttgt
+     6061 agacttatct gaaatttaaa aacagcgtcc tttatcaagc ttccgctcat aatccattgt
+     6121 ttgcatcgat tcaggcctga atcgtttgca ctctgccacc ccttgaccat gtcgttaaat
+     6181 gcttggtttt atcaattaag ttaattagta acccacttga gagtatctag attttctgtc
+     6241 gtcatctatt tatcttgcaa ataacacgac catttgtacc aggtgttagc atcagcgtgc
+     6301 tgcaaggcaa cttatcgggg aagattactg atagtatcgt gttttacaac atgcaaactg
+     6361 gcctctacaa cacttatcta aatcaaataa ctattaaacc taaaagacta aaagtgaaat
+     6421 atgagcgcag ttatcaagaa tatgtgacta agaaaactaa actaatactg aaaggattgg
+     6481 attaacatgc aagatacacc tgaaactgcc gagtttgcca aacgcgccga agaagctagt
+     6541 caacgtgcaa gaaagatgaa aaccgagtta cgtaagaaac ggcgagctga taaattaaaa
+     6601 ttacaacaac aactgggtgc tgaactaatg aaagagacta acattgtatc agctcaacaa
+     6661 ctcaaacaat atctacaaga taacctgaat tatgaagctg aggctgagaa tcaacaagat
+     6721 taccagcaag ctctaattga gttaaacacc tttgctaatc aattaacttg ggatgaagaa
+     6781 cgaggctact ggcgagttgc taacctgcga acgttaaccg attggctagc aggctttagg
+     6841 acaaacaatt aattattgta aagttggcaa acacgtcaac ctcacaataa ttattggttc
+     6901 taatcactaa tttacgagta gtaaatttag tgatttaatt tttaccctta gtgccatcaa
+     6961 gcagacattt gcgtaaagta aactgactgt tggtggcact ttttcggttt ccttttgcta
+     7021 aaaggtaagg tgtgacgggg ttgactgttg gtggcgttgt gtgaagcaca atcgacacgg
+     7081 ctttgacttt gggggggagt taagaggggg agcgttgcgc cctctcttac aagcgcaaga
+     7141 gggagacaag gagcgtagcg atattgtcta cacattgccc cgcttgtcat acgactttaa
+     7201 actgttataa tgatggcgtg aatagcgtca ttactagtta ccgtttctta gctaacatgc
+     7261 aaccgcgtag ggcgcacgtt ggcttagcca aggaggtgtt tttgactttt gactgcacaa
+     7321 aaaaagcgca cgcaaattaa cgtccgtctt gatgaacttg aattagaaaa agtgaaatat
+     7381 tcagctgacg ttctcggtct gtctgtcggc caatatgtta aacaagttgt gacaaagtca
+     7441 ccgttgatcg aacccaaatt ttcgcccgat tttcaaaaaa cagctattcg acaattggtc
+     7501 ggtattgcta acaatttaaa ccagttaacc cgtttagctc acatcaatgg cactacttca
+     7561 acccaacaag ctattgacca actacgaaag gaagttgacc tgctatggca acaattggca
+     7621 aaataacgac tgctagtagt ggatcggcgg ctattgacta cgcttacggc cgcaataaaa
+     7681 tgccagccgc aactaaagat tggcttaaac agcaaggtgt tgacccagct accgttgagc
+     7741 aactgcaaaa tcgagcagtc gtcatgtctg gtctgaacgt tgaccctgaa tatgctaaaa
+     7801 cccaaatgaa agccactaga atggctttta gcacccgtgg taaacaaacg actcgtgtta
+     7861 ttcagtcctt cccaacgatt gacttagacc ctgctgatcc tcatgactgg cagacagcta
+     7921 accaattagg cttagaactc gccaaacaag cttttcctga ttatcaagtt gctgtttata
+     7981 cccagctaga cggcaaggga cacaagctcc acaaccacat tatcgttaat atgccgaata
+     8041 ttagaaccgg tgaaaagtat catgaacatc aaagctggca acggttatct agaattaatg
+     8101 acgaaattag tcaagaacat aacctatcaa tcattgaccg caataccaga gcccctgaac
+     8161 gacgaaccat ggctgaatgg caactcaacg ccaaaaatga gtacgtctgg aaagatgatt
+     8221 tacgtcgtcg gattgataaa gcaatattag agagttctaa aaactcatat aaggacttct
+     8281 cagagcattt aactcaatct ggcataatta tccatgacag aggtaaaaat ttctcatacg
+     8341 agtttttaga cgctgataaa aagcaccggc gtgctcgtgg taaaacttta ggtgcagatt
+     8401 atgaaaagga gacgatactt aatgagttgg agcgacaaaa tcgacaacca gcaaccgagc
+     8461 taccaagact tattgaacct aatcgacaaa ttgaacaacg aaaacgggct gttgaatcaa
+     8521 gagaaccaat ctctgaatca agaaaacgaa caactgcaaa atcaggtcaa agtgttgaca
+     8581 gtcttacaat cgcaattggc cgaactcgac aaacagctcg aacagtggca aacaatctca
+     8641 acaaacaaaa cagccgaaaa caacgattta gagagcgaat tacaagcttt acaaaacgtt
+     8701 tcagagaaat tggacaccaa attaaccagt ttatccaacg actagactgt tataaccgaa
+     8761 ccgttaataa cttccaacaa cggctcaaag ctgaccagca agcgaaacaa caagcctttc
+     8821 aaagtttcca gcagcgcttt gaggctgacc aaaaagttca aaaacaacat gagcttgaac
+     8881 aacaacagct aaataaatca tttccaatcg aggaggatca tggtattgaa cgttaacgac
+     8941 cgagaaatca tcactcaaat aatggacgcc tatcgtaatg gcacgcttga ttgggctaat
+     9001 gtcccggctt ttcaagcaat tatcagacaa gaaatccgaa aagcactgac cgatagtcat
+     9061 ttccaagcac aacaacaaac ccagttaaaa aatgaccaca cttggtatca tctagaaatc
+     9121 gaacgggcca tcgaaaaaac cgccgagcaa gtgaatacgg agcaaattaa acaaaccgtc
+     9181 gaaaaggata ttgccgagca acagcacaaa ttaagcctac aactacttaa taacatgaac
+     9241 atgcaagcta aactagaaaa gcaacagaag ctttggatac cagtattgct gactgtctta
+     9301 ccaaccatgg ccttcttgct aattagtttt tgtgctatct ggttcatctt catacgctag
+     9361 gaggcttagt atgcctaaat acttcaaaac ctatcacttg tcacgatact tgttgttagt
+     9421 agtcacacta tggtgcgtac taggtgtcta tggctcgttt accgttggcc gaatacatgc
+     9481 gcaccaagta cgggttcaaa gacaagaaaa acgactaaaa gctaaacggc aagcgattaa
+     9541 gcaacgcaaa caagttgaga tgaagcgtca agtctctaag ctacaagcac aagttaatga
+     9601 actgcaaaat caagctacca gtctgaatca acgcaacaag catatcatac taccctctga
+     9661 cgccgatgaa aaattaaaat cgaagatagt taatcaggtt aaccatctca atcctacaat
+     9721 tgcagagctt gatactaagt tcactggtgt tcctgcctta cagaagagct atcggcagtt
+     9781 acaacatctt acagaggggt atggatttta gactatgtcg ctgttatcaa gatatatatg
+     9841 gcattttaga acactacggt ttacatgttc ttaccccttg atacgactag tatcttgaat
+     9901 agtaaggact acctcagctc ctagtcgtgg ttaactctgc ctgagggcgt gcccgaagtt
+     9961 tccctaacaa cgggcttgat gttgacccta gcaacgacca acgggaggcg cagttaaatg
+    10021 tgagcgtgtt ttgcgctcac tcctttttag cgaggggggg aactggggac ggcgttacgt
+    10081 cccctagaca gtcttcaatc gttaattttt ttaagattct taaaattttt tgttcgcgcg
+    10141 cgcgttaatt tagttacttt cagacatact tttaattact tttaaatact ttaggagcct
+    10201 tagaaatggc ttaaccacgc gggttacagg cgtcgaaaat acctttttgt acgtgatatg
+    10261 taaccttttt gtacgtgata tgtaaccttt ttgtacgtga tatgtaacct ttttgtacgt
+    10321 gattattata taagattgca taatatccta attaagggta ttattctgtt tgtatttata
+    10381 aatgactttt ttgtacgttc ctttaggagg tgatttaatg caagggaaaa tttccaagaa
+    10441 agctgatgtt gctttttcaa gtttattatc acgtcaagat tatttagtcg ttcaaggtaa
+    10501 cgacttagct aaagcatttg gcaacttgtc ggcttttgaa catcaggtac tagactattg
+    10561 ttttagcttt gtcactcaaa acagtaaagc agaagatgaa tactctgtgg aagctattga
+    10621 cttgattcat catcttggtt tgaactcttc aggacacaat tatgagcgta tcgccaaggc
+    10681 ttttaaggct ttaaatgaga aaactgcctt atactttcac actgaaagtg atggcgtacc
+    10741 gggaatcctc atgacccaat tattcagtca tatcaagttc tttaagaacg ggcatgttac
+    10801 ctttcaattc tcgcaagacg cggccccgta tgtgtttgat ttacgttcaa attactattc
+    10861 attcaagctt agtgagttgt cgcgtgtcaa atccaagtac agccttatca tgttaaagct
+    10921 cattgaagcc aatcgaatgg gaaatcagaa cccaattacg ataaaaggta ctttagaaga
+    10981 ttggcaaggc tggtttctcg gtgctgaccg ccgatggcca gctggccgat ttatgcaaaa
+    11041 ggcaattgac gtagcaattg atgaactcta tcaaaagatg ggactagtct ttaccgttac
+    11101 taccttaaag cataaacgtt cagtagtagg ctatgtgatt gatgtgacca aaccagaaga
+    11161 aaatagaaaa ataaaaaaag tcatcagggg cgactgaaac cgcaatccct gatgacttaa
+    11221 gctctggcaa ctacttacaa tagttacttt agcgaactta gcaaagagca ttacctacct
+    11281 ttcttgctgg ataggggtaa tgctccaacc accggacaag ccggcttctg tattatagca
+    11341 tgtaccggtt tgtcctcaac attaggagga taaaaccatg aaccaaaata ctttagcttt
+    11401 caaacaaact gccaaacacg ttctgagcaa aaacatcaaa aatatatggc taggaaagct
+    11461 aaactaatac tgaaaggatt gagataatat gcaattctta gaaatcagag ctaacggaca
+    11521 ttacgcatgg attagcgcca atgacccaag tcaatcgtca cttaataatt ccatcgaaca
+    11581 ccacaggtta actggttaaa cgagatacca gagaaacaaa cgtggcaagc ttatatgaat
+    11641 accagcaaca atcctgcccc agcacgtcgt catgttctcc aacaacgagc cacaatttgg
+    11701 ctagatatct tctaactgtg aacctatcac ctacctataa gtatgataag atcatagtgt
+    11761 aaggggcgtc gcgaaagggc aataggatat cttttactga ggaggataca aaatgaaatt
+    11821 caaacaatga ctgttacctg ttatcatttc actgataagt ttgtcgttgc ttattttaat
+    11881 aacaagttat actactgttg ttcat
+//

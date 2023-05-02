@@ -1,0 +1,292 @@
+LOCUS       BGC0001551              4553 bp    DNA     linear   CON 11-APR-2022
+DEFINITION  Streptomyces glaucescens strain GLA.O chromosome, complete genome.
+ACCESSION   BGC0001551
+VERSION     BGC0001551
+KEYWORDS    .
+SOURCE      Streptomyces glaucescens
+  ORGANISM  Streptomyces glaucescens
+            Bacteria; Actinobacteria; Streptomycetales; Streptomycetaceae;
+            Streptomyces.
+COMMENT     REFSEQ INFORMATION: The reference sequence is identical to
+            CP009438.1.
+            The annotation was added by the NCBI Prokaryotic Genome Annotation
+            Pipeline (PGAP). Information about PGAP can be found here:
+            https://www.ncbi.nlm.nih.gov/genome/annotation_prok/
+            COMPLETENESS: full length.
+            ##antiSMASH-Data-START##
+            Version      :: 6.2.0-924c3663(changed)
+            Run date     :: 2022-11-08 02:29:24
+            ##antiSMASH-Data-END##
+FEATURES             Location/Qualifiers
+     protocluster    1..4553
+                     /aStool="rule-based-clusters"
+                     /category="RiPP"
+                     /contig_edge="True"
+                     /core_location="[143:2712]"
+                     /cutoff="10000"
+                     /detection_rule="(PF13471 and Asn_synthase or micJ25 or
+                     mcjC)"
+                     /neighbourhood="10000"
+                     /product="lassopeptide"
+                     /protocluster_number="1"
+                     /tool="antismash"
+     proto_core      144..2712
+                     /aStool="rule-based-clusters"
+                     /tool="antismash"
+                     /cutoff="10000"
+                     /detection_rule="(PF13471 and Asn_synthase or micJ25 or
+                     mcjC)"
+                     /neighbourhood="10000"
+                     /product="lassopeptide"
+                     /protocluster_number="1"
+     cand_cluster    1..4553
+                     /candidate_cluster_number="1"
+                     /contig_edge="True"
+                     /detection_rules="(PF13471 and Asn_synthase or micJ25 or
+                     mcjC)"
+                     /kind="single"
+                     /product="lassopeptide"
+                     /protoclusters="1"
+                     /tool="antismash"
+     subregion       1..4553
+                     /aStool="externally annotated by: MIBiG"
+                     /contig_edge="True"
+                     /label="BGC0001551"
+                     /subregion_number="1"
+                     /tool="antismash"
+     region          1..4553
+                     /candidate_cluster_numbers="1"
+                     /contig_edge="True"
+                     /product="lassopeptide"
+                     /region_number="1"
+                     /rules="(PF13471 and Asn_synthase or micJ25 or mcjC)"
+                     /subregion_numbers="1"
+                     /tool="antismash"
+     gene            7..117
+                     /locus_tag="SGLAU_RS35025"
+                     /old_locus_tag="SGLAU_31040"
+     CDS             7..117
+                     /codon_start=1
+                     /gene_functions="biosynthetic-additional (lassopeptides)
+                     predicted lassopeptide"
+                     /gene_kind="biosynthetic-additional"
+                     /inference="COORDINATES: similar to AA
+                     sequence:RefSeq:WP_016638602.1"
+                     /locus_tag="SGLAU_RS35025"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Protein Homology."
+                     /old_locus_tag="SGLAU_31040"
+                     /product="keywimysin-related RiPP"
+                     /protein_id="WP_107408983.1"
+                     /transl_table=11
+                     /translation="MKKAYEAPTLVRLGSFRQKTGLLQRHGNDRLILSKN"
+     CDS_motif       7..69
+                     /prepeptide="leader"
+                     /note="peptide class: lassopeptide"
+                     /note="predicted sequence: MKKAYEAPTLVRLGSFRQKTG"
+                     /locus_tag="SGLAU_RS35025_lassopeptide"
+                     /aSTool="lassopeptides"
+                     /tool="antismash"
+     CDS_motif       70..117
+                     /prepeptide="core"
+                     /locus_tag="SGLAU_RS35025_lassopeptide"
+                     /peptide="lassopeptide"
+                     /predicted_class="Class II"
+                     /score="3.30"
+                     /molecular_weight="1759.0"
+                     /monoisotopic_mass="1758.0"
+                     /core_sequence="LLQRHGNDRLILSKN"
+                     /aSTool="lassopeptides"
+                     /tool="antismash"
+                     /leader_sequence="MKKAYEAPTLVRLGSFRQKTG"
+                     /leader_location="[6:69](+)"
+     gene            144..2000
+                     /locus_tag="SGLAU_RS30630"
+                     /old_locus_tag="SGLAU_31045"
+     CDS             144..2000
+                     /codon_start=1
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     lassopeptide: Asn_synthase"
+                     /gene_functions="biosynthetic-additional (smcogs)
+                     SMCOG1177:asparagine synthase (glutamine-hydrolyzing)
+                     (Score: 110.4; E-value: 1.6e-33)"
+                     /gene_kind="biosynthetic"
+                     /inference="COORDINATES: similar to AA
+                     sequence:RefSeq:WP_015656043.1"
+                     /locus_tag="SGLAU_RS30630"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Protein Homology."
+                     /old_locus_tag="SGLAU_31045"
+                     /product="lasso peptide isopeptide bond-forming cyclase"
+                     /protein_id="WP_043505821.1"
+                     /sec_met_domain="Asn_synthase (E-value: 5.5e-48, bitscore:
+                     152.8, seeds: 78, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MPELHESAEPGRGDAHFAVFPDCAEAAAAARFFRRPGTRVLTHAS
+                     GRPWLIGRWSDAEIVTGRAPGTALAALGWCGAGPRHLERHAARMRDLAEVDALARSLPG
+                     SFHLVAAHDGQLRVQGTASGLRLVFHARIHGVHVAATSADLLAAALGSRPDTGRLAVRL
+                     LWPVPHPLYETSVWEGVDAVSPEDALIVSADGRRVRRSRWWRPPEPVRTLARGAPAVRE
+                     ALAEAVDLRTRTGGVVSCDLSGGLDSTSVCFLAARSSASLVAATWPGRDPADTDLAWAR
+                     QAADHLPKADHVVWDADASALVYSDLLGIDDLLDEPTIGVMDRSRVLQQLPWLAARGSR
+                     VHLTGIGGDHVAWCSEAYYHRLLRTRPLFALGRLRGFRALWNWPLGATARALADAHSYP
+                     DWLADSVRRLRAPMPETSVTGSLGWGMPPRLFPWMTAETERLARAALLASAARAEPLHR
+                     DRGLHTDLELIRTCTRIIRQWERMATRAGLPMASPYLDDRVIEACLAVRPDERVTPWQY
+                     KPLLTEAMRGVVPDECLRRTNKAEASMDASDGLRRHRGDLMTLWTDSRLERLGLVDGGE
+                     LRRLAQRPSAPGLRDAILYSTIACEVWLRARDRAPRPGSAAA"
+     gene            2027..2281
+                     /locus_tag="SGLAU_RS30635"
+                     /old_locus_tag="SGLAU_31050"
+     CDS             2027..2281
+                     /codon_start=1
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     RRE-containing: Lasso_Fused_RRE"
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     RRE-containing: Stand_Alone_Lasso_RRE"
+                     /gene_functions="biosynthetic-additional
+                     (rule-based-clusters) PF05402"
+                     /gene_kind="biosynthetic"
+                     /inference="COORDINATES: similar to AA
+                     sequence:RefSeq:WP_004946593.1"
+                     /locus_tag="SGLAU_RS30635"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Protein Homology."
+                     /old_locus_tag="SGLAU_31050"
+                     /product="lasso peptide biosynthesis PqqD family chaperone"
+                     /protein_id="WP_043505823.1"
+                     /sec_met_domain="PF05402 (E-value: 7.1e-19, bitscore: 56.5,
+                     seeds: 461, tool: rule-based-clusters)"
+                     /sec_met_domain="Stand_Alone_Lasso_RRE (E-value: 5e-30,
+                     bitscore: 92.0, seeds: 25, tool: rule-based-clusters)"
+                     /sec_met_domain="Lasso_Fused_RRE (E-value: 1.1e-10,
+                     bitscore: 30.0, seeds: 20, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MTLRFHQDVSTAETGYGTVLLDQRTGEYWELNPTGALVVRTLMDD
+                     GDETAAVTALVTRFDIDRDRAAQDVTALVRDLRDAGLVS"
+     gene            2278..2712
+                     /locus_tag="SGLAU_RS30640"
+                     /old_locus_tag="SGLAU_31055"
+     CDS             2278..2712
+                     /codon_start=1
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     lassopeptide: PF13471"
+                     /gene_kind="biosynthetic"
+                     /inference="COORDINATES: similar to AA
+                     sequence:RefSeq:WP_010987089.1"
+                     /locus_tag="SGLAU_RS30640"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Protein Homology."
+                     /old_locus_tag="SGLAU_31055"
+                     /product="lasso peptide biosynthesis B2 protein"
+                     /protein_id="WP_043505824.1"
+                     /sec_met_domain="PF13471 (E-value: 8.2e-29, bitscore: 88.5,
+                     seeds: 84, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MTTPSALDRPTGVPLARRLAARLVLLPALALSFLPPRHIRTVLER
+                     VRRGARPATPAQAAAAREALCAVSLRCAGPRGCLPRSLGAALLCRVYGTWPTWCTGVRT
+                     LPPFAAHAWIEAGGRPVGEGVPDDYFARLISVPPARRATT"
+     gene            2826..4553
+                     /locus_tag="SGLAU_RS30645"
+                     /old_locus_tag="SGLAU_31060"
+     CDS             2826..4553
+                     /codon_start=1
+                     /gene_functions="transport (smcogs) SMCOG1288:ABC
+                     transporter related protein (Score: 358.2; E-value:
+                     1.3e-108)"
+                     /gene_kind="transport"
+                     /inference="COORDINATES: similar to AA
+                     sequence:RefSeq:WP_003988508.1"
+                     /locus_tag="SGLAU_RS30645"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Protein Homology."
+                     /old_locus_tag="SGLAU_31060"
+                     /product="ABC transporter ATP-binding protein/permease"
+                     /protein_id="WP_052414171.1"
+                     /transl_table=11
+                     /translation="MFRLTEGHRRGIAAATGLTLAASAVGLAQPLVAKHVVDAGSRGQV
+                     LWPFLLLLSGLFVAEAAAGATGRFLLDRMGEGVVRTVRHGLVTRLLRLEMRELDRRRRG
+                     DLVSRVTADTTLLRDVMSQALVDLLTGCLVSAGALVLMLWLDPLLLLLVVLTVALAAAV
+                     VTTLLKGMRTASEQTQSSVGAIAAELERALAALPVVRVYRAEEREARRIGRRVDSAHGA
+                     GVRAARLAAVMSSAVELAVQGSFLLVLVVGGVRAGSGGADSLGDLVAFLLYASYLVMPL
+                     SSVFRAIGLIQRGTGAYLRIDEVLALPEEPARPPARAMPRPDPPGTPPALELTDVRFSY
+                     VPGRPVLRGAALTVPRHGLVALVGRSGAGKSTLFSLITRLYDPDSGTIRYDGRPAAALS
+                     RRESRAGIALVDQNTHVLEGTLRENLTYAAPDATEDDIVRVVRLARLGHVVRRLPGGLD
+                     GRLGDHGGSLSAGERQRVALARALLARPRLLLLDEHTSHLDAVNETALTRTLGAVTRDC
+                     AVLVITHRLATVRHADRIIVLQDGRTVASGRHDELLATSPAYRELAATHALHPEGRGS"
+ORIGIN
+        1 gatggcatga agaaggcgta cgaggccccg acgctcgtcc ggctcggatc gttccgccag
+       61 aagaccggac tgctgcagcg ccacggcaac gaccgtctga tcctcagcaa gaactgaccg
+      121 cggccggcgc gtaacgcgac cacatgcccg agctgcacga gagtgcggaa ccgggccgcg
+      181 gcgacgccca cttcgcggtc ttccccgact gcgcggaggc ggccgccgcg gcccgcttct
+      241 tccgccgacc cggtacccgt gtcctgaccc acgcctccgg ccggccctgg ctgatcggcc
+      301 gttggtccga cgccgagatc gtcaccggcc gagcccccgg aacggccctc gccgccctcg
+      361 gatggtgcgg cgccggcccc cgccacctcg aacggcacgc cgcccgcatg cgcgacctcg
+      421 ccgaagtcga cgccctcgcc cggtccctgc cggggagttt ccacctggtc gccgcccacg
+      481 acgggcagct cagggtgcag ggcaccgcct cagggctgcg gctggtgttc cacgcccgga
+      541 tccacggtgt ccacgtggcc gcgaccagcg cggacctgct cgcggcggcc ctgggaagcc
+      601 ggccggacac cggtcggctg gccgtcaggc tcctgtggcc cgtgccgcac ccgctgtacg
+      661 agacctccgt gtgggaggga gtcgacgcgg tctcccccga ggacgccctg atcgtctccg
+      721 ccgacggacg gcgggtccgc cgatcacgct ggtggcggcc cccggagccg gtccgcaccc
+      781 tcgcgcgggg cgcgccggcc gtccgcgagg cgctggccga ggccgtcgac ctccgcaccc
+      841 ggacgggcgg cgtggtcagc tgcgacctgt ccggcggact cgactccacc tcggtctgct
+      901 tcctcgccgc ccgctcctcc gcctccctgg tggcggcgac ctggcccgga cgggatcccg
+      961 cggacaccga cctggcctgg gcccggcagg ccgccgacca cctgccgaag gccgaccacg
+     1021 tcgtctggga cgcggacgcg tcggccctcg tctactcgga cctgctcggc atcgacgacc
+     1081 tgctcgacga gccgaccatc ggcgtgatgg accgctcacg cgtcctgcag cagctgccct
+     1141 ggctggccgc acgcggcagc cgggtccacc tcaccggcat cggcggcgac cacgtcgcct
+     1201 ggtgctcgga ggcctactac caccggctgc tgcgcacccg cccgctgttc gcgctgggcc
+     1261 ggctgcgcgg cttccgcgcc ctgtggaact ggccgctcgg cgcgacggcg cgagccctcg
+     1321 ccgacgccca ctcctacccc gactggctgg cggactccgt ccggcggctg cgcgcgccga
+     1381 tgcccgagac ctcggtgacc gggagcctcg gctgggggat gccgccccgc ctgttcccct
+     1441 ggatgaccgc cgagacggaa cggctggccc gcgccgccct gctggcctcg gccgcgcgcg
+     1501 ccgagccgct gcaccgggac cgcggcctgc acaccgacct cgaactgatc cgcacctgta
+     1561 cgcgcatcat ccgccagtgg gagcggatgg cgacccgggc cggccttccg atggcgtcac
+     1621 cgtacctgga cgaccgggtg atcgaggcgt gcctggcggt ccggccggac gaacgcgtca
+     1681 cgccctggca gtacaaaccg ctgctcaccg aggcgatgcg cggcgtcgtc ccggacgagt
+     1741 gcctgcgccg taccaacaag gccgaggcct cgatggacgc gtcggacgga ctgcgtcgcc
+     1801 accggggcga cctgatgacc ctgtggaccg actcccggct ggaacgcctc ggcctggtgg
+     1861 acggcgggga actgcgccgg ctcgcccagc ggccctccgc ccccggcctg cgcgacgcga
+     1921 tcctctactc gaccatcgcc tgcgaggtgt ggctgcgcgc ccgggaccga gcgccacgcc
+     1981 cgggatccgc cgccgcatga cacgacagca gaaaggcgcc gaccctatga ccctccgctt
+     2041 ccaccaggac gtctccaccg ccgagaccgg gtacggaacg gtactgctcg accagcgcac
+     2101 cggtgagtac tgggaactca accccacggg cgcgctggtg gtgcggaccc tcatggacga
+     2161 cggcgacgag acggccgcgg tcacggcgct cgtcacccgg ttcgacatcg accgcgaccg
+     2221 cgcggcacag gacgtgacgg cactggtgcg cgacctccgg gacgcggggc tggtctcatg
+     2281 accacaccca gcgccctgga ccgccccacc ggagtgcccc tcgcccggcg gctcgccgcc
+     2341 cgtctcgtcc tgctgcccgc cctggccctg tcgttcctgc cgcctcgcca catccggacc
+     2401 gtgctggagc gcgtacgccg gggcgcgcgg cccgccaccc ccgcacaggc cgcggcggcc
+     2461 cgcgaggcac tgtgcgcggt gagcctgcgc tgcgcgggcc cgcgcggctg cctgccgcgt
+     2521 tcgctgggcg ccgccctgct gtgccgggtg tacgggacct ggcccacctg gtgcaccgga
+     2581 gtgcgcaccc tgccgccgtt cgccgcccac gcctggatcg aggccggcgg ccgccccgtg
+     2641 ggggagggcg taccggacga ctacttcgcg cggctcatca gcgtgccccc ggcacggcgg
+     2701 gcgacgacgt gagcgacacg gccgtcgcgg acgggacccc gtccggaccc ggaccgggcg
+     2761 aggacgcggc gggacggcca ccgcgcaccg cggacacaag gacgacggcg ggttcggtcg
+     2821 ccgccctgtt ccggctgacg gagggtcacc ggcgcggcat cgccgcggcg accgggctca
+     2881 ccctggccgc gtcggccgtg ggactcgccc agccgctcgt cgccaagcac gtcgtggacg
+     2941 ccggatcccg cggacaggtg ctgtggccgt tcctgctgct gctgtccggg ctgttcgtcg
+     3001 ccgaggccgc cgcgggcgcg accggccggt tcctgctgga ccgcatgggc gagggcgtgg
+     3061 tccgtacggt gcgccacgga ctcgtgacgc ggctgctgcg gctggagatg cgggagctgg
+     3121 accggcgccg ccgcggcgac ctggtctccc gtgtcaccgc cgacaccacg ctgctgcggg
+     3181 acgtgatgtc gcaggccctg gtcgacctgc tcaccggctg cctggtctcc gccggggcgc
+     3241 tcgtgctgat gctgtggctg gacccgctgc tgctgctcct cgtcgtgctg acggtcgccc
+     3301 tcgccgcggc cgtcgtcacc accctgctga agggcatgcg tacggcctcg gagcagacgc
+     3361 agtcctccgt gggcgcgatc gccgcggaac tggagcgggc cctggccgcg ctgcccgtgg
+     3421 tgcgggtgta ccgggccgag gagcgcgagg cgcgccgcat cggccggcgg gtggactcgg
+     3481 cccacggggc gggtgtacgg gcggcgaggc tggccgcggt catgagcagc gccgtcgaac
+     3541 tcgcggtcca gggctccttc ctgctggtcc tggtcgtcgg cggcgtgcgg gccggcagcg
+     3601 ggggagcgga ctccctcgga gacctggtcg ccttcctgct gtacgcctcc tacctggtca
+     3661 tgcccctgtc gtcggtgttc cgcgccatcg gactgatcca gcgcggcacc ggtgcgtacc
+     3721 tgaggatcga cgaggtcctc gccctccccg aggaacccgc acgcccgccc gcccgcgcga
+     3781 tgccccgccc ggacccgccc ggcacgccgc ccgcgctgga gctcacggac gtccgcttct
+     3841 cctacgtccc tggccggccg gtcctgcgcg gagcggccct caccgtgccg cggcacggac
+     3901 tggtggccct cgtcggccgc tcgggcgccg gcaagagcac cctgttctcg ctgatcaccc
+     3961 gactgtacga cccggactcc gggaccatcc ggtacgacgg gcgcccggcg gcggccctga
+     4021 gccgccggga gagccgggcc ggcatcgccc tcgtcgacca gaacacccat gtgctggagg
+     4081 gaacactccg cgagaacctc acctacgccg cccccgacgc caccgaggac gacatcgtcc
+     4141 gcgtcgtccg gctggcccgg ctcggccacg tggtgcgccg attgcccggg ggcctggacg
+     4201 gcagactggg cgaccacggt ggcagcctct ccgcgggaga acgccagcgc gtcgccctgg
+     4261 cccgcgcgct gctcgcccgt ccgcggctgc tcctgctcga cgagcacacc tcacacctgg
+     4321 acgccgtcaa cgagacggcg ctcacccgga cgctgggcgc ggtcacccgc gactgcgcgg
+     4381 tcctcgtcat cacccaccgt ctcgccacgg tgcggcacgc cgaccggatt atcgtcctcc
+     4441 aggacggccg cacggtggcc tcgggccggc acgacgaact cctcgccacc agtccggcgt
+     4501 accgggaact ggccgccacg cacgccctgc acccggaggg ccgcgggagc tga
+//
