@@ -1098,6 +1098,7 @@ def disulfide_bridging(node, model):
     mol_cys = substrate.GetSubstructMatches(Chem.MolFromSmarts(cysquery[0]))
     mol_cyslist = average_position(remap(mol_cys, mol_map))
     if len(mol_cyslist) > 2:
+        n=2.0
         optimum_coordinating_value = mol_cyslist[0]+mol_cyslist[2]
         products = ds_reaction.RunReactants([substrate,])
         for p in products:
@@ -1113,6 +1114,7 @@ def disulfide_bridging(node, model):
         products = ds_reaction.RunReactants([product,])
         product = products[0][0]
     else:
+        n=1.0
         products = ds_reaction.RunReactants([substrate, ])
         product = products[0][0]
 
@@ -1131,7 +1133,7 @@ def disulfide_bridging(node, model):
     disulfide_bridge_reaction.lower_bound = 0.
     disulfide_bridge_reaction.upper_bound = 1000.
     disulfide_bridge_reaction.add_metabolites(
-        {node.metabolite: -1.0, disulfide_bridged_peptide: 1.0, UNIMOD.metabolites.get_by_id("gthox_c"):-1.0, UNIMOD.metabolites.get_by_id("gthrd_c"):2.0}
+        {node.metabolite: -1.0, disulfide_bridged_peptide: 1.0, UNIMOD.metabolites.get_by_id("gthox_c"):-n, UNIMOD.metabolites.get_by_id("gthrd_c"):n}
     )
 
     m_node = Metabolite_node(disulfide_bridged_peptide, node.name, node, disulfide_bridge_reaction, product, ds_smiles)
