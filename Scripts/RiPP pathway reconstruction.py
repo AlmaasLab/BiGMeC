@@ -1133,7 +1133,7 @@ def disulfide_bridging(node, model):
     disulfide_bridge_reaction.lower_bound = 0.
     disulfide_bridge_reaction.upper_bound = 1000.
     disulfide_bridge_reaction.add_metabolites(
-        {node.metabolite: -1.0, disulfide_bridged_peptide: 1.0, UNIMOD.metabolites.get_by_id("gthox_c"):-n, UNIMOD.metabolites.get_by_id("gthrd_c"):n}
+        {node.metabolite: -1.0, disulfide_bridged_peptide: 1.0, UNIMOD.metabolites.get_by_id("gthox_c"):-n, UNIMOD.metabolites.get_by_id("gthrd_c"):2*n}
     )
 
     m_node = Metabolite_node(disulfide_bridged_peptide, node.name, node, disulfide_bridge_reaction, product, ds_smiles)
