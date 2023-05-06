@@ -286,7 +286,7 @@ def glutamylation_elimination(node, model, strictness):
     m_node = Metabolite_node(dehydrated_peptide, node.name, node, dehydration_reaction, substrate, de_smiles)
     return m_node
 
-#Function that dehydrates serine and threonine per the glutamylation elimination reaction catalyzed by LanM/KC/L (class II-IV lanthipeptides)
+#Function that dehydrates serine and threonine per the phosphorylation reaction catalyzed by LanM/KC/L (class II-IV lanthipeptides)
 def phosphorylation_dehydration(node, model, strictness):
     if strictness == 0:
         serine_query = Chem.MolFromSmarts("[C:1]([CX4H2:2][OX2H:3])[C:4](=[O:5])")
@@ -1085,7 +1085,7 @@ def macrolactam_ring_formation(node, model):
     m_node = Metabolite_node(macrolactam_peptide, node.name, node, macrolactam_reaction, product, ml_smiles)
     return m_node
 
-#Wrong compartment for glutathione, but wasnt able to choose periplasm compartment in carveme model
+#Function for disulfide bridging of class I, III and IV lasso peptides
 def disulfide_bridging(node, model):
     substrate = node.molecule
     Chem.SanitizeMol(substrate)
