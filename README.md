@@ -65,7 +65,7 @@ The current version of BiGMeC uses the _S. coelicolor_ model [Sco-GEM](https://g
 ## Contributors
 - [Snorre Sulheim](https://www.sintef.no/en/all-employees/employee/?empId=5675) ([@sulheim](https://github.com/sulheim)), SINTEF Industry, Norway / Norwegian University of Science and Technology, Norway
 - [Fredrik Aunaas Fossheim](https://no.linkedin.com/in/fredrik-aunaas-fossheim)([@FredrikFossheim](https://github.com/FredrikFossheim)), Norwegian University of Science and Technology, Norway
-
+- Adrian Thorsplass([@adriatho](https://github.com/adriatho)), Norwegian University of Science and Technology, Norway
 ## Contribute
 Contributions are very welcome, either by raising issues or through pull requests. 
 
